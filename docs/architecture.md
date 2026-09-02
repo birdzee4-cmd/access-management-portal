@@ -51,7 +51,7 @@ Ports for future legacy integrations. Interfaces expose read operations only and
 
 ### `database`
 
-A Prisma schema targeting SQL Server for a future, dedicated portal database. It does not describe, introspect, or migrate the existing production SQL Server. Migration and seed directories are placeholders only.
+A Prisma schema targeting SQL Server for a future, dedicated portal database. It does not describe, introspect, or migrate the existing production SQL Server. The normalized design is documented in [Access Management Portal Data Model V1](data-model.md); no migration has been created or run.
 
 ## Data ownership
 

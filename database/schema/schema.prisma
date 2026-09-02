@@ -8,14 +8,302 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// This schema belongs only to the future Access Management Portal database.
-// It must never be pointed at or used to migrate the existing production SQL Server.
-model PortalConfiguration {
-  id        String   @id @default(uuid()) @db.UniqueIdentifier
-  key       String   @unique @db.NVarChar(200)
-  value     String   @db.NVarChar(2000)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// This schema belongs only to the new Access Management Portal database.
+// Never point Prisma commands at production or legacy databases.
+//
+// Prisma's SQL Server connector does not support Prisma enum or Json fields.
+// Coded fields therefore use documented NVARCHAR vocabularies, while structured
+// payloads are serialized as JSON in NVARCHAR(MAX) columns.
 
-  @@map("PortalConfiguration")
+model User {
+  id                    String           @id @default(uuid()) @db.UniqueIdentifier
+  employeeId            String           @unique @db.NVarChar(50)
+  entraObjectId         String           @unique @db.UniqueIdentifier
+  email                 String           @unique @db.NVarChar(320)
+  displayName           String           @db.NVarChar(200)
+  departmentId          String?          @db.UniqueIdentifier
+  managerId             String?          @db.UniqueIdentifier
+  active                Boolean          @default(true)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  department            Department?      @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  manager               User?            @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  directReports         User[]           @relation("UserManager")
+  requestedRequests     AccessRequest[]  @relation("AccessRequestRequester")
+  targetRequests        AccessRequest[]  @relation("AccessRequestTargetUser")
+  approvalMatrixEntries ApprovalMatrix[]
+  approvals             Approval[]
+  auditEventsAsActor    AuditLog[]       @relation("AuditActor")
+  auditEventsForTarget  AuditLog[]       @relation("AuditTargetUser")
+
+  @@index([departmentId, active])
+  @@index([managerId])
+  @@index([active])
+  @@map("Users")
+}
+
+model Department {
+  id               String           @id @default(uuid()) @db.UniqueIdentifier
+  code             String           @unique @db.NVarChar(50)
+  name             String           @unique @db.NVarChar(200)
+  active           Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  users            User[]
+  approvalMatrices ApprovalMatrix[]
+
+  @@index([active])
+  @@map("Departments")
+}
+
+model System {
+  id               String              @id @default(uuid()) @db.UniqueIdentifier
+  code             String              @unique @db.NVarChar(100)
+  name             String              @unique @db.NVarChar(200)
+  description      String?             @db.NVarChar(1000)
+  active           Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  applications     Application[]
+  roles            Role[]
+  permissions      Permission[]
+  approvalMatrices ApprovalMatrix[]
+  requestItems     AccessRequestItem[]
+  auditLogs        AuditLog[]
+
+  @@index([active])
+  @@map("Systems")
+}
+
+model Application {
+  id           String              @id @default(uuid()) @db.UniqueIdentifier
+  systemId     String              @db.UniqueIdentifier
+  code         String              @db.NVarChar(100)
+  name         String              @db.NVarChar(200)
+  description  String?             @db.NVarChar(1000)
+  active       Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  system       System              @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  roles        Role[]
+  permissions  Permission[]
+  requestItems AccessRequestItem[]
+
+  @@unique([systemId, code])
+  @@index([systemId, active])
+  @@map("Applications")
+}
+
+model Role {
+  id               String              @id @default(uuid()) @db.UniqueIdentifier
+  systemId         String              @db.UniqueIdentifier
+  applicationId    String?             @db.UniqueIdentifier
+  code             String              @db.NVarChar(100)
+  name             String              @db.NVarChar(200)
+  description      String?             @db.NVarChar(1000)
+  active           Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  system           System              @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  application      Application?        @relation(fields: [applicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rolePermissions  RolePermission[]
+  approvalMatrices ApprovalMatrix[]
+  requestItems     AccessRequestItem[]
+
+  @@unique([systemId, applicationId, code])
+  @@index([systemId, active])
+  @@index([applicationId])
+  @@map("Roles")
+}
+
+model Permission {
+  id              String              @id @default(uuid()) @db.UniqueIdentifier
+  systemId        String              @db.UniqueIdentifier
+  applicationId   String?             @db.UniqueIdentifier
+  code            String              @db.NVarChar(100)
+  name            String              @db.NVarChar(200)
+  description     String?             @db.NVarChar(1000)
+  active          Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  system          System              @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  application     Application?        @relation(fields: [applicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rolePermissions RolePermission[]
+  requestItems    AccessRequestItem[]
+
+  @@unique([systemId, applicationId, code])
+  @@index([systemId, active])
+  @@index([applicationId])
+  @@map("Permissions")
+}
+
+model RolePermission {
+  roleId       String     @db.UniqueIdentifier
+  permissionId String     @db.UniqueIdentifier
+  createdAt    DateTime   @default(now())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("RolePermissions")
+}
+
+model ApprovalMatrix {
+  id            String     @id @default(uuid()) @db.UniqueIdentifier
+  departmentId  String     @db.UniqueIdentifier
+  systemId      String     @db.UniqueIdentifier
+  roleId        String?    @db.UniqueIdentifier
+  approverId    String     @db.UniqueIdentifier
+  approvalLevel Int
+  active        Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  department    Department @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  system        System     @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role          Role?      @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approver      User       @relation(fields: [approverId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([departmentId, systemId, roleId, approvalLevel, approverId])
+  @@index([departmentId, systemId, roleId, active, approvalLevel])
+  @@index([approverId, active])
+  @@map("ApprovalMatrices")
+}
+
+model AccessRequest {
+  id             String              @id @default(uuid()) @db.UniqueIdentifier
+  requestNumber  String              @unique @db.NVarChar(30)
+  requesterId    String              @db.UniqueIdentifier
+  targetUserId   String              @db.UniqueIdentifier
+  requestType    String              @db.NVarChar(20)
+  reason         String              @db.NVarChar(Max)
+  effectiveDate  DateTime?           @db.Date
+  expirationDate DateTime?           @db.Date
+  status         String              @default("DRAFT") @db.NVarChar(40)
+  metadata       String?             @db.NVarChar(Max)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  requester      User                @relation("AccessRequestRequester", fields: [requesterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  targetUser     User                @relation("AccessRequestTargetUser", fields: [targetUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items          AccessRequestItem[]
+  approvals      Approval[]
+
+  @@index([status, createdAt])
+  @@index([requesterId, createdAt])
+  @@index([targetUserId, status, createdAt])
+  @@map("AccessRequests")
+}
+
+model AccessRequestItem {
+  id              String          @id @default(uuid()) @db.UniqueIdentifier
+  accessRequestId String          @db.UniqueIdentifier
+  systemId        String          @db.UniqueIdentifier
+  applicationId   String?         @db.UniqueIdentifier
+  roleId          String?         @db.UniqueIdentifier
+  permissionId    String?         @db.UniqueIdentifier
+  action          String          @db.NVarChar(20)
+  currentValue    String?         @db.NVarChar(Max)
+  requestedValue  String?         @db.NVarChar(Max)
+  status          String          @default("PENDING") @db.NVarChar(40)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  accessRequest   AccessRequest   @relation(fields: [accessRequestId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  system          System          @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  application     Application?    @relation(fields: [applicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role            Role?           @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  permission      Permission?     @relation(fields: [permissionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  automationJobs  AutomationJob[]
+
+  @@index([accessRequestId, status])
+  @@index([systemId, status])
+  @@index([applicationId])
+  @@index([roleId, status])
+  @@index([permissionId])
+  @@map("AccessRequestItems")
+}
+
+model Approval {
+  id              String        @id @default(uuid()) @db.UniqueIdentifier
+  accessRequestId String        @db.UniqueIdentifier
+  approverId      String        @db.UniqueIdentifier
+  approvalLevel   Int
+  status          String        @default("PENDING") @db.NVarChar(30)
+  comment         String?       @db.NVarChar(2000)
+  decidedAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  accessRequest   AccessRequest @relation(fields: [accessRequestId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approver        User          @relation(fields: [approverId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([accessRequestId, approvalLevel, approverId])
+  @@index([accessRequestId, approvalLevel, status])
+  @@index([approverId, status, createdAt])
+  @@map("Approvals")
+}
+
+model ExternalReference {
+  id             String   @id @default(uuid()) @db.UniqueIdentifier
+  entityType     String   @db.NVarChar(50)
+  entityId       String   @db.NVarChar(100)
+  externalSystem String   @db.NVarChar(50)
+  externalScope  String   @default("DEFAULT") @db.NVarChar(100)
+  externalId     String   @db.NVarChar(200)
+  externalUrl    String?  @db.NVarChar(1000)
+  metadata       String?  @db.NVarChar(Max)
+  createdAt      DateTime @default(now())
+
+  @@unique([externalSystem, externalScope, externalId])
+  @@index([entityType, entityId])
+  @@index([externalSystem, externalId])
+  @@map("ExternalReferences")
+}
+
+model AutomationJob {
+  id                  String            @id @default(uuid()) @db.UniqueIdentifier
+  accessRequestItemId String            @db.UniqueIdentifier
+  connector           String            @db.NVarChar(100)
+  operation           String            @db.NVarChar(40)
+  status              String            @default("PENDING") @db.NVarChar(40)
+  attemptCount        Int               @default(0)
+  startedAt           DateTime?
+  completedAt         DateTime?
+  errorMessage        String?           @db.NVarChar(Max)
+  correlationId       String            @db.NVarChar(100)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  accessRequestItem   AccessRequestItem @relation(fields: [accessRequestItemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([accessRequestItemId, status])
+  @@index([status, createdAt])
+  @@index([correlationId])
+  @@map("AutomationJobs")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid()) @db.UniqueIdentifier
+  occurredAt    DateTime @default(now())
+  actorId       String?  @db.UniqueIdentifier
+  actor         String   @db.NVarChar(320)
+  targetUserId  String?  @db.UniqueIdentifier
+  action        String   @db.NVarChar(100)
+  entityType    String   @db.NVarChar(50)
+  entityId      String   @db.NVarChar(100)
+  systemId      String?  @db.UniqueIdentifier
+  beforeValue   String?  @db.NVarChar(Max)
+  afterValue    String?  @db.NVarChar(Max)
+  result        String   @db.NVarChar(40)
+  connector     String?  @db.NVarChar(100)
+  errorMessage  String?  @db.NVarChar(Max)
+  correlationId String?  @db.NVarChar(100)
+  actorUser     User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  targetUser    User?    @relation("AuditTargetUser", fields: [targetUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  system        System?  @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([occurredAt])
+  @@index([actorId, occurredAt])
+  @@index([targetUserId, occurredAt])
+  @@index([entityType, entityId, occurredAt])
+  @@index([systemId, occurredAt])
+  @@index([correlationId])
+  @@map("AuditLogs")
 }

@@ -1,0 +1,136 @@
+{
+  "notice": "SYNTHETIC LOCAL DEVELOPMENT DATA ONLY - NOT FOR PRODUCTION",
+  "departments": [
+    {
+      "code": "DEMO-IT",
+      "name": "Demo Information Technology",
+      "active": true
+    },
+    {
+      "code": "DEMO-OPS",
+      "name": "Demo Operations",
+      "active": true
+    }
+  ],
+  "users": [
+    {
+      "employeeId": "EMP-DEMO-001",
+      "entraObjectId": "00000000-0000-4000-8000-000000000001",
+      "email": "demo.requester@example.invalid",
+      "displayName": "Demo Requester",
+      "departmentCode": "DEMO-OPS",
+      "managerEmployeeId": "EMP-DEMO-002",
+      "active": true
+    },
+    {
+      "employeeId": "EMP-DEMO-002",
+      "entraObjectId": "00000000-0000-4000-8000-000000000002",
+      "email": "demo.approver@example.invalid",
+      "displayName": "Demo Approver",
+      "departmentCode": "DEMO-IT",
+      "managerEmployeeId": null,
+      "active": true
+    }
+  ],
+  "systems": [
+    {
+      "code": "AZURE_DEVOPS",
+      "name": "Azure DevOps",
+      "active": true
+    },
+    {
+      "code": "WMS",
+      "name": "Demo Warehouse Management System",
+      "active": true
+    },
+    {
+      "code": "OMS",
+      "name": "Demo Order Management System",
+      "active": true
+    }
+  ],
+  "applications": [
+    {
+      "systemCode": "AZURE_DEVOPS",
+      "code": "BOARDS",
+      "name": "Demo Boards Module",
+      "active": true
+    }
+  ],
+  "roles": [
+    {
+      "systemCode": "AZURE_DEVOPS",
+      "applicationCode": "BOARDS",
+      "code": "READER",
+      "name": "Reader",
+      "active": true
+    },
+    {
+      "systemCode": "AZURE_DEVOPS",
+      "applicationCode": "BOARDS",
+      "code": "CONTRIBUTOR",
+      "name": "Contributor",
+      "active": true
+    },
+    {
+      "systemCode": "WMS",
+      "applicationCode": null,
+      "code": "ADMINISTRATOR",
+      "name": "Administrator",
+      "active": true
+    },
+    {
+      "systemCode": "OMS",
+      "applicationCode": null,
+      "code": "READER",
+      "name": "Reader",
+      "active": true
+    }
+  ],
+  "permissions": [
+    {
+      "systemCode": "AZURE_DEVOPS",
+      "applicationCode": "BOARDS",
+      "code": "VIEW_WORK_ITEMS",
+      "name": "View demo work items",
+      "active": true
+    },
+    {
+      "systemCode": "AZURE_DEVOPS",
+      "applicationCode": "BOARDS",
+      "code": "VIEW_PROJECT_METADATA",
+      "name": "View demo project metadata",
+      "active": true
+    }
+  ],
+  "rolePermissions": [
+    {
+      "systemCode": "AZURE_DEVOPS",
+      "applicationCode": "BOARDS",
+      "roleCode": "READER",
+      "permissionCode": "VIEW_WORK_ITEMS"
+    },
+    {
+      "systemCode": "AZURE_DEVOPS",
+      "applicationCode": "BOARDS",
+      "roleCode": "CONTRIBUTOR",
+      "permissionCode": "VIEW_WORK_ITEMS"
+    },
+    {
+      "systemCode": "AZURE_DEVOPS",
+      "applicationCode": "BOARDS",
+      "roleCode": "CONTRIBUTOR",
+      "permissionCode": "VIEW_PROJECT_METADATA"
+    }
+  ],
+  "approvalMatrices": [
+    {
+      "departmentCode": "DEMO-OPS",
+      "systemCode": "AZURE_DEVOPS",
+      "roleCode": "READER",
+      "approverEmployeeId": "EMP-DEMO-002",
+      "approvalLevel": 1,
+      "active": true
+    }
+  ]
+}

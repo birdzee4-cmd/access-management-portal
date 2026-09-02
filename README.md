@@ -71,6 +71,7 @@ npm run prisma:validate
 - [Architecture](docs/architecture.md)
 - [Security model](docs/security.md)
 - [Existing-system boundary](docs/existing-system.md)
+- [Data model](docs/data-model.md)
 
 ## Current non-goals
 
