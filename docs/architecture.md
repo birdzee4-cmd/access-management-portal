@@ -4,6 +4,8 @@
 
 This phase creates a local, deployable-in-the-future code layout without creating infrastructure or connecting to any external system. Azure DevOps / VSTS is the first planned pilot, but its current contract is query-only.
 
+This document describes the **NEW ACCESS MANAGEMENT PORTAL** architecture. The working **CURRENT PRODUCTION SYSTEM** is a separate architecture domain and remains unchanged. Its components, workflow, correlation identifiers, legacy SQL sources, and safety boundary are documented in [Existing System Architecture Baseline](existing-system.md).
+
 ## Logical view
 
 ```text
