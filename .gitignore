@@ -1,0 +1,27 @@
+node_modules/
+dist/
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Local environment and Azure Functions settings
+.env
+.env.*
+!.env.example
+local.settings.json
+!local.settings.example.json
+
+# Prisma and generated files
+*.db
+*.db-journal
+database/generated/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

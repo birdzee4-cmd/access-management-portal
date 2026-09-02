@@ -1,0 +1,22 @@
+{
+  "name": "access-management-portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local skeleton for the Access Management Portal pilot.",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "database"
+  ],
+  "scripts": {
+    "build": "npm run build -w @access-portal/contracts && npm run build -w @access-portal/shared && npm run build -w @access-portal/connectors && npm run build -w @access-portal/web && npm run build -w @access-portal/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "dev:web": "npm run dev -w @access-portal/web",
+    "dev:api": "npm run start -w @access-portal/api",
+    "prisma:validate": "npm run validate -w @access-portal/database"
+  },
+  "engines": {
+    "node": ">=20.19.0",
+    "npm": ">=10.0.0"
+  }
+}

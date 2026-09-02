@@ -1,0 +1,17 @@
+{
+  "name": "@access-portal/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "cross-env DATABASE_URL=\"sqlserver://localhost:1433;database=access_management_portal_local;user=local_user;password=replace_me;encrypt=true;trustServerCertificate=true\" prisma validate --schema schema/schema.prisma",
+    "generate": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "6.12.0"
+  },
+  "devDependencies": {
+    "cross-env": "7.0.3",
+    "prisma": "6.12.0"
+  }
+}

@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+// This schema belongs only to the future Access Management Portal database.
+// It must never be pointed at or used to migrate the existing production SQL Server.
+model PortalConfiguration {
+  id        String   @id @default(uuid()) @db.UniqueIdentifier
+  key       String   @unique @db.NVarChar(200)
+  value     String   @db.NVarChar(2000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("PortalConfiguration")
+}

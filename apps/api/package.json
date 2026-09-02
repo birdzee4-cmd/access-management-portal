@@ -1,0 +1,21 @@
+{
+  "name": "@access-portal/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/src/functions/*.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
+    "start": "npm run build && func start"
+  },
+  "dependencies": {
+    "@access-portal/contracts": "*",
+    "@access-portal/shared": "*",
+    "@azure/functions": "^4.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "typescript": "^5.8.2"
+  }
+}

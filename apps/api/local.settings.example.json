@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "LEGACY_INTEGRATION_MODE": "READ_ONLY",
+    "ENABLE_SHAREPOINT_WRITE": "false",
+    "ENABLE_LEGACY_SQL_WRITE": "false",
+    "ENABLE_VSTS_WRITE": "false",
+    "ENABLE_ACCESS_PROVISIONING": "false",
+    "ENABLE_ACCESS_REVOCATION": "false",
+    "ENABLE_AUTOMATION": "false"
+  }
+}
