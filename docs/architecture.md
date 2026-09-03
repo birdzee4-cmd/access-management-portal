@@ -33,6 +33,8 @@ No arrow in this diagram represents an active integration in the initial skeleto
 
 A React single-page application built by Vite. Its Task 05A authentication adapter uses MSAL for redirect login/logout, current-user state, and silent API access-token acquisition. Components consume the adapter rather than MSAL directly. Placeholder configuration leaves the application in an explicit unconfigured state.
 
+Task 06 adds a responsive authenticated shell with React routing, reusable page/table/status components, and role-aware navigation for Admin, Approver, and Viewer. The shell verifies the current identity through `/api/auth/me` before using roles for navigation. This client-side visibility is a user-experience feature only; API authorization remains authoritative. Every displayed business record is synthetic local mock data.
+
 ### `apps/api`
 
 An Azure Functions TypeScript application using the v4 programming model. Its anonymous health endpoint has no dependency on authentication, a database, a cloud resource, or a legacy system. Task 05B wires injectable bearer-token validation to `/api/auth/me` and the Admin-only `/api/auth/admin-test`. These return safe identity test data only and are not business endpoints.

@@ -54,11 +54,13 @@ npm run build
 
 On macOS or Linux, use `cp` instead of `copy`.
 
-Run the frontend with `npm run dev:web`. Run the API with `npm run dev:api` after installing Azure Functions Core Tools. The only API route is `GET /api/health`; it performs no external I/O.
+Run the frontend with `npm run dev:web`. Run the API with `npm run dev:api` after installing Azure Functions Core Tools. `GET /api/health` performs no external I/O.
 
-With placeholder Entra values, the frontend runs in an explicit unconfigured authentication state. Task 05B wires the manually created local Entra registrations to the MSAL client and the protected test endpoints without committing identifiers. Real values belong only in the ignored local `.env`.
+With placeholder Entra values, the frontend runs in an explicit unconfigured authentication state. Task 05B wires the manually created local Entra registrations to the MSAL client and the protected test endpoints without committing identifiers. Real frontend values belong only in the ignored local `.env`; real API values belong only in the ignored `apps/api/local.settings.json`.
 
 The authentication-only test routes are `GET /api/auth/me` and `GET /api/auth/admin-test`. They do not query SQL or any legacy system.
+
+Task 06 adds the authenticated portal shell, role-aware navigation, responsive page layouts, and clearly synthetic local data. It does not add business operations or external integrations.
 
 ## Validation
 
@@ -79,6 +81,7 @@ npm run prisma:validate
 - [Data model](docs/data-model.md)
 - [Local data-access layer](docs/data-access.md)
 - [Authentication foundation](docs/authentication.md)
+- [Portal UI foundation](docs/ui-foundation.md)
 
 ## Current non-goals
 

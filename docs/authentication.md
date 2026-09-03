@@ -144,6 +144,10 @@ This mechanism is for local handler development only. It is not a token format a
 - Keep production values and local settings outside version control.
 - Authentication does not relax the Production Safety Boundary or permit legacy writes.
 
+## Portal UI consumer
+
+The Task 06 portal shell calls `GET /api/auth/me` after MSAL sign-in and renders navigation from the roles returned by that validated API response. It never displays tokens or raw claims. Frontend route visibility remains a user-experience boundary; protected backend operations must continue to enforce their own roles.
+
 ## Remaining future work
 
-Task 05B is local wiring only. Hosted redirect URIs, deployment configuration, production consent, production role assignment, monitoring, Conditional Access review, and operational support remain separately authorized future work. Task 06 is not part of this change.
+Hosted redirect URIs, deployment configuration, production consent, production role assignment, monitoring, Conditional Access review, and operational support remain separately authorized future work.

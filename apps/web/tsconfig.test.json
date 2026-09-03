@@ -9,5 +9,5 @@
     "declaration": false,
     "sourceMap": false
   },
-  "include": ["src/auth/authConfig.ts", "src/auth/authConfig.test.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
