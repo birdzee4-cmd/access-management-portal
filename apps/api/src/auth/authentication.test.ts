@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { generateKeyPair, SignJWT } from "jose";
 
 import {
   AuthenticationConfigurationError,
   AuthenticationError,
   AuthenticationService,
   AuthorizationError,
+  EntraJwtAccessTokenValidator,
   getAdminTestIdentity,
   getAuthenticatedIdentity,
+  readEntraAuthenticationConfiguration,
   requireAuthenticatedUser,
   requireRole,
 } from "./index.js";
@@ -173,5 +176,88 @@ test("development mock cannot activate outside development", async () => {
   await assert.rejects(
     authentication.authenticate(headers({ "x-development-auth": "enabled" })),
     (error) => error instanceof AuthenticationConfigurationError,
+  );
+});
+
+test("backend configuration rejects angle-bracket identifiers", () => {
+  assert.throws(
+    () =>
+      readEntraAuthenticationConfiguration({
+        ENTRA_TENANT_ID: "<22222222-2222-4222-8222-222222222222>",
+        ENTRA_API_CLIENT_ID: "33333333-3333-4333-8333-333333333333",
+        ENTRA_EXPECTED_AUDIENCE:
+          "api://33333333-3333-4333-8333-333333333333",
+      }),
+    (error) => error instanceof AuthenticationConfigurationError,
+  );
+});
+
+test("backend configuration rejects a delegated scope as the audience", () => {
+  assert.throws(
+    () =>
+      readEntraAuthenticationConfiguration({
+        ENTRA_TENANT_ID: "22222222-2222-4222-8222-222222222222",
+        ENTRA_API_CLIENT_ID: "33333333-3333-4333-8333-333333333333",
+        ENTRA_EXPECTED_AUDIENCE:
+          "api://33333333-3333-4333-8333-333333333333/access_as_user",
+      }),
+    (error) => error instanceof AuthenticationConfigurationError,
+  );
+});
+
+async function signedAccessToken(scopes: string) {
+  const tenantId = "22222222-2222-4222-8222-222222222222";
+  const apiClientId = "33333333-3333-4333-8333-333333333333";
+  const issuer = "https://login.microsoftonline.com/" + tenantId + "/v2.0";
+  const audience = "api://" + apiClientId;
+  const { privateKey, publicKey } = await generateKeyPair("RS256");
+  const token = await new SignJWT({
+    tid: tenantId,
+    oid: "00000000-0000-4000-8000-00000000f001",
+    preferred_username: "fake.authenticated.user@example.invalid",
+    name: "Fake Authenticated User",
+    roles: ["Admin"],
+    scp: scopes,
+  })
+    .setProtectedHeader({ alg: "RS256" })
+    .setIssuer(issuer)
+    .setAudience(audience)
+    .setSubject("fake-subject")
+    .setIssuedAt()
+    .setExpirationTime("5m")
+    .sign(privateKey);
+
+  return {
+    token,
+    validator: new EntraJwtAccessTokenValidator(
+      {
+        tenantId,
+        apiClientId,
+        expectedAudience: audience,
+        expectedIssuers: [issuer],
+        jwksUri: "https://example.invalid/keys",
+      },
+      async () => publicKey,
+    ),
+  };
+}
+
+test("JWT validator accepts the required delegated scope and application role", async () => {
+  const { token, validator } = await signedAccessToken(
+    "profile access_as_user",
+  );
+
+  const authenticated = await validator.validate(token);
+
+  assert.equal(authenticated.authenticationSource, "ENTRA");
+  assert.deepEqual(authenticated.roles, ["Admin"]);
+});
+
+test("JWT validator rejects a token without the required delegated scope", async () => {
+  const { token, validator } = await signedAccessToken("profile");
+
+  await assert.rejects(
+    validator.validate(token),
+    /missing the required delegated scope/,
   );
 });

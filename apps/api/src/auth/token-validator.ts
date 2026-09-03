@@ -9,6 +9,8 @@ import {
 import type { EntraAuthenticationConfiguration } from "./configuration.js";
 import type { AccessTokenValidator, AuthenticatedUser } from "./types.js";
 
+const requiredDelegatedScope = "access_as_user";
+
 function stringClaim(payload: JWTPayload, names: readonly string[]): string | null {
   for (const name of names) {
     const value = payload[name];
@@ -28,6 +30,13 @@ function recognizedRoles(payload: JWTPayload): PortalRole[] {
   return payload.roles.filter(
     (role): role is PortalRole =>
       typeof role === "string" && portalRoles.some((portalRole) => portalRole === role),
+  );
+}
+
+function hasDelegatedScope(payload: JWTPayload, requiredScope: string): boolean {
+  return (
+    typeof payload.scp === "string" &&
+    payload.scp.split(/\s+/).includes(requiredScope)
   );
 }
 
@@ -54,6 +63,10 @@ export class EntraJwtAccessTokenValidator implements AccessTokenValidator {
 
     if (payload.tid !== this.configuration.tenantId) {
       throw new Error("The access token tenant is not trusted.");
+    }
+
+    if (!hasDelegatedScope(payload, requiredDelegatedScope)) {
+      throw new Error("The access token is missing the required delegated scope.");
     }
 
     const entraObjectId = stringClaim(payload, ["oid"]);

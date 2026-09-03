@@ -49,6 +49,7 @@ The API accepts identity only from the Authorization Bearer header. EntraJwtAcce
 - RS256 signature;
 - an exact tenant-specific Microsoft v1 or v2 issuer;
 - configured audience;
+- the delegated access_as_user scope;
 - expiration and issued-at claims;
 - subject, tenant, and Entra object ID claims;
 - exact tenant ID match.
@@ -111,9 +112,11 @@ ENTRA_API_CLIENT_ID=replace_me
 ENTRA_EXPECTED_AUDIENCE=replace_me
 ~~~
 
-These are identifiers and validation settings, not credentials. Real values must not be committed. The frontend requires the exact scope format api://<API_CLIENT_ID>/access_as_user. ENTRA_EXPECTED_AUDIENCE must match the aud value Entra actually issues for this API; it is never inferred or hard-coded. Trusted issuer values and the JWKS URL are derived from ENTRA_TENANT_ID.
+These are identifiers and validation settings, not credentials. Real values must not be committed. The frontend requires the exact scope format api://<API_CLIENT_ID>/access_as_user. ENTRA_EXPECTED_AUDIENCE must match the aud value Entra actually issues for this API; it is never inferred or hard-coded. It must not include the /access_as_user scope suffix. Trusted issuer values and the JWKS URL are derived from ENTRA_TENANT_ID.
 
-Copy .env.example to the ignored root .env and enter values there manually. Vite reads that root file through its envDir configuration. The root npm run dev:api command loads the same untracked file into the local Functions process without printing its contents. Authentication values are intentionally absent from local.settings.example.json so a copied local settings file cannot override the root .env values with placeholders.
+Copy .env.example to the ignored root .env and enter the frontend values there manually. Vite reads that root file through its envDir configuration. Copy apps/api/local.settings.example.json to the ignored apps/api/local.settings.json and enter the backend values in its Values object. Enter identifiers without angle brackets. The repository-supported npm run dev:api command starts Azure Functions, which loads local.settings.json without printing its contents.
+
+The completed local authentication check verified Microsoft Entra interactive sign-in, GET /api/auth/me, the Admin role returned from the validated API access token, and Admin authorization on GET /api/auth/admin-test.
 
 ## Local development strategy
 

@@ -20,6 +20,9 @@ const placeholderValues = new Set([
   "00000000-0000-0000-0000-000000000000",
 ]);
 
+const entraIdentifierPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function requireConfiguredValue(
   environment: AuthenticationEnvironment,
   key: string,
@@ -32,15 +35,39 @@ function requireConfiguredValue(
   return value;
 }
 
+function requireEntraIdentifier(
+  environment: AuthenticationEnvironment,
+  key: string,
+): string {
+  const value = requireConfiguredValue(environment, key);
+  if (!entraIdentifierPattern.test(value)) {
+    throw new AuthenticationConfigurationError(
+      key + " must be an Entra identifier without angle brackets.",
+    );
+  }
+
+  return value;
+}
+
 export function readEntraAuthenticationConfiguration(
   environment: AuthenticationEnvironment = process.env,
 ): EntraAuthenticationConfiguration {
-  const tenantId = requireConfiguredValue(environment, "ENTRA_TENANT_ID");
-  const apiClientId = requireConfiguredValue(environment, "ENTRA_API_CLIENT_ID");
+  const tenantId = requireEntraIdentifier(environment, "ENTRA_TENANT_ID");
+  const apiClientId = requireEntraIdentifier(environment, "ENTRA_API_CLIENT_ID");
   const expectedAudience = requireConfiguredValue(
     environment,
     "ENTRA_EXPECTED_AUDIENCE",
   );
+
+  if (
+    expectedAudience.includes("<") ||
+    expectedAudience.includes(">") ||
+    expectedAudience.endsWith("/access_as_user")
+  ) {
+    throw new AuthenticationConfigurationError(
+      "ENTRA_EXPECTED_AUDIENCE must be the token audience, not a delegated scope.",
+    );
+  }
 
   return {
     tenantId,
