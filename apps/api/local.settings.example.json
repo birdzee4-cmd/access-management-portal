@@ -3,12 +3,6 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "node",
-    "APP_ENV": "development",
-    "ENTRA_TENANT_ID": "replace_me",
-    "ENTRA_API_CLIENT_ID": "replace_me",
-    "ENTRA_EXPECTED_AUDIENCE": "replace_me",
-    "ENTRA_EXPECTED_ISSUER": "https://login.microsoftonline.com/replace_me/v2.0",
-    "ENABLE_DEV_AUTH_MOCK": "false",
     "DATABASE_URL": "sqlserver://localhost:1433;database=access_management_portal_local;user=local_user;password=replace_me;encrypt=true;trustServerCertificate=true",
     "LEGACY_INTEGRATION_MODE": "READ_ONLY",
     "ENABLE_SHAREPOINT_WRITE": "false",

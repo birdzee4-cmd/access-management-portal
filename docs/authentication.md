@@ -2,7 +2,7 @@
 
 ## Scope
 
-Task 05A adds authentication and authorization code boundaries only. It does not create Microsoft Entra app registrations, Azure resources, secrets, production configuration, deployment artifacts, business permissions, or connections to any database or legacy system.
+Task 05A added authentication and authorization code boundaries. Task 05B wires those boundaries to Microsoft Entra resources that were created manually outside this repository. It does not create or modify app registrations, Azure resources, secrets, production configuration, deployment artifacts, business permissions, or connections to any database or legacy system.
 
 All identifiers in committed environment examples are placeholders.
 
@@ -47,7 +47,7 @@ If every frontend Entra value remains missing or set to a placeholder, AuthProvi
 The API accepts identity only from the Authorization Bearer header. EntraJwtAccessTokenValidator uses a tenant-derived Microsoft JWKS endpoint and validates:
 
 - RS256 signature;
-- configured issuer;
+- an exact tenant-specific Microsoft v1 or v2 issuer;
 - configured audience;
 - expiration and issued-at claims;
 - subject, tenant, and Entra object ID claims;
@@ -71,18 +71,25 @@ The initial application roles are:
 - Approver
 - Viewer
 
-These roles are code vocabulary only. They have not been created or assigned in Microsoft Entra ID, and they do not grant any legacy-system permission.
+Matching application roles have been created manually on the API registration, and the development user has been assigned Admin outside this repository. No role IDs, assignments, user identifiers, or tenant values are stored here. These roles do not grant any legacy-system permission.
 
 Business permissions, ownership rules, request-level access, and target-user authorization remain future work.
 
-## Planned Entra app registrations
+## Manually created Entra app registrations
 
-Task 05B may configure two distinct registrations after review:
+Task 05B expects two distinct registrations that already exist:
 
-1. A public single-page application registration for the React portal, using authorization code flow with PKCE and an approved redirect URI.
-2. A protected web API registration exposing a delegated API scope and the approved Admin, Approver, and Viewer application roles.
+1. A single-tenant public SPA registration for the React portal with the localhost redirect URI.
+2. A single-tenant protected API registration exposing the delegated access_as_user scope and Admin, Approver, and Viewer roles.
 
-No client secret is required for normal browser user authentication. Exact tenant policy, supported accounts, redirect URIs, API scope, consent, token version, role assignments, and deployment settings must be approved in Task 05B.
+The SPA has delegated permission to the API scope. No client secret is used or required for browser user authentication.
+
+## Task 05B protected test endpoints
+
+- GET /api/auth/me requires a valid access token and returns only authenticated, displayName, email, and roles.
+- GET /api/auth/admin-test requires a valid access token plus the Admin application role.
+
+Responses set Cache-Control to no-store. They never include verified claims, object IDs, JWTs, ID tokens, access tokens, or Authorization headers. The endpoints do not access SQL, SharePoint, Azure DevOps, or any business service.
 
 ## Required environment variables
 
@@ -91,6 +98,7 @@ Frontend:
 ~~~text
 VITE_ENTRA_CLIENT_ID=replace_me
 VITE_ENTRA_TENANT_ID=replace_me
+VITE_ENTRA_API_CLIENT_ID=replace_me
 VITE_ENTRA_REDIRECT_URI=http://localhost:5173
 VITE_ENTRA_API_SCOPE=api://replace_me/access_as_user
 ~~~
@@ -101,10 +109,11 @@ Backend:
 ENTRA_TENANT_ID=replace_me
 ENTRA_API_CLIENT_ID=replace_me
 ENTRA_EXPECTED_AUDIENCE=replace_me
-ENTRA_EXPECTED_ISSUER=https://login.microsoftonline.com/replace_me/v2.0
 ~~~
 
-These are identifiers and validation settings, not credentials. Real values must not be committed. The API client ID is retained separately from the expected audience because a future App ID URI may differ from the registration's client ID.
+These are identifiers and validation settings, not credentials. Real values must not be committed. The frontend requires the exact scope format api://<API_CLIENT_ID>/access_as_user. ENTRA_EXPECTED_AUDIENCE must match the aud value Entra actually issues for this API; it is never inferred or hard-coded. Trusted issuer values and the JWKS URL are derived from ENTRA_TENANT_ID.
+
+Copy .env.example to the ignored root .env and enter values there manually. Vite reads that root file through its envDir configuration. The root npm run dev:api command loads the same untracked file into the local Functions process without printing its contents. Authentication values are intentionally absent from local.settings.example.json so a copied local settings file cannot override the root .env values with placeholders.
 
 ## Local development strategy
 
@@ -132,19 +141,6 @@ This mechanism is for local handler development only. It is not a token format a
 - Keep production values and local settings outside version control.
 - Authentication does not relax the Production Safety Boundary or permit legacy writes.
 
-## Future Task 05B steps
+## Remaining future work
 
-Task 05B must be separately authorized before any Entra or Azure change. It should review and then configure:
-
-1. Tenant ownership and single-tenant policy.
-2. Separate SPA and API app registrations.
-3. Approved localhost and hosted redirect URIs.
-4. API Application ID URI and delegated access scope.
-5. Access-token version and issuer/audience values.
-6. Admin, Approver, and Viewer app-role definitions and assignments.
-7. Consent and least-privilege policy.
-8. Hosted environment configuration and secret-management process.
-9. End-to-end sign-in and protected-API tests in a non-production environment.
-10. Operational monitoring without token or sensitive-claim logging.
-
-Task 05A does not perform any of these configuration actions.
+Task 05B is local wiring only. Hosted redirect URIs, deployment configuration, production consent, production role assignment, monitoring, Conditional Access review, and operational support remain separately authorized future work. Task 06 is not part of this change.

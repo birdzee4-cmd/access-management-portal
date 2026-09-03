@@ -56,7 +56,9 @@ On macOS or Linux, use `cp` instead of `copy`.
 
 Run the frontend with `npm run dev:web`. Run the API with `npm run dev:api` after installing Azure Functions Core Tools. The only API route is `GET /api/health`; it performs no external I/O.
 
-With placeholder Entra values, the frontend runs in an explicit unconfigured authentication state. Task 05A adds MSAL and API JWT-validation boundaries but creates no app registration and protects no business endpoint yet.
+With placeholder Entra values, the frontend runs in an explicit unconfigured authentication state. Task 05B wires the manually created local Entra registrations to the MSAL client and the protected test endpoints without committing identifiers. Real values belong only in the ignored local `.env`.
+
+The authentication-only test routes are `GET /api/auth/me` and `GET /api/auth/admin-test`. They do not query SQL or any legacy system.
 
 ## Validation
 

@@ -22,7 +22,7 @@ The parser in `packages/shared` accepts only these exact safe values and throws 
 
 ## Identity and authorization
 
-Microsoft Entra ID is the planned identity provider. Task 05A provides code boundaries for browser MSAL, API bearer-token validation, and backend role checks without creating or configuring Entra resources. See [Authentication Foundation](authentication.md).
+Microsoft Entra ID is the identity provider selected for the portal. Task 05A provided code boundaries, and Task 05B wires local testing to app registrations created manually outside this repository. No tenant/client identifiers, user assignments, secrets, or tokens are tracked. See [Authentication Foundation](authentication.md).
 
 A later configuration phase must:
 

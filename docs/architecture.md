@@ -35,7 +35,7 @@ A React single-page application built by Vite. Its Task 05A authentication adapt
 
 ### `apps/api`
 
-An Azure Functions TypeScript application using the v4 programming model. Its anonymous health endpoint has no dependency on authentication, a database, a cloud resource, or a legacy system. Task 05A adds injectable bearer-token validation and role guards for future protected handlers. No protected business endpoint is implemented yet.
+An Azure Functions TypeScript application using the v4 programming model. Its anonymous health endpoint has no dependency on authentication, a database, a cloud resource, or a legacy system. Task 05B wires injectable bearer-token validation to `/api/auth/me` and the Admin-only `/api/auth/admin-test`. These return safe identity test data only and are not business endpoints.
 
 ### `packages/contracts`
 

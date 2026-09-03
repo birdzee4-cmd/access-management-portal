@@ -4,7 +4,7 @@ export interface EntraAuthenticationConfiguration {
   readonly tenantId: string;
   readonly apiClientId: string;
   readonly expectedAudience: string;
-  readonly expectedIssuer: string;
+  readonly expectedIssuers: string[];
   readonly jwksUri: string;
 }
 
@@ -41,24 +41,15 @@ export function readEntraAuthenticationConfiguration(
     environment,
     "ENTRA_EXPECTED_AUDIENCE",
   );
-  const expectedIssuer = requireConfiguredValue(environment, "ENTRA_EXPECTED_ISSUER");
-  const issuerUrl = new URL(expectedIssuer);
-
-  if (
-    issuerUrl.protocol !== "https:" ||
-    issuerUrl.username ||
-    issuerUrl.password
-  ) {
-    throw new AuthenticationConfigurationError(
-      "ENTRA_EXPECTED_ISSUER must be a credential-free HTTPS URL.",
-    );
-  }
 
   return {
     tenantId,
     apiClientId,
     expectedAudience,
-    expectedIssuer: issuerUrl.toString(),
+    expectedIssuers: [
+      "https://login.microsoftonline.com/" + tenantId + "/v2.0",
+      "https://sts.windows.net/" + tenantId + "/",
+    ],
     jwksUri:
       "https://login.microsoftonline.com/" +
       encodeURIComponent(tenantId) +

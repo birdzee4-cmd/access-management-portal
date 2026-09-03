@@ -8,6 +8,7 @@ import {
 export interface FrontendAuthEnvironment {
   readonly VITE_ENTRA_CLIENT_ID?: string;
   readonly VITE_ENTRA_TENANT_ID?: string;
+  readonly VITE_ENTRA_API_CLIENT_ID?: string;
   readonly VITE_ENTRA_REDIRECT_URI?: string;
   readonly VITE_ENTRA_API_SCOPE?: string;
 }
@@ -15,6 +16,7 @@ export interface FrontendAuthEnvironment {
 export interface FrontendAuthConfiguration {
   readonly clientId: string;
   readonly tenantId: string;
+  readonly apiClientId: string;
   readonly redirectUri: string;
   readonly apiScope: string;
 }
@@ -38,12 +40,14 @@ export function readFrontendAuthConfiguration(
   const values = {
     clientId: configuredValue(environment.VITE_ENTRA_CLIENT_ID),
     tenantId: configuredValue(environment.VITE_ENTRA_TENANT_ID),
+    apiClientId: configuredValue(environment.VITE_ENTRA_API_CLIENT_ID),
     redirectUri: configuredValue(environment.VITE_ENTRA_REDIRECT_URI),
     apiScope: configuredValue(environment.VITE_ENTRA_API_SCOPE),
   };
   const identityConfiguredCount = [
     values.clientId,
     values.tenantId,
+    values.apiClientId,
     values.apiScope,
   ].filter(Boolean).length;
 
@@ -51,7 +55,7 @@ export function readFrontendAuthConfiguration(
     return null;
   }
 
-  if (identityConfiguredCount !== 3 || !values.redirectUri) {
+  if (identityConfiguredCount !== 4 || !values.redirectUri) {
     throw new Error(
       "Frontend authentication is partially configured. Set all VITE_ENTRA_* values or leave every value as a placeholder.",
     );
@@ -62,11 +66,20 @@ export function readFrontendAuthConfiguration(
     throw new Error("VITE_ENTRA_REDIRECT_URI must use HTTPS unless it targets localhost.");
   }
 
+  const apiClientId = values.apiClientId as string;
+  const apiScope = values.apiScope as string;
+  if (apiScope !== "api://" + apiClientId + "/access_as_user") {
+    throw new Error(
+      "VITE_ENTRA_API_SCOPE must equal api://<VITE_ENTRA_API_CLIENT_ID>/access_as_user.",
+    );
+  }
+
   return {
     clientId: values.clientId as string,
     tenantId: values.tenantId as string,
+    apiClientId,
     redirectUri: redirectUri.toString(),
-    apiScope: values.apiScope as string,
+    apiScope,
   };
 }
 

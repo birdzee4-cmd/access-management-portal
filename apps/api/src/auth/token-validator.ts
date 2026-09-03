@@ -45,7 +45,7 @@ export class EntraJwtAccessTokenValidator implements AccessTokenValidator {
 
   async validate(accessToken: string): Promise<AuthenticatedUser> {
     const { payload } = await jwtVerify(accessToken, this.signingKeys, {
-      issuer: this.configuration.expectedIssuer,
+      issuer: this.configuration.expectedIssuers,
       audience: this.configuration.expectedAudience,
       algorithms: ["RS256"],
       requiredClaims: ["exp", "iat", "iss", "aud", "sub", "tid", "oid"],

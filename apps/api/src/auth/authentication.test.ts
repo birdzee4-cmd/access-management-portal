@@ -6,6 +6,8 @@ import {
   AuthenticationError,
   AuthenticationService,
   AuthorizationError,
+  getAdminTestIdentity,
+  getAuthenticatedIdentity,
   requireAuthenticatedUser,
   requireRole,
 } from "./index.js";
@@ -73,6 +75,49 @@ test("a validated token produces the validator's authenticated context", async (
   );
 
   assert.equal(actual, expected);
+});
+
+test("me endpoint boundary returns only safe identity fields", async () => {
+  const authentication = new AuthenticationService(
+    { validate: async () => user(["Admin"]) },
+    { ENABLE_DEV_AUTH_MOCK: "false" },
+  );
+
+  const response = await getAuthenticatedIdentity(
+    { headers: headers({ authorization: "Bearer offline-test-token" }) },
+    authentication,
+  );
+
+  assert.deepEqual(response, {
+    authenticated: true,
+    displayName: "Fake Authenticated User",
+    email: "fake.authenticated.user@example.invalid",
+    roles: ["Admin"],
+  });
+  assert.equal("claims" in response, false);
+  assert.equal("accessToken" in response, false);
+  assert.equal("authorization" in response, false);
+});
+
+test("admin endpoint boundary accepts Admin and rejects Viewer", async () => {
+  const adminAuthentication = new AuthenticationService(
+    { validate: async () => user(["Admin"]) },
+    { ENABLE_DEV_AUTH_MOCK: "false" },
+  );
+  const viewerAuthentication = new AuthenticationService(
+    { validate: async () => user(["Viewer"]) },
+    { ENABLE_DEV_AUTH_MOCK: "false" },
+  );
+  const request = {
+    headers: headers({ authorization: "Bearer offline-test-token" }),
+  };
+
+  const response = await getAdminTestIdentity(request, adminAuthentication);
+  assert.equal(response.authorizedRole, "Admin");
+  await assert.rejects(
+    getAdminTestIdentity(request, viewerAuthentication),
+    (error) => error instanceof AuthorizationError,
+  );
 });
 
 test("Admin is allowed through an Admin role guard", () => {

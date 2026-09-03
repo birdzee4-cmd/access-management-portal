@@ -3,6 +3,17 @@ export type LegacyIntegrationMode = "READ_ONLY";
 export const portalRoles = ["Admin", "Approver", "Viewer"] as const;
 export type PortalRole = (typeof portalRoles)[number];
 
+export interface AuthenticatedIdentityResponse {
+  readonly authenticated: true;
+  readonly displayName: string;
+  readonly email: string;
+  readonly roles: readonly PortalRole[];
+}
+
+export interface AdminTestResponse extends AuthenticatedIdentityResponse {
+  readonly authorizedRole: "Admin";
+}
+
 export interface PilotStatus {
   projectName: "Access Management Portal";
   phase: "LOCAL_SKELETON";
