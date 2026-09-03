@@ -31,7 +31,7 @@ packages/
 database/
   migrations/   Reserved for new-portal migrations only
   schema/       Prisma schema for a new Azure SQL database
-  seed/         Reserved for non-production seed data
+  seed/         Synthetic local-development fixtures only
 docs/
 ```
 
@@ -60,6 +60,7 @@ Run the frontend with `npm run dev:web`. Run the API with `npm run dev:api` afte
 
 ```bash
 npm run typecheck
+npm test
 npm run build
 npm run prisma:validate
 ```
@@ -72,6 +73,7 @@ npm run prisma:validate
 - [Security model](docs/security.md)
 - [Existing-system boundary](docs/existing-system.md)
 - [Data model](docs/data-model.md)
+- [Local data-access layer](docs/data-access.md)
 
 ## Current non-goals
 
@@ -81,3 +83,4 @@ npm run prisma:validate
 - Live integration clients
 - Data migration
 - Access approval, provisioning, or revocation workflows
+- Automatic database migration or seed execution

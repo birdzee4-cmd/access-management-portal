@@ -3,15 +3,28 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "validate": "cross-env DATABASE_URL=\"sqlserver://localhost:1433;database=access_management_portal_local;user=local_user;password=replace_me;encrypt=true;trustServerCertificate=true\" prisma validate --schema schema/schema.prisma",
-    "generate": "prisma generate"
+    "generate": "cross-env DATABASE_URL=\"sqlserver://localhost:1433;database=access_management_portal_local;user=local_user;password=replace_me;encrypt=true;trustServerCertificate=true\" prisma generate --schema schema/schema.prisma",
+    "build": "npm run generate && tsc -p tsconfig.json",
+    "typecheck": "npm run generate && tsc -p tsconfig.json --noEmit --pretty false",
+    "test": "npm run generate && tsc -p tsconfig.test.json && node --test dist-test/client.test.js"
   },
   "dependencies": {
     "@prisma/client": "6.12.0"
   },
   "devDependencies": {
+    "@types/node": "^22.13.4",
     "cross-env": "7.0.3",
-    "prisma": "6.12.0"
+    "prisma": "6.12.0",
+    "typescript": "^5.8.2"
   }
 }

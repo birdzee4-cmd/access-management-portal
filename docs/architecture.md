@@ -53,6 +53,10 @@ Ports for future legacy integrations. Interfaces expose read operations only and
 
 A Prisma schema targeting SQL Server for a future, dedicated portal database. It does not describe, introspect, or migrate the existing production SQL Server. The normalized design is documented in [Access Management Portal Data Model V1](data-model.md); no migration has been created or run.
 
+Task 04 adds a reusable environment-configured Prisma client plus repository interfaces and Prisma implementations for the portal-owned entities. Minimal API services depend on those interfaces and are assembled in an API composition root. The health endpoint remains independent of this container, so startup health checks perform no database I/O.
+
+The implementation flow is API service to repository interface to Prisma repository to the new portal database. Legacy systems use a separate read-only connector boundary and never pass through the portal Prisma repositories. See [Local Development Data Layer](data-access.md).
+
 ## Data ownership
 
 - The existing platform remains authoritative throughout the pilot.

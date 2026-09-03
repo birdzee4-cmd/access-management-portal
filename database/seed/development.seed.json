@@ -30,6 +30,15 @@
       "departmentCode": "DEMO-IT",
       "managerEmployeeId": null,
       "active": true
+    },
+    {
+      "employeeId": "EMP-DEMO-003",
+      "entraObjectId": "00000000-0000-4000-8000-000000000003",
+      "email": "demo.target@example.invalid",
+      "displayName": "Demo Target User",
+      "departmentCode": "DEMO-OPS",
+      "managerEmployeeId": "EMP-DEMO-002",
+      "active": true
     }
   ],
   "systems": [
@@ -131,6 +140,91 @@
       "approverEmployeeId": "EMP-DEMO-002",
       "approvalLevel": 1,
       "active": true
+    }
+  ],
+  "accessRequests": [
+    {
+      "requestNumber": "AR-DEMO-000001",
+      "requesterEmployeeId": "EMP-DEMO-001",
+      "targetEmployeeId": "EMP-DEMO-003",
+      "requestType": "ADD",
+      "reason": "Synthetic local request for Azure DevOps reader access.",
+      "effectiveDate": "2030-01-15",
+      "expirationDate": null,
+      "status": "PENDING_APPROVAL",
+      "metadata": {
+        "fixture": "LOCAL_DEVELOPMENT_ONLY"
+      }
+    }
+  ],
+  "accessRequestItems": [
+    {
+      "requestNumber": "AR-DEMO-000001",
+      "systemCode": "AZURE_DEVOPS",
+      "applicationCode": "BOARDS",
+      "roleCode": "READER",
+      "permissionCode": null,
+      "action": "ADD",
+      "currentValue": null,
+      "requestedValue": {
+        "role": "READER"
+      },
+      "status": "PENDING"
+    }
+  ],
+  "approvals": [
+    {
+      "requestNumber": "AR-DEMO-000001",
+      "approverEmployeeId": "EMP-DEMO-002",
+      "approvalLevel": 1,
+      "status": "PENDING",
+      "comment": null,
+      "decidedAt": null
+    }
+  ],
+  "externalReferences": [
+    {
+      "entityType": "ACCESS_REQUEST",
+      "entityRequestNumber": "AR-DEMO-000001",
+      "externalSystem": "SHAREPOINT",
+      "externalScope": "LOCAL_DEMO",
+      "externalId": "DEV-SP-1001",
+      "externalUrl": null,
+      "metadata": {
+        "fixture": "NOT_A_REAL_SHAREPOINT_ID"
+      }
+    },
+    {
+      "entityType": "ACCESS_REQUEST",
+      "entityRequestNumber": "AR-DEMO-000001",
+      "externalSystem": "AZURE_DEVOPS",
+      "externalScope": "LOCAL_DEMO",
+      "externalId": "DEV-ADO-2001",
+      "externalUrl": null,
+      "metadata": {
+        "fixture": "NOT_A_REAL_WORK_ITEM_ID"
+      }
+    }
+  ],
+  "auditLogs": [
+    {
+      "occurredAt": "2030-01-01T00:00:00.000Z",
+      "actorEmployeeId": "EMP-DEMO-001",
+      "actor": "demo.requester@example.invalid",
+      "targetEmployeeId": "EMP-DEMO-003",
+      "action": "ACCESS_REQUEST_CREATED",
+      "entityType": "ACCESS_REQUEST",
+      "entityRequestNumber": "AR-DEMO-000001",
+      "systemCode": "AZURE_DEVOPS",
+      "beforeValue": null,
+      "afterValue": {
+        "requestType": "ADD",
+        "status": "PENDING_APPROVAL"
+      },
+      "result": "SUCCESS",
+      "connector": null,
+      "errorMessage": null,
+      "correlationId": "DEV-CORR-0001"
     }
   ]
 }
