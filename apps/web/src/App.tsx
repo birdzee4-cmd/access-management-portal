@@ -1,4 +1,5 @@
 import type { PilotStatus } from "@access-portal/contracts";
+import { useAuth } from "./auth/useAuth";
 
 const pilotStatus: PilotStatus = {
   projectName: "Access Management Portal",
@@ -7,6 +8,8 @@ const pilotStatus: PilotStatus = {
 };
 
 export function App() {
+  const auth = useAuth();
+
   return (
     <main className="shell">
       <section className="card" aria-labelledby="page-title">
@@ -32,6 +35,28 @@ export function App() {
         <aside className="notice">
           Provisioning, revocation, automation, and legacy writes are disabled.
         </aside>
+        <section aria-labelledby="authentication-title">
+          <h2 id="authentication-title">Authentication foundation</h2>
+          <p>
+            Status: <strong>{auth.state}</strong>
+          </p>
+          {auth.user ? (
+            <>
+              <p>Signed in as {auth.user.displayName}</p>
+              <button type="button" onClick={() => void auth.logout()}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              disabled={auth.state === "unconfigured" || auth.state === "authenticating"}
+              onClick={() => void auth.login()}
+            >
+              Sign in with Microsoft Entra ID
+            </button>
+          )}
+        </section>
       </section>
     </main>
   );

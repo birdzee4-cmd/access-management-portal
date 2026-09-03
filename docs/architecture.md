@@ -31,11 +31,11 @@ No arrow in this diagram represents an active integration in the initial skeleto
 
 ### `apps/web`
 
-A React single-page application built by Vite. It contains a static pilot-status screen only. Entra ID configuration placeholders are present, but no login flow or token acquisition is implemented.
+A React single-page application built by Vite. Its Task 05A authentication adapter uses MSAL for redirect login/logout, current-user state, and silent API access-token acquisition. Components consume the adapter rather than MSAL directly. Placeholder configuration leaves the application in an explicit unconfigured state.
 
 ### `apps/api`
 
-An Azure Functions TypeScript application using the v4 programming model. Its anonymous health endpoint has no dependency on a database, cloud resource, or legacy system. Business endpoints will require Entra ID authentication when implemented.
+An Azure Functions TypeScript application using the v4 programming model. Its anonymous health endpoint has no dependency on authentication, a database, a cloud resource, or a legacy system. Task 05A adds injectable bearer-token validation and role guards for future protected handlers. No protected business endpoint is implemented yet.
 
 ### `packages/contracts`
 

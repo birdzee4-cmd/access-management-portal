@@ -56,6 +56,8 @@ On macOS or Linux, use `cp` instead of `copy`.
 
 Run the frontend with `npm run dev:web`. Run the API with `npm run dev:api` after installing Azure Functions Core Tools. The only API route is `GET /api/health`; it performs no external I/O.
 
+With placeholder Entra values, the frontend runs in an explicit unconfigured authentication state. Task 05A adds MSAL and API JWT-validation boundaries but creates no app registration and protects no business endpoint yet.
+
 ## Validation
 
 ```bash
@@ -74,12 +76,13 @@ npm run prisma:validate
 - [Existing-system boundary](docs/existing-system.md)
 - [Data model](docs/data-model.md)
 - [Local data-access layer](docs/data-access.md)
+- [Authentication foundation](docs/authentication.md)
 
 ## Current non-goals
 
 - Azure resource provisioning
 - Deployment pipelines
-- Production authentication configuration or credentials
+- Production authentication configuration, app registrations, or credentials
 - Live integration clients
 - Data migration
 - Access approval, provisioning, or revocation workflows

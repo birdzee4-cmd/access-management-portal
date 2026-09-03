@@ -7,14 +7,15 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
-    "test": "tsc -p tsconfig.test.json && node --test dist-test/services/services.test.js",
+    "test": "tsc -p tsconfig.test.json && node --test dist-test/services/services.test.js dist-test/auth/authentication.test.js",
     "start": "npm run build && func start"
   },
   "dependencies": {
     "@access-portal/contracts": "*",
     "@access-portal/database": "*",
     "@access-portal/shared": "*",
-    "@azure/functions": "^4.7.2"
+    "@azure/functions": "^4.7.2",
+    "jose": "^6.2.10"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",

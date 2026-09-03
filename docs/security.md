@@ -22,7 +22,9 @@ The parser in `packages/shared` accepts only these exact safe values and throws 
 
 ## Identity and authorization
 
-Microsoft Entra ID is the planned identity provider. A later phase must:
+Microsoft Entra ID is the planned identity provider. Task 05A provides code boundaries for browser MSAL, API bearer-token validation, and backend role checks without creating or configuring Entra resources. See [Authentication Foundation](authentication.md).
+
+A later configuration phase must:
 
 - register separate applications for appropriate client/API trust boundaries;
 - validate issuer, tenant, audience, signature, expiry, and scopes/roles in the API;
@@ -30,7 +32,7 @@ Microsoft Entra ID is the planned identity provider. A later phase must:
 - define portal roles separately from legacy-system permissions;
 - prohibit authorization decisions based only on UI state.
 
-No application registration, secret, certificate, or production tenant identifier is created here.
+No application registration, secret, certificate, or production tenant identifier is created here. The committed development-authentication mock is disabled by default, requires APP_ENV=development plus an explicit request header, and returns only a fixed fake Viewer identity.
 
 ## Secrets
 

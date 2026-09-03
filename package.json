@@ -10,8 +10,8 @@
   ],
   "scripts": {
     "build": "npm run build -w @access-portal/contracts && npm run build -w @access-portal/shared && npm run build -w @access-portal/connectors && npm run build -w @access-portal/database && npm run build -w @access-portal/web && npm run build -w @access-portal/api",
-    "typecheck": "npm run typecheck -w @access-portal/contracts && npm run typecheck -w @access-portal/shared && npm run typecheck -w @access-portal/connectors && npm run build -w @access-portal/database && npm run typecheck -w @access-portal/web && npm run typecheck -w @access-portal/api",
-    "test": "npm run build -w @access-portal/database && npm run test -w @access-portal/database && npm run test -w @access-portal/api",
+    "typecheck": "npm run build -w @access-portal/contracts && npm run build -w @access-portal/shared && npm run build -w @access-portal/connectors && npm run build -w @access-portal/database && npm run typecheck -w @access-portal/web && npm run typecheck -w @access-portal/api",
+    "test": "npm run build -w @access-portal/contracts && npm run build -w @access-portal/database && npm run test -w @access-portal/database && npm run test -w @access-portal/web && npm run test -w @access-portal/api",
     "dev:web": "npm run dev -w @access-portal/web",
     "dev:api": "npm run start -w @access-portal/api",
     "prisma:validate": "npm run validate -w @access-portal/database"
