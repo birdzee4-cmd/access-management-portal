@@ -46,7 +46,7 @@ function responseBody(path: string): object {
   } satisfies LegacyMatrixRowsResponse;
 }
 
-test("legacy matrix client uses only authenticated GET requests and bounded inputs", async () => {
+test("legacy clients use only authenticated GET requests and bounded inputs", async () => {
   const originalFetch = globalThis.fetch;
   const calls: Array<{ url: string; method: string; authorization: string }> = [];
 
@@ -72,6 +72,7 @@ test("legacy matrix client uses only authenticated GET requests and bounded inpu
     await client.getLegacyMatrixRows("PH", 20);
     await client.getLegacyMatrixRows("VN_MY_ID", 50);
     await client.getLegacyMatrixSummary("NEW");
+    await client.getLegacyUserRequestDetail("42");
 
     assert.deepEqual(
       calls.map((call) => call.url),
@@ -81,6 +82,7 @@ test("legacy matrix client uses only authenticated GET requests and bounded inpu
         "http://localhost:7071/api/legacy/matrix?source=PH&limit=20",
         "http://localhost:7071/api/legacy/matrix?source=VN_MY_ID&limit=50",
         "http://localhost:7071/api/legacy/matrix/summary?source=NEW",
+        "http://localhost:7071/api/legacy/user-requests/42",
       ],
     );
     assert.equal(calls.every((call) => call.method === "GET"), true);
@@ -93,7 +95,7 @@ test("legacy matrix client uses only authenticated GET requests and bounded inpu
   }
 });
 
-test("legacy matrix client exposes status only for failed API responses", async () => {
+test("legacy clients expose status only for failed API responses", async () => {
   const originalFetch = globalThis.fetch;
 
   try {
@@ -110,6 +112,13 @@ test("legacy matrix client exposes status only for failed API responses", async 
 
       await assert.rejects(
         client.getLegacyMatrixRows("NEW", 20),
+        (error: unknown) =>
+          error instanceof AuthApiError &&
+          error.status === status &&
+          !error.message.includes("synthetic_backend_detail"),
+      );
+      await assert.rejects(
+        client.getLegacyUserRequestDetail("42"),
         (error: unknown) =>
           error instanceof AuthApiError &&
           error.status === status &&

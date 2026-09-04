@@ -228,8 +228,9 @@ duplicates, or timestamp names as a strict lifecycle. The existing
 
 ## Recommendation for Task 07K
 
-If separately approved, add only an Admin read view over this endpoint. Present
-the lifecycle as source observations, list every related VSTS item, show
-truncation and discrepancy explicitly, and leave date text unconverted. Do not
-add completion, required-stage, primary-item, persistence, reconciliation, or
-write semantics.
+Task 07K implements the separately approved Admin-only read view over this
+endpoint. It presents lifecycle data as source observations, lists every
+returned VSTS item, shows truncation and discrepancy explicitly, and leaves
+date text unconverted. It adds no completion, required-stage, primary-item,
+persistence, reconciliation, or write semantics. See
+[Legacy User Request Detail UI](legacy-user-request-detail-ui.md).

@@ -13,6 +13,7 @@ import { AuditLogsPage } from "../pages/AuditLogsPage.js";
 import { AutomationJobsPage } from "../pages/AutomationJobsPage.js";
 import { DashboardPage } from "../pages/DashboardPage.js";
 import { LegacyRequestsPage } from "../pages/LegacyRequestsPage.js";
+import { LegacyUserRequestDetailPage } from "../pages/LegacyUserRequestDetailPage.js";
 import { MyRequestsPage } from "../pages/MyRequestsPage.js";
 import { SettingsPage } from "../pages/SettingsPage.js";
 import { UsersPage } from "../pages/UsersPage.js";
@@ -42,7 +43,9 @@ export interface PortalViewProps {
   readonly onSignOut: () => Promise<void>;
   readonly api: Pick<
     AuthApiClient,
-    "getLegacyMatrixRows" | "getLegacyMatrixSummary"
+    | "getLegacyMatrixRows"
+    | "getLegacyMatrixSummary"
+    | "getLegacyUserRequestDetail"
   >;
 }
 
@@ -76,6 +79,14 @@ export function PortalView({ identity, onSignOut, api }: PortalViewProps) {
           }
         />
         <Route path="/legacy-requests" element={<LegacyRequestsPage />} />
+        <Route
+          path="/legacy-requests/:idSharepoint"
+          element={
+            <RoleRoute userRoles={identity.roles} requiredRoles={["Admin"]}>
+              <LegacyUserRequestDetailPage roles={identity.roles} api={api} />
+            </RoleRoute>
+          }
+        />
         <Route
           path="/automation-jobs"
           element={

@@ -4,7 +4,10 @@
 
 Task 06 replaces the temporary authentication test page with the first authenticated portal shell. It is a frontend-only foundation: no request workflow, approval decision, database query, connector, provisioning, revocation, automation, Azure resource, or deployment is introduced.
 
-All business records shown by the UI are static, obviously synthetic examples. Names use Demo, Example, or Sample labels; email addresses use example.invalid; request, legacy, work-item, job, and correlation identifiers use explicit demo prefixes.
+Task 06 pages continue to use static, obviously synthetic examples. Task 07K
+adds one explicit exception: an Admin-only detail route may display the
+privacy-minimized Task 07I legacy DTO as read-only source observations. It does
+not expose person fields or add an action workflow.
 
 ## Application shell
 
@@ -27,6 +30,7 @@ The shell calls GET /api/auth/me before rendering portal navigation. Authenticat
 | /approvals | Approvals | Admin, Approver |
 | /users | Users | Admin |
 | /legacy-requests | Legacy Requests | Admin, Approver, Viewer |
+| /legacy-requests/:idSharepoint | Legacy User Request detail | Admin |
 | /automation-jobs | Automation Jobs | Admin |
 | /audit-logs | Audit Logs | Admin |
 | /settings | Settings | Admin |
@@ -41,6 +45,9 @@ Navigation filtering and frontend route guards improve usability only. They do n
 - **Approvals** previews pending items without Approve or Reject actions.
 - **Users** shows synthetic directory rows and makes clear that Microsoft Graph is not connected.
 - **Legacy Requests** labels its source as not connected and read-only.
+- **Legacy User Request detail** uses the authenticated read-only API for one
+  Admin-selected numeric identifier and shows independent source observations,
+  all bounded VSTS rows, discrepancy/truncation notes, and no write actions.
 - **Automation Jobs** displays disabled illustrative activity and provides no execution control.
 - **Audit Logs** shows synthetic append-oriented event examples.
 - **Settings** displays mandatory safety configuration as read-only badges with no enabling controls.

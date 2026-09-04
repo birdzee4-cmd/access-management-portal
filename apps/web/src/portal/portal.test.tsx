@@ -15,6 +15,9 @@ const portalApi = {
   getLegacyMatrixSummary: async () => {
     throw new Error("Not called during server rendering.");
   },
+  getLegacyUserRequestDetail: async () => {
+    throw new Error("Not called during server rendering.");
+  },
 };
 
 function identity(roles: readonly PortalRole[]): AuthenticatedIdentityResponse {
@@ -123,6 +126,14 @@ test("direct navigation to a restricted route shows the access-denied state", ()
 
   assert.match(html, /Page not available/);
   assert.doesNotMatch(html, /Production Safety Boundary enforced/);
+});
+
+test("legacy request detail route is Admin-only before any detail request", () => {
+  for (const role of ["Viewer", "Approver"] as const) {
+    const html = renderPortal("/legacy-requests/42", [role]);
+    assert.match(html, /Page not available/);
+    assert.doesNotMatch(html, /Loading legacy request/);
+  }
 });
 
 test("non-Admin catalog view explains the Legacy Matrix restriction", () => {

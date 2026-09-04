@@ -59,6 +59,14 @@ or `CONTRADICTED`; it is documentation and discovery support, not an approval,
 authorization, provisioning, or lifecycle rule engine. Production discovery
 uses the same central SELECT-only guard and emits no request or Work Item IDs.
 
+Task 07K adds an Admin-only React route at
+`/legacy-requests/:idSharepoint`. It consumes the existing Task 07I GET endpoint
+through `AuthApiClient` and the existing MSAL access-token abstraction. The
+view presents request, approval, legacy status, related VSTS, comparison, and
+lifecycle fields as independent source observations. It adds no backend route,
+legacy field, write control, persistence, source API call, or workflow logic.
+See [Legacy User Request Detail UI](legacy-user-request-detail-ui.md).
+
 ### `packages/contracts`
 
 Framework-neutral TypeScript types shared across boundaries. Keeping transport contracts separate prevents frontend code from importing server or database implementation details.
