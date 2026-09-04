@@ -4,11 +4,21 @@ import test from "node:test";
 import type {
   LegacyMatrixRowsResponse,
   LegacyMatrixSummaryResponse,
+  LegacyUserRequestListResponse,
 } from "@access-portal/contracts";
 
 import { AuthApiClient, AuthApiError } from "./authApi.js";
 
 function responseBody(path: string): object {
+  if (path.includes("/legacy/user-requests?")) {
+    const limit = Number(new URL(path).searchParams.get("limit"));
+    return {
+      rowsRead: 0,
+      limit,
+      requests: [],
+    } satisfies LegacyUserRequestListResponse;
+  }
+
   if (path.includes("/summary")) {
     const quality = {
       nullCount: 0,
@@ -72,6 +82,8 @@ test("legacy clients use only authenticated GET requests and bounded inputs", as
     await client.getLegacyMatrixRows("PH", 20);
     await client.getLegacyMatrixRows("VN_MY_ID", 50);
     await client.getLegacyMatrixSummary("NEW");
+    await client.getLegacyUserRequests(20);
+    await client.getLegacyUserRequests(50);
     await client.getLegacyUserRequestDetail("42");
 
     assert.deepEqual(
@@ -82,6 +94,8 @@ test("legacy clients use only authenticated GET requests and bounded inputs", as
         "http://localhost:7071/api/legacy/matrix?source=PH&limit=20",
         "http://localhost:7071/api/legacy/matrix?source=VN_MY_ID&limit=50",
         "http://localhost:7071/api/legacy/matrix/summary?source=NEW",
+        "http://localhost:7071/api/legacy/user-requests?limit=20",
+        "http://localhost:7071/api/legacy/user-requests?limit=50",
         "http://localhost:7071/api/legacy/user-requests/42",
       ],
     );
@@ -112,6 +126,13 @@ test("legacy clients expose status only for failed API responses", async () => {
 
       await assert.rejects(
         client.getLegacyMatrixRows("NEW", 20),
+        (error: unknown) =>
+          error instanceof AuthApiError &&
+          error.status === status &&
+          !error.message.includes("synthetic_backend_detail"),
+      );
+      await assert.rejects(
+        client.getLegacyUserRequests(20),
         (error: unknown) =>
           error instanceof AuthApiError &&
           error.status === status &&

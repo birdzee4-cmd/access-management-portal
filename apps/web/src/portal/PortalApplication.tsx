@@ -45,6 +45,7 @@ export interface PortalViewProps {
     AuthApiClient,
     | "getLegacyMatrixRows"
     | "getLegacyMatrixSummary"
+    | "getLegacyUserRequests"
     | "getLegacyUserRequestDetail"
   >;
 }
@@ -78,7 +79,14 @@ export function PortalView({ identity, onSignOut, api }: PortalViewProps) {
             </RoleRoute>
           }
         />
-        <Route path="/legacy-requests" element={<LegacyRequestsPage />} />
+        <Route
+          path="/legacy-requests"
+          element={
+            <RoleRoute userRoles={identity.roles} requiredRoles={["Admin"]}>
+              <LegacyRequestsPage roles={identity.roles} api={api} />
+            </RoleRoute>
+          }
+        />
         <Route
           path="/legacy-requests/:idSharepoint"
           element={

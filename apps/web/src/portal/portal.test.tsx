@@ -15,6 +15,9 @@ const portalApi = {
   getLegacyMatrixSummary: async () => {
     throw new Error("Not called during server rendering.");
   },
+  getLegacyUserRequests: async () => {
+    throw new Error("Not called during server rendering.");
+  },
   getLegacyUserRequestDetail: async () => {
     throw new Error("Not called during server rendering.");
   },
@@ -75,6 +78,7 @@ test("Viewer does not see Admin-only navigation", () => {
   assert.doesNotMatch(html, />Automation Jobs</);
   assert.doesNotMatch(html, />Audit Logs</);
   assert.doesNotMatch(html, />Settings</);
+  assert.doesNotMatch(html, />Legacy Requests</);
 });
 
 test("Approver sees Approvals navigation", () => {
@@ -133,6 +137,14 @@ test("legacy request detail route is Admin-only before any detail request", () =
     const html = renderPortal("/legacy-requests/42", [role]);
     assert.match(html, /Page not available/);
     assert.doesNotMatch(html, /Loading legacy request/);
+  }
+});
+
+test("legacy request list route is Admin-only before any list request", () => {
+  for (const role of ["Viewer", "Approver"] as const) {
+    const html = renderPortal("/legacy-requests", [role]);
+    assert.match(html, /Page not available/);
+    assert.doesNotMatch(html, /Loading legacy requests/);
   }
 });
 

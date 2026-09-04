@@ -43,7 +43,7 @@ Schema discovery was performed on 2026-09-04 through the existing `LegacySqlConn
 - a parameterized `INFORMATION_SCHEMA.COLUMNS` metadata SELECT for the fixed schema and table;
 - a parameterized `sys.indexes` metadata SELECT limited to primary and unique indexes.
 
-Both statements were SELECT-only. No business row was read, printed, saved, or committed. The table returned 32 nullable columns. No primary key or unique index was reported, so Task 07G does not expose a detail endpoint.
+Both statements were SELECT-only. No business row was read, printed, saved, or committed. The table returned 32 nullable columns. No primary key or unique index was reported, so Task 07G itself did not expose a detail endpoint. Later discovery and the fail-closed Task 07I implementation are documented separately.
 
 The date-related source columns are `varchar`, not SQL date/time values. The API therefore trims them but preserves them as `createdDateText` and `updatedDateText`; it does not guess a format or fabricate ISO timestamps.
 
@@ -171,3 +171,17 @@ Legacy User Request SQL table
 - Decide whether a detail endpoint is justified after a stable identifier is established.
 - Consider status filtering/pagination only after stable semantics and ordering are approved.
 - Define any snapshot/import or Portal-database reconciliation strategy separately. No persistence occurs in Task 07G.
+
+## Task 07L list UI consumption
+
+Task 07L consumes this unchanged list contract from the Admin-only
+`/legacy-requests` React route. The client requests only limit 20 or 50 through
+the existing authenticated GET abstraction, renders a subset of the minimized
+DTO, and uses `externalRequestId`—never `workItemId`—to navigate to the
+read-only Task 07K detail route.
+
+The UI adds no filters, pagination, source query parameters, direct SQL,
+SharePoint or VSTS API call, persistence, or write control. See
+[Legacy User Request List UI](legacy-user-request-list-ui.md). A future task
+should first validate source semantics and bounded-list usability with data
+owners before proposing additional read capabilities.

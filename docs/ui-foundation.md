@@ -4,10 +4,10 @@
 
 Task 06 replaces the temporary authentication test page with the first authenticated portal shell. It is a frontend-only foundation: no request workflow, approval decision, database query, connector, provisioning, revocation, automation, Azure resource, or deployment is introduced.
 
-Task 06 pages continue to use static, obviously synthetic examples. Task 07K
-adds one explicit exception: an Admin-only detail route may display the
-privacy-minimized Task 07I legacy DTO as read-only source observations. It does
-not expose person fields or add an action workflow.
+Task 06 business previews continue to use static, obviously synthetic examples.
+The explicit legacy exceptions are the Admin-only role-matrix view and the
+Task 07K/07L User Request detail and list routes. These consume minimized
+read-only DTOs, do not expose person fields, and add no action workflow.
 
 ## Application shell
 
@@ -29,7 +29,7 @@ The shell calls GET /api/auth/me before rendering portal navigation. Authenticat
 | /catalog | Access Catalog | Admin, Approver, Viewer |
 | /approvals | Approvals | Admin, Approver |
 | /users | Users | Admin |
-| /legacy-requests | Legacy Requests | Admin, Approver, Viewer |
+| /legacy-requests | Legacy Requests | Admin |
 | /legacy-requests/:idSharepoint | Legacy User Request detail | Admin |
 | /automation-jobs | Automation Jobs | Admin |
 | /audit-logs | Audit Logs | Admin |
@@ -44,7 +44,10 @@ Navigation filtering and frontend route guards improve usability only. They do n
 - **Access Catalog** previews normalized Azure DevOps, WMS, and OMS role entries without editing.
 - **Approvals** previews pending items without Approve or Reject actions.
 - **Users** shows synthetic directory rows and makes clear that Microsoft Graph is not connected.
-- **Legacy Requests** labels its source as not connected and read-only.
+- **Legacy Requests** retrieves up to 20 or 50 minimized summaries through the
+  authenticated legacy SQL read-only API, supports Refresh, and links an
+  available external request ID to the detail route. It has no search,
+  pagination, polling, or write action.
 - **Legacy User Request detail** uses the authenticated read-only API for one
   Admin-selected numeric identifier and shows independent source observations,
   all bounded VSTS rows, discrepancy/truncation notes, and no write actions.
@@ -66,4 +69,8 @@ ENABLE_ACCESS_REVOCATION=false
 ENABLE_AUTOMATION=false
 ~~~
 
-Integration cards state that the new portal database is not connected, legacy SQL/SharePoint/Azure DevOps are read-only and not connected, and automation is disabled. These labels are not a substitute for backend enforcement or least-privilege credentials in future approved phases.
+Integration cards state that the new portal database is not connected,
+SharePoint/Azure DevOps source APIs are not called, the specifically approved
+legacy SQL paths are read-only, and automation is disabled. These labels are
+not a substitute for backend enforcement or least-privilege credentials in
+future approved phases.

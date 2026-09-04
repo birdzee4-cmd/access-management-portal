@@ -5,6 +5,7 @@ import type {
   LegacyMatrixSource,
   LegacyMatrixSummaryResponse,
   LegacyUserRequestDetail,
+  LegacyUserRequestListResponse,
 } from "@access-portal/contracts";
 
 export type AccessTokenProvider = () => Promise<string>;
@@ -62,6 +63,13 @@ export class AuthApiClient {
   ): Promise<LegacyMatrixSummaryResponse> {
     const query = new URLSearchParams({ source });
     return this.get("/legacy/matrix/summary?" + query.toString());
+  }
+
+  getLegacyUserRequests(
+    limit: 20 | 50,
+  ): Promise<LegacyUserRequestListResponse> {
+    const query = new URLSearchParams({ limit: String(limit) });
+    return this.get("/legacy/user-requests?" + query.toString());
   }
 
   getLegacyUserRequestDetail(

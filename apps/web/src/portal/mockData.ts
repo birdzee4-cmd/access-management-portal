@@ -174,29 +174,6 @@ export const fakeUsers = [
   },
 ] as const;
 
-export const legacyRequests = [
-  {
-    legacyId: "LEG-DEMO-3003",
-    created: "03 Sep 2026",
-    employee: "Avery Sample",
-    department: "Demo Technology",
-    requestType: "Example access request",
-    managerStatus: "Approved",
-    workId: "ADO-DEMO-7003",
-    vstsStatus: "Active",
-  },
-  {
-    legacyId: "LEG-DEMO-3002",
-    created: "02 Sep 2026",
-    employee: "Cameron Example",
-    department: "Example Operations",
-    requestType: "Example service request",
-    managerStatus: "Pending",
-    workId: "ADO-DEMO-7002",
-    vstsStatus: "New",
-  },
-] as const;
-
 export const automationJobs = [
   {
     job: "JOB-DEMO-001",

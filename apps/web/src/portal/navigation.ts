@@ -32,7 +32,7 @@ export const navigationItems: readonly NavigationItem[] = [
     label: "Legacy Requests",
     path: "/legacy-requests",
     icon: "↺",
-    roles: ["Admin", "Approver", "Viewer"],
+    roles: ["Admin"],
   },
   {
     label: "Automation Jobs",

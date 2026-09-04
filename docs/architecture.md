@@ -33,7 +33,7 @@ The initial skeleton activated no integration. Task 07E later activates only the
 
 A React single-page application built by Vite. Its Task 05A authentication adapter uses MSAL for redirect login/logout, current-user state, and silent API access-token acquisition. Components consume the adapter rather than MSAL directly. Placeholder configuration leaves the application in an explicit unconfigured state.
 
-Task 06 adds a responsive authenticated shell with React routing, reusable page/table/status components, and role-aware navigation for Admin, Approver, and Viewer. The shell verifies the current identity through `/api/auth/me` before using roles for navigation. This client-side visibility is a user-experience feature only; API authorization remains authoritative. Every displayed business record is synthetic local mock data.
+Task 06 adds a responsive authenticated shell with React routing, reusable page/table/status components, and role-aware navigation for Admin, Approver, and Viewer. The shell verifies the current identity through `/api/auth/me` before using roles for navigation. This client-side visibility is a user-experience feature only; API authorization remains authoritative. Task 06 business previews remain synthetic; later explicitly documented Admin-only legacy views consume privacy-minimized read APIs.
 
 ### `apps/api`
 
@@ -66,6 +66,14 @@ view presents request, approval, legacy status, related VSTS, comparison, and
 lifecycle fields as independent source observations. It adds no backend route,
 legacy field, write control, persistence, source API call, or workflow logic.
 See [Legacy User Request Detail UI](legacy-user-request-detail-ui.md).
+
+Task 07L connects the Admin-only `/legacy-requests` route to the existing Task
+07G list GET. The former legacy mock preview is removed. The browser requests
+only bounded limits of 20 or 50 through `AuthApiClient`, displays the minimized
+summary projection, and uses only `externalRequestId` for client-side
+navigation to the Task 07K detail route. There is no search, pagination,
+polling, direct SQL, SharePoint API, VSTS API, Portal database, or write path.
+See [Legacy User Request List UI](legacy-user-request-list-ui.md).
 
 ### `packages/contracts`
 

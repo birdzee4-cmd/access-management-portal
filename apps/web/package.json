@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit --pretty false",
-    "test": "tsc -p tsconfig.test.json && node --test dist-test/auth/authApi.test.js dist-test/auth/authConfig.test.js dist-test/pages/AccessCatalogPage.test.js dist-test/pages/LegacyUserRequestDetailPage.test.js dist-test/portal/portal.test.js",
+    "test": "tsc -p tsconfig.test.json && node --test dist-test/auth/authApi.test.js dist-test/auth/authConfig.test.js dist-test/pages/AccessCatalogPage.test.js dist-test/pages/LegacyRequestsPage.test.js dist-test/pages/LegacyUserRequestDetailPage.test.js dist-test/portal/portal.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
