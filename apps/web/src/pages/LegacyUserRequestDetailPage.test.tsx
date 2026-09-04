@@ -7,6 +7,7 @@ import { AuthApiError } from "../auth/authApi.js";
 import {
   LegacyUserRequestDetailView,
   canViewLegacyUserRequestDetail,
+  legacyRequestListBackPath,
   legacyUserRequestDetailErrorState,
   loadLegacyUserRequestDetailForRoles,
   normalizeLegacyRequestRouteId,
@@ -249,4 +250,14 @@ test("the page exposes only Back and Refresh actions and ignores extra sensitive
   assert.deepEqual(buttonLabels, ["Back", "Refresh"]);
   assert.doesNotMatch(html, /person@example\.invalid|Synthetic Person|sensitive free text/);
   assert.doesNotMatch(html, /Azure DevOps link|VSTS action|Save changes/);
+});
+
+test("detail Back target preserves list query state", () => {
+  assert.equal(
+    legacyRequestListBackPath(
+      "?limit=50&system=Example+System&country=Example+Country",
+    ),
+    "/legacy-requests?limit=50&system=Example+System&country=Example+Country",
+  );
+  assert.equal(legacyRequestListBackPath(""), "/legacy-requests");
 });

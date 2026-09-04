@@ -45,18 +45,32 @@ test("normalization trims source text and converts blank values to null", () => 
 });
 
 test("service enforces bounds and delegates only to the read-only method", async () => {
-  const calls: number[] = [];
+  const calls: Array<{ limit: number; filters: object }> = [];
   const reader: Pick<ReadOnlyLegacySqlConnector, "listLegacyUserRequests"> = {
-    listLegacyUserRequests: async (limit) => {
-      calls.push(limit ?? -1);
+    listLegacyUserRequests: async (limit, filters) => {
+      calls.push({ limit: limit ?? -1, filters: filters ?? {} });
       return [sourceRow];
     },
   };
   const service = new LegacyUserRequestService(reader);
 
   assert.equal((await service.listRequests(1)).length, 1);
-  assert.equal((await service.listRequests(50)).length, 1);
-  assert.deepEqual(calls, [1, 50]);
+  assert.equal(
+    (
+      await service.listRequests(50, {
+        system: "Example System",
+        country: "TH",
+      })
+    ).length,
+    1,
+  );
+  assert.deepEqual(calls, [
+    { limit: 1, filters: {} },
+    {
+      limit: 50,
+      filters: { system: "Example System", country: "TH" },
+    },
+  ]);
 
   for (const invalidLimit of [0, 51, 1.5]) {
     await assert.rejects(service.listRequests(invalidLimit));

@@ -180,8 +180,10 @@ the existing authenticated GET abstraction, renders a subset of the minimized
 DTO, and uses `externalRequestId`—never `workItemId`—to navigate to the
 read-only Task 07K detail route.
 
-The UI adds no filters, pagination, source query parameters, direct SQL,
-SharePoint or VSTS API call, persistence, or write control. See
-[Legacy User Request List UI](legacy-user-request-list-ui.md). A future task
-should first validate source semantics and bounded-list usability with data
-owners before proposing additional read capabilities.
+Task 07L originally added no filters, pagination, source query parameters,
+direct SQL, SharePoint or VSTS API call, persistence, or write control. Task
+07M later adds only allowlisted, parameterized exact matches for system,
+country, SharePoint-side VSTS status, and department while retaining the same
+bounded projection and read-only boundary. See
+[Legacy User Request List UI](legacy-user-request-list-ui.md) and
+[Legacy User Request List API](legacy-user-request-api.md).

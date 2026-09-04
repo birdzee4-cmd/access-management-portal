@@ -30,8 +30,21 @@ to the Task 07K detail route. It does not query legacy SQL directly.
 ## Bounded reads and navigation
 
 The initial request uses limit 20. The only other UI selection is 50. The Web
-client constructs an authenticated GET with that limit and exposes no arbitrary
-query, search, offset, cursor, or polling behavior.
+client constructs an authenticated GET with that limit and optional exact-match
+`system`, `country`, `vstsStatus`, and `department` values. It exposes no
+arbitrary query, free-text search, offset, cursor, sorting, or polling behavior.
+
+Filter controls are dropdowns derived from normalized values in the current
+bounded response. They are explicitly described as observed options rather
+than a complete source vocabulary. A selected value is sent to the server, so
+filtering is not limited to a client-side subset. No production value is
+hard-coded.
+
+The selected limit and filters are stored in the browser query string. Unknown,
+repeated, blank, overlength, or control-character parameters produce a safe
+invalid-filter state before the Web client calls the API. Detail links carry
+the validated query string, and the detail page Back action returns to that
+list state.
 
 Each usable `externalRequestId` is a client-side link to:
 
@@ -63,11 +76,17 @@ Work Item ID. No Microsoft Graph lookup is performed.
 
 ## Read-only and failure behavior
 
-The only list interactions are Refresh, changing the bounded 20/50 limit, and
-opening an available detail link. Refresh repeats the same authenticated GET
-for the selected limit. There is no background polling and no create, edit,
-delete, approval, synchronization, reconciliation, provisioning, revocation,
-or Work Item action.
+The only list interactions are Refresh, changing the bounded 20/50 limit,
+selecting or clearing safe exact filters, and opening an available detail link.
+Refresh repeats the same authenticated GET for the selected limit and filters.
+There is no background polling and no create, edit, delete, approval,
+synchronization, reconciliation, provisioning, revocation, or Work Item
+action.
+
+Result copy reports the number of rows returned from the bounded result and
+states that additional matching rows may exist when the limit is reached. It
+never describes `rowsRead` as a total. No ordering is promised because the
+legacy query has no validated `ORDER BY`.
 
 The page provides loading, empty, unauthorized, forbidden, legacy-unavailable,
 and generic failure states. Errors use fixed messages and never display SQL
@@ -96,7 +115,8 @@ non-Admin behavior, bounds, states, refresh semantics, privacy omissions,
 external-ID navigation, mock-row removal, GET-only client behavior, and the
 absence of write actions without requiring production SQL.
 
-A separately authorized follow-up should validate the bounded list usability
-and remaining source semantics with data owners before proposing pagination,
-search, broader role visibility, or any new field. Write capability remains
-outside this recommendation and requires its own security review.
+A separately authorized follow-up should validate whether a dedicated bounded
+filter-vocabulary endpoint or stable pagination is required. Value
+completeness, ordering, broader visibility, and new fields require data-owner
+review. Write capability remains outside this recommendation and requires its
+own security review.

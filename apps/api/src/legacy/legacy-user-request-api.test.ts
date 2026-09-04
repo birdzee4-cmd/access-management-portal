@@ -2,7 +2,10 @@ import {
   LegacySqlConfigurationError,
   LegacySqlConnectorError,
 } from "@access-portal/connectors";
-import type { LegacyUserRequestSummary } from "@access-portal/contracts";
+import type {
+  LegacyUserRequestFilters,
+  LegacyUserRequestSummary,
+} from "@access-portal/contracts";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -104,14 +107,20 @@ function dependencies(options?: {
   readonly invalidToken?: boolean;
   readonly requests?: readonly LegacyUserRequestSummary[];
   readonly error?: Error;
-  readonly calls?: number[];
+  readonly calls?: Array<{
+    readonly limit: number;
+    readonly filters: LegacyUserRequestFilters;
+  }>;
 }): LegacyUserRequestApiDependencies {
   return {
     getAuthenticationService: () =>
       authentication(options?.roles ?? ["Admin"], options?.invalidToken),
     getLegacyUserRequestService: () => ({
-      listRequests: async (limit) => {
-        options?.calls?.push(limit ?? -1);
+      listRequests: async (limit, filters) => {
+        options?.calls?.push({
+          limit: limit ?? -1,
+          filters: filters ?? {},
+        });
         if (options?.error) {
           throw options.error;
         }
@@ -122,7 +131,7 @@ function dependencies(options?: {
 }
 
 test("missing and invalid bearer tokens return 401 before legacy access", async () => {
-  const calls: number[] = [];
+  const calls: Array<{ limit: number; filters: LegacyUserRequestFilters }> = [];
   const missing = await handleLegacyUserRequestList(
     request("", ""),
     new RecordingLogger(),
@@ -141,7 +150,7 @@ test("missing and invalid bearer tokens return 401 before legacy access", async 
 
 test("Admin is allowed while Viewer and Approver receive 403", async () => {
   for (const role of ["Viewer", "Approver"] as const) {
-    const calls: number[] = [];
+    const calls: Array<{ limit: number; filters: LegacyUserRequestFilters }> = [];
     const response = await handleLegacyUserRequestList(
       request(),
       new RecordingLogger(),
@@ -160,7 +169,7 @@ test("Admin is allowed while Viewer and Approver receive 403", async () => {
 });
 
 test("default, minimum, and maximum limits are validated and delegated", async () => {
-  const calls: number[] = [];
+  const calls: Array<{ limit: number; filters: LegacyUserRequestFilters }> = [];
   for (const query of ["", "limit=1", "limit=50"]) {
     const response = await handleLegacyUserRequestList(
       request(query),
@@ -169,17 +178,58 @@ test("default, minimum, and maximum limits are validated and delegated", async (
     );
     assert.equal(response.status, 200);
   }
-  assert.deepEqual(calls, [DEFAULT_LEGACY_USER_REQUEST_ROWS, 1, 50]);
+  assert.deepEqual(calls, [
+    { limit: DEFAULT_LEGACY_USER_REQUEST_ROWS, filters: {} },
+    { limit: 1, filters: {} },
+    { limit: 50, filters: {} },
+  ]);
 });
 
-test("invalid limits and unsupported filters return 400 before service creation", async () => {
+test("allowed exact-match filters and combinations are delegated by fixed keys", async () => {
+  const calls: Array<{ limit: number; filters: LegacyUserRequestFilters }> = [];
+  const queries = [
+    ["system=Example%20System", { system: "Example System" }],
+    ["country=Example%20Country", { country: "Example Country" }],
+    ["vstsStatus=SOURCE_STATE", { vstsStatus: "SOURCE_STATE" }],
+    ["department=Example%20Department", { department: "Example Department" }],
+    [
+      "limit=50&system=Example%20System&country=Example%20Country&vstsStatus=SOURCE_STATE&department=Example%20Department",
+      {
+        system: "Example System",
+        country: "Example Country",
+        vstsStatus: "SOURCE_STATE",
+        department: "Example Department",
+      },
+    ],
+  ] as const;
+
+  for (const [query, filters] of queries) {
+    const response = await handleLegacyUserRequestList(
+      request(query),
+      new RecordingLogger(),
+      dependencies({ calls }),
+    );
+    assert.equal(response.status, 200, query);
+    assert.deepEqual(calls.at(-1)?.filters, filters);
+  }
+  assert.equal(calls.at(-1)?.limit, 50);
+});
+
+test("invalid, repeated, and unknown query parameters fail before service creation", async () => {
   for (const query of [
     "limit=0",
     "limit=51",
     "limit=1.5",
     "limit=abc",
     "limit=20&limit=21",
+    "system=",
+    "system=One&system=Two",
+    "country=%20%20",
+    "vstsStatus=line%0Abreak",
+    "department=" + "x".repeat(201),
     "status=Active",
+    "column=SystemProgram",
+    "orderBy=CreateDate",
     "table=dbo.All_SharepointUserRequest",
     "sql=SELECT",
   ]) {
@@ -202,9 +252,10 @@ test("invalid limits and unsupported filters return 400 before service creation"
 });
 
 test("successful response contains only the normalized bounded DTO", async () => {
+  const logger = new RecordingLogger();
   const response = await handleLegacyUserRequestList(
-    request("limit=1"),
-    new RecordingLogger(),
+    request("limit=1&system=Example%20System"),
+    logger,
     dependencies({ requests: [normalizedRequest] }),
   );
   const serialized = JSON.stringify(response);
@@ -227,6 +278,7 @@ test("successful response contains only the normalized bounded DTO", async () =>
   ]) {
     assert.equal(serialized.includes(omittedField), false);
   }
+  assert.equal(JSON.stringify(logger.entries).includes("Example System"), false);
 });
 
 test("unexpected and SQL failures return only sanitized errors and logs", async () => {

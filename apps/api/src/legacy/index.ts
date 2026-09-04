@@ -15,8 +15,10 @@ export {
   LegacyUserRequestInputError,
   handleLegacyUserRequestList,
   parseLegacyUserRequestLimit,
+  parseLegacyUserRequestListQuery,
   type LegacyUserRequestApiDependencies,
   type LegacyUserRequestLogger,
+  type LegacyUserRequestListInput,
   type LegacyUserRequestQuery,
   type LegacyUserRequestRequest,
 } from "./legacy-user-request-api.js";

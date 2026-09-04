@@ -75,6 +75,17 @@ navigation to the Task 07K detail route. There is no search, pagination,
 polling, direct SQL, SharePoint API, VSTS API, Portal database, or write path.
 See [Legacy User Request List UI](legacy-user-request-list-ui.md).
 
+Task 07M adds server-side exact-match filtering for four already normalized
+fields: system, country, SharePoint-side VSTS status, and department. The API
+allowlists and validates each key, and the connector maps keys to fixed
+predicates with parameterized values while retaining the fixed table,
+projection, SELECT-only guard, and 50-row cap. The Web stores validated filters
+and the 20/50 limit in URL state, derives dropdown options from the current
+bounded response, and preserves the query through detail navigation. It adds no
+authoritative total, ordering, wildcard search, generic filter endpoint,
+external API call, persistence, or write path. See
+[Legacy User Request List API](legacy-user-request-api.md).
+
 ### `packages/contracts`
 
 Framework-neutral TypeScript types shared across boundaries. Keeping transport contracts separate prevents frontend code from importing server or database implementation details.

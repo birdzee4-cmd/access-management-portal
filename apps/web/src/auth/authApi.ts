@@ -5,6 +5,7 @@ import type {
   LegacyMatrixSource,
   LegacyMatrixSummaryResponse,
   LegacyUserRequestDetail,
+  LegacyUserRequestFilters,
   LegacyUserRequestListResponse,
 } from "@access-portal/contracts";
 
@@ -67,8 +68,13 @@ export class AuthApiClient {
 
   getLegacyUserRequests(
     limit: 20 | 50,
+    filters: LegacyUserRequestFilters = {},
   ): Promise<LegacyUserRequestListResponse> {
     const query = new URLSearchParams({ limit: String(limit) });
+    if (filters.system) query.set("system", filters.system);
+    if (filters.country) query.set("country", filters.country);
+    if (filters.vstsStatus) query.set("vstsStatus", filters.vstsStatus);
+    if (filters.department) query.set("department", filters.department);
     return this.get("/legacy/user-requests?" + query.toString());
   }
 

@@ -8,6 +8,7 @@ import {
   LegacySqlReadGuardError,
   LegacySqlRowLimitError,
   LegacySqlTableNotAllowedError,
+  LegacyUserRequestFilterError,
   LegacyUserRequestRowLimitError,
   LEGACY_USER_REQUEST_TABLE,
   assertLegacySqlReadOnlyQuery,
@@ -235,6 +236,47 @@ test("User Request list query is fixed, explicit, SELECT-only, and bounded", () 
   }
 });
 
+test("User Request filters use fixed exact-match predicates and parameters", () => {
+  const query = buildLegacyUserRequestListQuery(50, {
+    system: " Example System ",
+    country: "Example Country",
+    vstsStatus: "SOURCE_STATE",
+    department: "Example Department",
+  });
+
+  assert.match(
+    query.text,
+    /FROM \[dbo\]\.\[All_SharepointUserRequest\] WHERE LTRIM\(RTRIM\(\[SystemProgram\]\)\) = @system AND LTRIM\(RTRIM\(\[Country\]\)\) = @country AND LTRIM\(RTRIM\(\[StatusVSTS\]\)\) = @vstsStatus AND LTRIM\(RTRIM\(\[Department\]\)\) = @department$/,
+  );
+  assert.deepEqual(query.parameters, [
+    { name: "limit", value: 50 },
+    { name: "system", value: "Example System" },
+    { name: "country", value: "Example Country" },
+    { name: "vstsStatus", value: "SOURCE_STATE" },
+    { name: "department", value: "Example Department" },
+  ]);
+  assert.equal(query.text.includes("Example System"), false);
+  assert.equal(query.text.includes("Example Country"), false);
+  assert.equal(query.text.includes("SOURCE_STATE"), false);
+  assert.equal(/SELECT\s+\*/i.test(query.text), false);
+  assert.equal(assertLegacySqlReadOnlyQuery(query.text), query.text);
+});
+
+test("User Request filters reject invalid values and arbitrary keys", () => {
+  for (const filters of [
+    { system: "" },
+    { country: "   " },
+    { vstsStatus: "line\nbreak" },
+    { department: "x".repeat(201) },
+    { arbitraryColumn: "synthetic" },
+  ]) {
+    assert.throws(
+      () => buildLegacyUserRequestListQuery(20, filters),
+      LegacyUserRequestFilterError,
+    );
+  }
+});
+
 test("User Request connector maps only the approved minimal projection", async () => {
   const omittedEmail = "omitted.person@example.invalid";
   const omittedDetail = "synthetic detail that must stay outside the DTO";
@@ -262,7 +304,9 @@ test("User Request connector maps only the approved minimal projection", async (
     new RecordingDriver(pool),
   );
 
-  const result = await connector.listLegacyUserRequests(1);
+  const result = await connector.listLegacyUserRequests(1, {
+    system: "Example System",
+  });
   const serialized = JSON.stringify(result);
 
   assert.equal(result.length, 1);
@@ -270,7 +314,10 @@ test("User Request connector maps only the approved minimal projection", async (
   assert.equal(serialized.includes(omittedDetail), false);
   assert.equal(serialized.includes("requestEmail"), false);
   assert.equal(serialized.includes("detail"), false);
-  assert.deepEqual(pool.requestInstance.inputs, [["limit", 1]]);
+  assert.deepEqual(pool.requestInstance.inputs, [
+    ["limit", 1],
+    ["system", "Example System"],
+  ]);
   assert.match(pool.requestInstance.lastQuery ?? "", /^SELECT TOP \(@limit\)/);
 });
 

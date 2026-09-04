@@ -1024,7 +1024,7 @@ p {
 
 .legacy-list__controls {
   display: grid;
-  grid-template-columns: minmax(120px, 160px) minmax(280px, 1fr);
+  grid-template-columns: repeat(5, minmax(120px, 1fr)) auto;
   align-items: end;
   gap: 0.8rem;
   padding: 1rem 1.2rem;
@@ -1033,6 +1033,7 @@ p {
 }
 
 .legacy-list__controls > p {
+  grid-column: 1 / -1;
   align-self: center;
   margin: 0;
   color: var(--muted);
@@ -1398,6 +1399,10 @@ p {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .legacy-list__controls {
+    grid-template-columns: repeat(3, minmax(140px, 1fr));
+  }
+
   .legacy-detail__summary-grid > div,
   .legacy-detail__summary-grid > div:nth-child(4n) {
     border-right: 1px solid #edf1f5;
@@ -1452,6 +1457,10 @@ p {
 
   .legacy-matrix__controls {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .legacy-list__controls {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
   }
 
   .legacy-matrix__controls > p {

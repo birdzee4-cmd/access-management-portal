@@ -45,9 +45,11 @@ Navigation filtering and frontend route guards improve usability only. They do n
 - **Approvals** previews pending items without Approve or Reject actions.
 - **Users** shows synthetic directory rows and makes clear that Microsoft Graph is not connected.
 - **Legacy Requests** retrieves up to 20 or 50 minimized summaries through the
-  authenticated legacy SQL read-only API, supports Refresh, and links an
-  available external request ID to the detail route. It has no search,
-  pagination, polling, or write action.
+  authenticated legacy SQL read-only API, supports Refresh and four
+  allowlisted exact-match filters, and links an available external request ID
+  to the detail route while preserving URL query state. Filter options come
+  from the current bounded response. It has no free-text search, sorting,
+  pagination, polling, authoritative total, or write action.
 - **Legacy User Request detail** uses the authenticated read-only API for one
   Admin-selected numeric identifier and shows independent source observations,
   all bounded VSTS rows, discrepancy/truncation notes, and no write actions.

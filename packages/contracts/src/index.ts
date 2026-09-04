@@ -84,6 +84,13 @@ export interface LegacyUserRequestSummary {
   readonly updatedDateText: string | null;
 }
 
+export interface LegacyUserRequestFilters {
+  readonly system?: string;
+  readonly country?: string;
+  readonly vstsStatus?: string;
+  readonly department?: string;
+}
+
 export interface LegacyUserRequestListResponse {
   readonly rowsRead: number;
   readonly limit: number;

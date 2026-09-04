@@ -4,7 +4,7 @@ import type {
   LegacyUserRequestDetail,
 } from "@access-portal/contracts";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { AuthApiError } from "../auth/authApi.js";
 import type { PortalRole } from "../auth/types.js";
@@ -44,6 +44,10 @@ export function normalizeLegacyRequestRouteId(
   const numeric = BigInt(value);
   if (numeric < 1n || numeric > MAX_SQL_INT) return null;
   return numeric.toString();
+}
+
+export function legacyRequestListBackPath(search: string): string {
+  return "/legacy-requests" + (search.startsWith("?") ? search : "");
 }
 
 export async function loadLegacyUserRequestDetailForRoles(
@@ -428,6 +432,7 @@ export function LegacyUserRequestDetailPage({
   readonly api: LegacyUserRequestDetailApi;
 }) {
   const { idSharepoint } = useParams<{ idSharepoint: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<LegacyUserRequestDetailViewState>({
@@ -469,7 +474,7 @@ export function LegacyUserRequestDetailPage({
   return (
     <LegacyUserRequestDetailView
       state={state}
-      onBack={() => navigate("/legacy-requests")}
+      onBack={() => navigate(legacyRequestListBackPath(location.search))}
       onRefresh={() => setAttempt((value) => value + 1)}
     />
   );

@@ -1,4 +1,5 @@
 import type { LegacyProductManagementMatrixRow } from "./types/LegacyProductManagementMatrixRow.js";
+import type { LegacyUserRequestFilters } from "@access-portal/contracts";
 import type { LegacyUserRequestRow } from "./types/LegacyUserRequestRow.js";
 import type {
   LegacyRelatedVstsRows,
@@ -27,6 +28,7 @@ export interface ReadOnlyLegacySqlConnector {
 
   listLegacyUserRequests(
     limit?: number,
+    filters?: LegacyUserRequestFilters,
   ): Promise<readonly LegacyUserRequestRow[]>;
 
   findLegacyUserRequestDetail(
@@ -70,9 +72,13 @@ export { MssqlLegacySqlDriver } from "./MssqlLegacySqlDriver.js";
 export {
   LEGACY_USER_REQUEST_TABLE,
   MAX_LEGACY_USER_REQUEST_ROWS,
+  LegacyUserRequestFilterError,
   LegacyUserRequestRowLimitError,
   buildLegacyUserRequestListQuery,
   enforceLegacyUserRequestRowLimit,
+  legacyUserRequestFilterKeys,
+  normalizeLegacyUserRequestFilters,
+  type LegacyUserRequestFilterKey,
 } from "./query/legacy-user-request.js";
 export {
   LEGACY_USER_REQUEST_DETAIL_LIMIT,

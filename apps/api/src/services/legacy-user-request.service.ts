@@ -4,7 +4,10 @@ import {
   type LegacyUserRequestRow,
   type ReadOnlyLegacySqlConnector,
 } from "@access-portal/connectors";
-import type { LegacyUserRequestSummary } from "@access-portal/contracts";
+import type {
+  LegacyUserRequestFilters,
+  LegacyUserRequestSummary,
+} from "@access-portal/contracts";
 
 export type LegacyUserRequestReader = Pick<
   ReadOnlyLegacySqlConnector,
@@ -44,10 +47,12 @@ export class LegacyUserRequestService {
 
   async listRequests(
     limit = MAX_LEGACY_USER_REQUEST_ROWS,
+    filters: LegacyUserRequestFilters = {},
   ): Promise<readonly LegacyUserRequestSummary[]> {
     const safeLimit = enforceLegacyUserRequestRowLimit(limit);
     const rows = await this.legacySql.listLegacyUserRequests(
       safeLimit,
+      filters,
     );
     if (rows.length > safeLimit) {
       throw new Error("Legacy User Request reader exceeded the requested limit.");

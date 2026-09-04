@@ -83,7 +83,12 @@ test("legacy clients use only authenticated GET requests and bounded inputs", as
     await client.getLegacyMatrixRows("VN_MY_ID", 50);
     await client.getLegacyMatrixSummary("NEW");
     await client.getLegacyUserRequests(20);
-    await client.getLegacyUserRequests(50);
+    await client.getLegacyUserRequests(50, {
+      system: "Example System",
+      country: "Example Country",
+      vstsStatus: "SOURCE_STATE",
+      department: "Example Department",
+    });
     await client.getLegacyUserRequestDetail("42");
 
     assert.deepEqual(
@@ -95,7 +100,7 @@ test("legacy clients use only authenticated GET requests and bounded inputs", as
         "http://localhost:7071/api/legacy/matrix?source=VN_MY_ID&limit=50",
         "http://localhost:7071/api/legacy/matrix/summary?source=NEW",
         "http://localhost:7071/api/legacy/user-requests?limit=20",
-        "http://localhost:7071/api/legacy/user-requests?limit=50",
+        "http://localhost:7071/api/legacy/user-requests?limit=50&system=Example+System&country=Example+Country&vstsStatus=SOURCE_STATE&department=Example+Department",
         "http://localhost:7071/api/legacy/user-requests/42",
       ],
     );

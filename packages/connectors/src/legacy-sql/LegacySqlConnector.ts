@@ -15,6 +15,7 @@ import {
   buildLegacyVstsRelationshipSampleQuery,
 } from "./query/legacy-user-request-vsts.js";
 import { buildLegacyUserRequestListQuery } from "./query/legacy-user-request.js";
+import type { LegacyUserRequestFilters } from "@access-portal/contracts";
 import { buildLegacyProductManagementMatrixQuery } from "./query/product-management-matrix.js";
 import type { LegacyProductManagementMatrixRow } from "./types/LegacyProductManagementMatrixRow.js";
 import type { LegacyUserRequestRow } from "./types/LegacyUserRequestRow.js";
@@ -168,9 +169,10 @@ export class LegacySqlConnector implements ReadOnlyLegacySqlConnector {
 
   async listLegacyUserRequests(
     limit?: number,
+    filters?: LegacyUserRequestFilters,
   ): Promise<readonly LegacyUserRequestRow[]> {
     const rows = await this.executeSelect<Record<string, unknown>>(
-      buildLegacyUserRequestListQuery(limit),
+      buildLegacyUserRequestListQuery(limit, filters),
     );
 
     return rows.map((row) => ({

@@ -3,8 +3,12 @@ import {
   LegacySqlConnectorError,
   LegacySqlReadGuardError,
   LegacyUserRequestRowLimitError,
+  normalizeLegacyUserRequestFilters,
 } from "@access-portal/connectors";
-import type { LegacyUserRequestListResponse } from "@access-portal/contracts";
+import type {
+  LegacyUserRequestFilters,
+  LegacyUserRequestListResponse,
+} from "@access-portal/contracts";
 import type { HttpResponseInit } from "@azure/functions";
 
 import {
@@ -50,6 +54,7 @@ export interface LegacyUserRequestApiDependencies {
 
 type LegacyUserRequestInputErrorCode =
   | "invalid_limit"
+  | "invalid_filter"
   | "unsupported_query_parameter";
 
 export class LegacyUserRequestInputError extends Error {
@@ -64,12 +69,6 @@ export class LegacyUserRequestInputError extends Error {
 export function parseLegacyUserRequestLimit(
   query: LegacyUserRequestQuery,
 ): number {
-  for (const key of query.keys()) {
-    if (key !== "limit") {
-      throw new LegacyUserRequestInputError("unsupported_query_parameter");
-    }
-  }
-
   const values = query.getAll("limit");
   if (values.length === 0) {
     return DEFAULT_LEGACY_USER_REQUEST_ROWS;
@@ -94,6 +93,53 @@ export function parseLegacyUserRequestLimit(
   }
 
   return limit;
+}
+
+const filterQueryKeys = [
+  "system",
+  "country",
+  "vstsStatus",
+  "department",
+] as const;
+
+export interface LegacyUserRequestListInput {
+  readonly limit: number;
+  readonly filters: LegacyUserRequestFilters;
+}
+
+export function parseLegacyUserRequestListQuery(
+  query: LegacyUserRequestQuery,
+): LegacyUserRequestListInput {
+  const allowedKeys = new Set<string>(["limit", ...filterQueryKeys]);
+  for (const key of query.keys()) {
+    if (!allowedKeys.has(key)) {
+      throw new LegacyUserRequestInputError("unsupported_query_parameter");
+    }
+  }
+
+  const candidate: {
+    system?: string;
+    country?: string;
+    vstsStatus?: string;
+    department?: string;
+  } = {};
+  for (const key of filterQueryKeys) {
+    const values = query.getAll(key);
+    if (values.length > 1) {
+      throw new LegacyUserRequestInputError("invalid_filter");
+    }
+    if (values.length === 1) candidate[key] = values[0] ?? "";
+  }
+
+  try {
+    return {
+      limit: parseLegacyUserRequestLimit(query),
+      filters: normalizeLegacyUserRequestFilters(candidate),
+    };
+  } catch (error) {
+    if (error instanceof LegacyUserRequestInputError) throw error;
+    throw new LegacyUserRequestInputError("invalid_filter");
+  }
 }
 
 function headers(includeChallenge = false): Record<string, string> {
@@ -186,6 +232,7 @@ export async function handleLegacyUserRequestList(
   dependencies: LegacyUserRequestApiDependencies,
 ): Promise<HttpResponseInit> {
   let limit: number | undefined;
+  let filterCount = 0;
 
   try {
     const user = await requireAuthenticatedUser(
@@ -193,16 +240,19 @@ export async function handleLegacyUserRequestList(
       dependencies.getAuthenticationService(),
     );
     requireRole(user, "Admin");
-    limit = parseLegacyUserRequestLimit(request.query);
+    const input = parseLegacyUserRequestListQuery(request.query);
+    limit = input.limit;
+    filterCount = Object.keys(input.filters).length;
 
     logger.info("Legacy User Request list authorized.", {
       endpoint: "legacy_user_request_list",
       requestedLimit: limit,
+      filterCount,
     });
 
     const requests = await dependencies
       .getLegacyUserRequestService()
-      .listRequests(limit);
+      .listRequests(limit, input.filters);
     const body: LegacyUserRequestListResponse = {
       rowsRead: requests.length,
       limit,
@@ -213,6 +263,7 @@ export async function handleLegacyUserRequestList(
       endpoint: "legacy_user_request_list",
       requestedLimit: limit,
       rowsRead: requests.length,
+      filterCount,
     });
 
     return {
@@ -224,6 +275,7 @@ export async function handleLegacyUserRequestList(
     logger.warn("Legacy User Request list failed.", {
       endpoint: "legacy_user_request_list",
       ...(limit ? { requestedLimit: limit } : {}),
+      filterCount,
       errorCode: safeErrorCode(error),
     });
     return errorResponse(error);
