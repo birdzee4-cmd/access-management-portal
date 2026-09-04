@@ -9,8 +9,10 @@ export {
   type LegacyMatrixLogger,
   type LegacyMatrixQuery,
   type LegacyMatrixRequest,
-  type LegacyMatrixRowsResponse,
-  type LegacyMatrixRowDto,
-  type LegacyMatrixSummaryResponse,
 } from "./legacy-matrix-api.js";
+export type {
+  LegacyMatrixRow as LegacyMatrixRowDto,
+  LegacyMatrixRowsResponse,
+  LegacyMatrixSummaryResponse,
+} from "@access-portal/contracts";
 export { getRuntimeLegacyCatalogService } from "./runtime.js";

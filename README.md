@@ -68,7 +68,9 @@ Tasks 07B and 07C validate the connector through a controlled health check and c
 
 Task 07D refines only the new-portal data model: access catalog, typed contexts, versioned approval rules with multiple approver candidates, and source-aware legacy mapping remain separate. It performs no migration, import, production query, or integration activation.
 
-Task 07E adds backend-only Admin-protected legacy matrix rows and summary routes. Inputs are allowlisted and bounded, manager values are masked, and all access continues through the SELECT-only connector. The Web UI remains disconnected.
+Task 07E adds backend-only Admin-protected legacy matrix rows and summary routes. Inputs are allowlisted and bounded, manager values are masked, and all access continues through the SELECT-only connector.
+
+Task 07F connects the Access Catalog page to those protected read routes for Admin users only. It adds source selection, bounded 20/50-row views, sampled summary metrics, and sanitized loading/error/empty states. Non-Admin users do not trigger matrix requests, while the API remains the authorization source of truth.
 
 ## Validation
 

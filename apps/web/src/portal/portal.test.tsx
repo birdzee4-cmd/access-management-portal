@@ -8,6 +8,14 @@ import type { PortalRole } from "../auth/types.js";
 import { LoginPage, PortalView } from "./PortalApplication.js";
 
 const noOperation = async () => undefined;
+const portalApi = {
+  getLegacyMatrixRows: async () => {
+    throw new Error("Not called during server rendering.");
+  },
+  getLegacyMatrixSummary: async () => {
+    throw new Error("Not called during server rendering.");
+  },
+};
 
 function identity(roles: readonly PortalRole[]): AuthenticatedIdentityResponse {
   return {
@@ -21,7 +29,11 @@ function identity(roles: readonly PortalRole[]): AuthenticatedIdentityResponse {
 function renderPortal(path: string, roles: readonly PortalRole[]): string {
   return renderToStaticMarkup(
     <MemoryRouter initialEntries={[path]}>
-      <PortalView identity={identity(roles)} onSignOut={noOperation} />
+      <PortalView
+        identity={identity(roles)}
+        onSignOut={noOperation}
+        api={portalApi}
+      />
     </MemoryRouter>,
   );
 }
@@ -111,4 +123,12 @@ test("direct navigation to a restricted route shows the access-denied state", ()
 
   assert.match(html, /Page not available/);
   assert.doesNotMatch(html, /Production Safety Boundary enforced/);
+});
+
+test("non-Admin catalog view explains the Legacy Matrix restriction", () => {
+  const html = renderPortal("/catalog", ["Viewer"]);
+
+  assert.match(html, /Legacy Role Matrix/);
+  assert.match(html, /Administrator access is required/);
+  assert.doesNotMatch(html, /Legacy matrix source/);
 });

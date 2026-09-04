@@ -1,13 +1,16 @@
 import type {
   AdminTestResponse,
   AuthenticatedIdentityResponse,
+  LegacyMatrixRowsResponse,
+  LegacyMatrixSource,
+  LegacyMatrixSummaryResponse,
 } from "@access-portal/contracts";
 
 export type AccessTokenProvider = () => Promise<string>;
 
 export class AuthApiError extends Error {
   constructor(readonly status: number) {
-    super("Authentication test request failed with status " + status + ".");
+    super("Portal API request failed with status " + status + ".");
     this.name = "AuthApiError";
   }
 }
@@ -43,6 +46,21 @@ export class AuthApiClient {
 
   getAdminTest(): Promise<AdminTestResponse> {
     return this.get("/auth/admin-test");
+  }
+
+  getLegacyMatrixRows(
+    source: LegacyMatrixSource,
+    limit: 20 | 50,
+  ): Promise<LegacyMatrixRowsResponse> {
+    const query = new URLSearchParams({ source, limit: String(limit) });
+    return this.get("/legacy/matrix?" + query.toString());
+  }
+
+  getLegacyMatrixSummary(
+    source: LegacyMatrixSource,
+  ): Promise<LegacyMatrixSummaryResponse> {
+    const query = new URLSearchParams({ source });
+    return this.get("/legacy/matrix/summary?" + query.toString());
   }
 
   private async get<T>(path: string): Promise<T> {

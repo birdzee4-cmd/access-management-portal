@@ -14,6 +14,56 @@ export interface AdminTestResponse extends AuthenticatedIdentityResponse {
   readonly authorizedRole: "Admin";
 }
 
+export const legacyMatrixSources = ["NEW", "TH", "PH", "VN_MY_ID"] as const;
+export type LegacyMatrixSource = (typeof legacyMatrixSources)[number];
+
+export interface LegacyMatrixRow {
+  readonly roleName: string | null;
+  readonly department: string | null;
+  readonly managerMasked: string | null;
+  readonly active: string | null;
+}
+
+export interface LegacyMatrixRowsResponse {
+  readonly source: LegacyMatrixSource;
+  readonly rowsRead: number;
+  readonly limit: number;
+  readonly rows: readonly LegacyMatrixRow[];
+}
+
+export interface LegacyMatrixFieldQuality {
+  readonly nullCount: number;
+  readonly blankCount: number;
+  readonly trailingWhitespaceCount: number;
+  readonly inconsistentCapitalizationGroups: number;
+}
+
+export interface LegacyMatrixActivePattern {
+  readonly value: string | null;
+  readonly count: number;
+}
+
+export interface LegacyMatrixSummaryResponse {
+  readonly source: LegacyMatrixSource;
+  readonly sampleSize: number;
+  readonly sampleLimit: number;
+  readonly sampleDistinctRoleCount: number;
+  readonly sampleDistinctDepartmentCount: number;
+  readonly sampleDistinctManagerCount: number;
+  readonly activePatterns: readonly LegacyMatrixActivePattern[];
+  readonly quality: Readonly<
+    Record<
+      "roleName" | "manager" | "department" | "active",
+      LegacyMatrixFieldQuality
+    >
+  >;
+  readonly normalizedDuplicateRows: number;
+  readonly normalizedDuplicateGroups: number;
+  readonly roleNamesWithMultipleManagers: number;
+  readonly roleNamesWithMultipleDepartments: number;
+  readonly departmentRolePairsWithMultipleManagers: number;
+}
+
 export interface PilotStatus {
   projectName: "Access Management Portal";
   phase: "LOCAL_SKELETON";

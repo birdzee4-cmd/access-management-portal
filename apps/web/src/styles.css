@@ -740,6 +740,78 @@ p {
   font-size: 0.75rem;
 }
 
+.catalog-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.legacy-matrix__controls {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) minmax(120px, 160px) minmax(280px, 1fr);
+  align-items: end;
+  gap: 0.8rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid #e7ecf2;
+  background: #fbfcfd;
+}
+
+.legacy-matrix__controls > p {
+  align-self: center;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.legacy-matrix__body {
+  min-width: 0;
+}
+
+.legacy-matrix__message {
+  margin: 1rem 1.2rem;
+}
+
+.legacy-matrix__summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  border-bottom: 1px solid #e7ecf2;
+}
+
+.legacy-matrix__summary > div {
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.2rem;
+  border-right: 1px solid #edf1f5;
+}
+
+.legacy-matrix__summary > div:last-child {
+  border-right: 0;
+}
+
+.legacy-matrix__summary span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.legacy-matrix__summary strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 1.15rem;
+  text-overflow: ellipsis;
+}
+
+.legacy-matrix__sample-note {
+  padding: 0.8rem 1.2rem;
+  margin: 0;
+  border-bottom: 1px solid #edf1f5;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
 .data-table-wrap {
   max-width: 100%;
   overflow-x: auto;
@@ -1013,6 +1085,14 @@ p {
   .dashboard-grid__wide {
     grid-column: auto;
   }
+
+  .legacy-matrix__summary {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+  }
+
+  .legacy-matrix__summary > div {
+    border-bottom: 1px solid #edf1f5;
+  }
 }
 
 @media (max-width: 920px) {
@@ -1050,6 +1130,14 @@ p {
 
   .filters {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .legacy-matrix__controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .legacy-matrix__controls > p {
+    grid-column: 1 / -1;
   }
 
   .field--search {
@@ -1152,6 +1240,19 @@ p {
 
   .filters {
     grid-template-columns: 1fr;
+  }
+
+  .legacy-matrix__controls,
+  .legacy-matrix__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .legacy-matrix__controls > p {
+    grid-column: auto;
+  }
+
+  .legacy-matrix__summary > div {
+    border-right: 0;
   }
 
   .field--search {

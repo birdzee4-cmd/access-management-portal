@@ -8,6 +8,11 @@ import {
   matrixSources,
   type MatrixSource,
 } from "@access-portal/connectors";
+import type {
+  LegacyMatrixRow,
+  LegacyMatrixRowsResponse,
+  LegacyMatrixSummaryResponse,
+} from "@access-portal/contracts";
 import type { HttpResponseInit } from "@azure/functions";
 
 import {
@@ -23,7 +28,6 @@ import {
   maskLegacyManager,
   normalizeLegacyMatrixValue,
   type LegacyCatalogService,
-  type LegacyMatrixFieldQuality,
   type LegacyMatrixSummary,
 } from "../services/index.js";
 
@@ -58,41 +62,6 @@ export interface LegacyMatrixLogger {
 export interface LegacyMatrixApiDependencies {
   readonly getAuthenticationService: () => AuthenticationService;
   readonly getLegacyCatalogService: () => MatrixCatalogService;
-}
-
-export interface LegacyMatrixRowDto {
-  readonly roleName: string | null;
-  readonly department: string | null;
-  readonly managerMasked: string | null;
-  readonly active: string | null;
-}
-
-export interface LegacyMatrixRowsResponse {
-  readonly source: MatrixSource;
-  readonly rowsRead: number;
-  readonly limit: number;
-  readonly rows: readonly LegacyMatrixRowDto[];
-}
-
-export interface LegacyMatrixSummaryResponse {
-  readonly source: MatrixSource;
-  readonly sampleSize: number;
-  readonly sampleLimit: number;
-  readonly sampleDistinctRoleCount: number;
-  readonly sampleDistinctDepartmentCount: number;
-  readonly sampleDistinctManagerCount: number;
-  readonly activePatterns: LegacyMatrixSummary["activeValuePatterns"];
-  readonly quality: Readonly<
-    Record<
-      "roleName" | "manager" | "department" | "active",
-      LegacyMatrixFieldQuality
-    >
-  >;
-  readonly normalizedDuplicateRows: number;
-  readonly normalizedDuplicateGroups: number;
-  readonly roleNamesWithMultipleManagers: number;
-  readonly roleNamesWithMultipleDepartments: number;
-  readonly departmentRolePairsWithMultipleManagers: number;
 }
 
 type LegacyMatrixInputErrorCode =
@@ -187,7 +156,7 @@ function sanitizeRow(row: {
   readonly manager: string | null;
   readonly department: string | null;
   readonly active: string | null;
-}): LegacyMatrixRowDto {
+}): LegacyMatrixRow {
   return {
     roleName: normalizeLegacyMatrixValue(row.roleName),
     department: normalizeLegacyMatrixValue(row.department),

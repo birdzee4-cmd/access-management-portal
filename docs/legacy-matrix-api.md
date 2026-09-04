@@ -2,7 +2,7 @@
 
 ## Scope
 
-Task 07E exposes two backend-only Azure Functions routes for controlled, bounded reads of the four approved Product Management matrix sources. It does not connect the Web UI, import data, persist an audit record, run a migration, or enable any write/provisioning/automation capability.
+Task 07E exposes two Azure Functions routes for controlled, bounded reads of the four approved Product Management matrix sources. Task 07F consumes those routes from the Access Catalog UI without importing data, persisting an audit record, running a migration, or enabling any write/provisioning/automation capability.
 
 The Azure Functions routes use `authLevel: anonymous` only because Microsoft Entra bearer-token validation and role authorization are implemented inside the API. The handlers independently require a valid access token and the `Admin` application role.
 
@@ -74,6 +74,19 @@ The response deliberately uses sample terminology:
 - `Viewer` and `Approver` alone are not sufficient.
 - UI visibility is irrelevant; authorization is enforced by the backend.
 - The existing Entra issuer, audience, signature, lifetime, tenant, and `access_as_user` validation is reused. No second authentication mechanism is introduced.
+
+## Access Catalog Web integration
+
+The Access Catalog contains a `Legacy Role Matrix` section with an explicit `READ ONLY` badge. Admin users can select `NEW`, `TH`, `PH`, or `VN_MY_ID` and request either 20 or 50 rows. The Web calls only:
+
+- `GET /api/legacy/matrix?source=<SOURCE>&limit=<LIMIT>`;
+- `GET /api/legacy/matrix/summary?source=<SOURCE>`.
+
+The existing MSAL access-token provider and Portal API client are reused. The client displays only response fields defined by the shared contract, including `managerMasked`; it does not unmask managers or perform Graph/identity lookups.
+
+For `Viewer`, `Approver`, or other non-Admin role sets, the section displays an access-required message and does not call either endpoint. This UI check reduces unnecessary requests but is not a security boundary. Both API routes continue to validate the bearer token and require `Admin`.
+
+Loading, empty, unauthenticated, forbidden, unavailable, and success states use fixed user-facing text. Raw backend errors, SQL details, stack traces, tokens, and credentials are never rendered.
 
 ## Safe errors and logs
 

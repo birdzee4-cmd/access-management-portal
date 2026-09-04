@@ -40,15 +40,22 @@ function RoleRoute({
 export interface PortalViewProps {
   readonly identity: AuthenticatedIdentityResponse;
   readonly onSignOut: () => Promise<void>;
+  readonly api: Pick<
+    AuthApiClient,
+    "getLegacyMatrixRows" | "getLegacyMatrixSummary"
+  >;
 }
 
-export function PortalView({ identity, onSignOut }: PortalViewProps) {
+export function PortalView({ identity, onSignOut, api }: PortalViewProps) {
   return (
     <AppShell identity={identity} onSignOut={onSignOut}>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/requests" element={<MyRequestsPage />} />
-        <Route path="/catalog" element={<AccessCatalogPage />} />
+        <Route
+          path="/catalog"
+          element={<AccessCatalogPage roles={identity.roles} api={api} />}
+        />
         <Route
           path="/approvals"
           element={
@@ -254,7 +261,7 @@ function AuthenticatedPortal({ auth }: { readonly auth: AuthContextValue }) {
     );
   }
 
-  return <PortalView identity={identity} onSignOut={auth.logout} />;
+  return <PortalView identity={identity} onSignOut={auth.logout} api={api} />;
 }
 
 export function PortalApplication() {

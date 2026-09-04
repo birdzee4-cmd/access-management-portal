@@ -56,6 +56,8 @@ Task 07A adds those safeguards for the inactive legacy SQL foundation: every que
 
 Task 07E exposes only two Admin-protected matrix read routes. Authentication and role authorization run before source/limit validation and lazy connector construction. Unknown query parameters are rejected, manager values are masked, responses and logs omit raw rows/identities/credentials, and automated tests inject fakes rather than contacting SQL. See [Admin-only Legacy Matrix Read API](legacy-matrix-api.md).
 
+Task 07F exposes those bounded results in the Web Access Catalog. Non-Admin users do not initiate matrix requests, but this is only a UX control; the API remains the authorization source of truth. The UI consumes `managerMasked` without identity resolution and displays fixed, sanitized error states.
+
 ## Logging and privacy
 
 Future logs must avoid access tokens, secrets, connection strings, full request payloads, and unnecessary employee data. Audit events should capture actor, action, target, decision, correlation ID, and timestamp, with an approved retention period.
