@@ -3,6 +3,13 @@ import type { LegacySqlConfig, LegacySqlEnvironment } from "./LegacySqlConfig.js
 import { readLegacySqlConfig } from "./LegacySqlConfig.js";
 import { assertLegacySqlReadOnlyQuery } from "./LegacySqlReadGuard.js";
 import { MssqlLegacySqlDriver } from "./MssqlLegacySqlDriver.js";
+import { analyzeLegacyUserRequestVstsRows } from "./LegacyUserRequestVstsAnalysis.js";
+import {
+  buildLegacyUserRequestRelationshipSampleQuery,
+  buildLegacyUserRequestVstsColumnsQuery,
+  buildLegacyUserRequestVstsIndexesQuery,
+  buildLegacyVstsRelationshipSampleQuery,
+} from "./query/legacy-user-request-vsts.js";
 import { buildLegacyUserRequestListQuery } from "./query/legacy-user-request.js";
 import { buildLegacyProductManagementMatrixQuery } from "./query/product-management-matrix.js";
 import type { LegacyProductManagementMatrixRow } from "./types/LegacyProductManagementMatrixRow.js";
@@ -11,6 +18,10 @@ import type {
   LegacySqlDriver,
   LegacySqlPool,
   LegacySqlQuery,
+  LegacyRelationshipSampleRow,
+  LegacyRelationshipSummary,
+  LegacySchemaColumn,
+  LegacyUniqueIndexColumn,
   MatrixSource,
 } from "./types/index.js";
 
@@ -41,6 +52,31 @@ function nullableString(value: unknown): string | null {
   }
 
   return String(value);
+}
+
+function numberValue(value: unknown): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function booleanValue(value: unknown): boolean {
+  return value === true || value === 1;
+}
+
+function relationshipSampleRow(
+  row: Record<string, unknown>,
+): LegacyRelationshipSampleRow {
+  return {
+    idSharepoint:
+      typeof row.idSharepoint === "number"
+        ? row.idSharepoint
+        : nullableString(row.idSharepoint),
+    workId:
+      typeof row.workId === "number" ? row.workId : nullableString(row.workId),
+    systemProgram: nullableString(row.systemProgram),
+    permission: nullableString(row.permission),
+    status: nullableString(row.status),
+  };
 }
 
 export class LegacySqlConnector implements ReadOnlyLegacySqlConnector {
@@ -144,6 +180,56 @@ export class LegacySqlConnector implements ReadOnlyLegacySqlConnector {
       createdDateText: nullableString(row.createdDateText),
       updatedDateText: nullableString(row.updatedDateText),
     }));
+  }
+
+  async describeLegacyUserRequestVstsSchema(): Promise<{
+    readonly columns: readonly LegacySchemaColumn[];
+    readonly indexes: readonly LegacyUniqueIndexColumn[];
+  }> {
+    const columnRows = await this.executeSelect<Record<string, unknown>>(
+      buildLegacyUserRequestVstsColumnsQuery(),
+    );
+    const indexRows = await this.executeSelect<Record<string, unknown>>(
+      buildLegacyUserRequestVstsIndexesQuery(),
+    );
+
+    return {
+      columns: columnRows.map((row) => ({
+        tableName: String(row.tableName),
+        ordinalPosition: numberValue(row.ordinalPosition),
+        columnName: String(row.columnName),
+        dataType: String(row.dataType),
+        maxLength: row.maxLength === null ? null : numberValue(row.maxLength),
+        isNullable: String(row.isNullable).toUpperCase() === "YES",
+      })),
+      indexes: indexRows.map((row) => ({
+        tableName: String(row.tableName),
+        indexName: String(row.indexName),
+        isPrimaryKey: booleanValue(row.isPrimaryKey),
+        isUnique: booleanValue(row.isUnique),
+        keyOrdinal: numberValue(row.keyOrdinal),
+        columnName: String(row.columnName),
+      })),
+    };
+  }
+
+  async analyzeLegacyUserRequestVstsRelationship(
+    limit?: number,
+  ): Promise<LegacyRelationshipSummary> {
+    const sharePointRows = (
+      await this.executeSelect<Record<string, unknown>>(
+        buildLegacyUserRequestRelationshipSampleQuery(limit),
+      )
+    ).map(relationshipSampleRow);
+    const vstsRows = (
+      await this.executeSelect<Record<string, unknown>>(
+        buildLegacyVstsRelationshipSampleQuery(
+          sharePointRows.map((row) => row.workId),
+          limit,
+        ),
+      )
+    ).map(relationshipSampleRow);
+    return analyzeLegacyUserRequestVstsRows(sharePointRows, vstsRows);
   }
 
   async healthCheck(): Promise<boolean> {

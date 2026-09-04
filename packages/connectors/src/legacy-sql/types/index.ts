@@ -1,5 +1,13 @@
 import type { LegacySqlConfig } from "../LegacySqlConfig.js";
 
+export type {
+  LegacyRelationshipClassification,
+  LegacyRelationshipSampleRow,
+  LegacyRelationshipSummary,
+  LegacySchemaColumn,
+  LegacyUniqueIndexColumn,
+} from "./LegacyUserRequestVstsRelationship.js";
+
 export const matrixSources = ["NEW", "TH", "PH", "VN_MY_ID"] as const;
 export type MatrixSource = (typeof matrixSources)[number];
 

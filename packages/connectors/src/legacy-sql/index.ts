@@ -1,6 +1,12 @@
 import type { LegacyProductManagementMatrixRow } from "./types/LegacyProductManagementMatrixRow.js";
 import type { LegacyUserRequestRow } from "./types/LegacyUserRequestRow.js";
-import type { LegacySqlQuery, MatrixSource } from "./types/index.js";
+import type {
+  LegacyRelationshipSummary,
+  LegacySchemaColumn,
+  LegacySqlQuery,
+  LegacyUniqueIndexColumn,
+  MatrixSource,
+} from "./types/index.js";
 
 /** Query-only contract for the isolated legacy SQL integration. */
 export interface ReadOnlyLegacySqlConnector {
@@ -18,6 +24,15 @@ export interface ReadOnlyLegacySqlConnector {
   listLegacyUserRequests(
     limit?: number,
   ): Promise<readonly LegacyUserRequestRow[]>;
+
+  describeLegacyUserRequestVstsSchema(): Promise<{
+    readonly columns: readonly LegacySchemaColumn[];
+    readonly indexes: readonly LegacyUniqueIndexColumn[];
+  }>;
+
+  analyzeLegacyUserRequestVstsRelationship(
+    limit?: number,
+  ): Promise<LegacyRelationshipSummary>;
 
   healthCheck(): Promise<boolean>;
 
@@ -47,6 +62,18 @@ export {
   enforceLegacyUserRequestRowLimit,
 } from "./query/legacy-user-request.js";
 export {
+  LEGACY_RELATIONSHIP_SAMPLE_LIMIT,
+  LEGACY_VSTS_TABLE,
+  LegacyRelationshipSampleLimitError,
+  buildLegacyUserRequestRelationshipSampleQuery,
+  buildLegacyUserRequestVstsColumnsQuery,
+  buildLegacyUserRequestVstsIndexesQuery,
+  buildLegacyVstsRelationshipSampleQuery,
+  enforceLegacyRelationshipSampleLimit,
+  normalizeLegacyWorkId,
+} from "./query/legacy-user-request-vsts.js";
+export { analyzeLegacyUserRequestVstsRows } from "./LegacyUserRequestVstsAnalysis.js";
+export {
   LegacySqlRowLimitError,
   LegacySqlTableNotAllowedError,
   MAX_LEGACY_MATRIX_ROWS,
@@ -57,6 +84,13 @@ export {
 } from "./query/product-management-matrix.js";
 export type { LegacyProductManagementMatrixRow } from "./types/LegacyProductManagementMatrixRow.js";
 export type { LegacyUserRequestRow } from "./types/LegacyUserRequestRow.js";
+export type {
+  LegacyRelationshipClassification,
+  LegacyRelationshipSampleRow,
+  LegacyRelationshipSummary,
+  LegacySchemaColumn,
+  LegacyUniqueIndexColumn,
+} from "./types/LegacyUserRequestVstsRelationship.js";
 export type {
   LegacySqlDriver,
   LegacySqlParameter,
