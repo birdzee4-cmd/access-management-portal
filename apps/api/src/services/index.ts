@@ -7,6 +7,11 @@ export {
   type LegacyCatalogReader,
 } from "./legacy-catalog.service.js";
 export {
+  LegacyUserRequestService,
+  normalizeLegacyUserRequest,
+  type LegacyUserRequestReader,
+} from "./legacy-user-request.service.js";
+export {
   analyzeLegacyMatrixRows,
   analyzeLegacyMatrixSources,
   maskLegacyManager,

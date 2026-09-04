@@ -39,7 +39,9 @@ Task 06 adds a responsive authenticated shell with React routing, reusable page/
 
 An Azure Functions TypeScript application using the v4 programming model. Its anonymous health endpoint has no dependency on authentication, a database, a cloud resource, or a legacy system. Task 05B wires injectable bearer-token validation to `/api/auth/me` and the Admin-only `/api/auth/admin-test`. These return safe identity test data only and are not business endpoints.
 
-Task 07E adds backend-only `GET /api/legacy/matrix` and `GET /api/legacy/matrix/summary`. Both reuse the Entra validator, require `Admin`, validate the fixed source allowlist and bounded limit before constructing the lazy legacy service, mask manager values, and return safe errors. No Web UI route consumes them.
+Task 07E adds `GET /api/legacy/matrix` and `GET /api/legacy/matrix/summary`. Both reuse the Entra validator, require `Admin`, validate the fixed source allowlist and bounded limit before constructing the lazy legacy service, mask manager values, and return safe errors. Task 07F consumes them from an Admin-only Access Catalog section.
+
+Task 07G adds backend-only `GET /api/legacy/user-requests`. It reuses the same guarded connector and Admin authorization, reads a fixed minimal projection from the legacy User Request SQL table, and returns normalized bounded summaries without person, free-text, or infrastructure fields. It does not add a UI, detail lookup, persistence, migration, or production feedback path.
 
 ### `packages/contracts`
 

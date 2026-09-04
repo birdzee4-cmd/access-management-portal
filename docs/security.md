@@ -58,6 +58,8 @@ Task 07E exposes only two Admin-protected matrix read routes. Authentication and
 
 Task 07F exposes those bounded results in the Web Access Catalog. Non-Admin users do not initiate matrix requests, but this is only a UX control; the API remains the authorization source of truth. The UI consumes `managerMasked` without identity resolution and displays fixed, sanitized error states.
 
+Task 07G adds an Admin-only legacy User Request list route. Its SQL projection never selects requester email, creator, manager, assignee, free-text detail, or infrastructure identifiers. The API returns a bounded normalized DTO, rejects all filters except a 1-50 row limit, and keeps VSTS `Work_ID` as a passive reference only. No UI or Portal-database persistence is added.
+
 ## Logging and privacy
 
 Future logs must avoid access tokens, secrets, connection strings, full request payloads, and unnecessary employee data. Audit events should capture actor, action, target, decision, correlation ID, and timestamp, with an approved retention period.

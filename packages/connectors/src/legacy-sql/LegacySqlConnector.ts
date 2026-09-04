@@ -3,8 +3,10 @@ import type { LegacySqlConfig, LegacySqlEnvironment } from "./LegacySqlConfig.js
 import { readLegacySqlConfig } from "./LegacySqlConfig.js";
 import { assertLegacySqlReadOnlyQuery } from "./LegacySqlReadGuard.js";
 import { MssqlLegacySqlDriver } from "./MssqlLegacySqlDriver.js";
+import { buildLegacyUserRequestListQuery } from "./query/legacy-user-request.js";
 import { buildLegacyProductManagementMatrixQuery } from "./query/product-management-matrix.js";
 import type { LegacyProductManagementMatrixRow } from "./types/LegacyProductManagementMatrixRow.js";
+import type { LegacyUserRequestRow } from "./types/LegacyUserRequestRow.js";
 import type {
   LegacySqlDriver,
   LegacySqlPool,
@@ -117,6 +119,30 @@ export class LegacySqlConnector implements ReadOnlyLegacySqlConnector {
       manager: nullableString(row.manager),
       department: nullableString(row.department),
       active: nullableString(row.active),
+    }));
+  }
+
+  async listLegacyUserRequests(
+    limit?: number,
+  ): Promise<readonly LegacyUserRequestRow[]> {
+    const rows = await this.executeSelect<Record<string, unknown>>(
+      buildLegacyUserRequestListQuery(limit),
+    );
+
+    return rows.map((row) => ({
+      externalRequestId: nullableString(row.externalRequestId),
+      workItemId: nullableString(row.workItemId),
+      company: nullableString(row.company),
+      department: nullableString(row.department),
+      country: nullableString(row.country),
+      system: nullableString(row.system),
+      permission: nullableString(row.permission),
+      lineManagerApprovalStatus: nullableString(row.lineManagerApprovalStatus),
+      ceoApprovalStatus: nullableString(row.ceoApprovalStatus),
+      itManagerApprovalStatus: nullableString(row.itManagerApprovalStatus),
+      vstsStatus: nullableString(row.vstsStatus),
+      createdDateText: nullableString(row.createdDateText),
+      updatedDateText: nullableString(row.updatedDateText),
     }));
   }
 

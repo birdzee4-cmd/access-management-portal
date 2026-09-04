@@ -2,7 +2,7 @@
 
 ## Purpose and current scope
 
-Task 07A created the read-only integration boundary, Task 07B performed a controlled health check, Task 07C performed capped discovery, and Task 07E exposes an authenticated Admin-only API for bounded, sanitized reads. None of these tasks authorizes a legacy write, data import, portal migration, UI integration, or production-system change.
+Task 07A created the read-only integration boundary, Task 07B performed a controlled health check, Task 07C performed capped discovery, Task 07E exposes an authenticated Admin-only matrix API, and Task 07G adds a backend-only Admin API for a minimized legacy User Request projection. None of these tasks authorizes a legacy write, data import, portal migration, or production-system change.
 
 The existing Power Apps, SharePoint, Power Automate, Azure DevOps / VSTS, and Azure SQL workflow remains unchanged. The required safety controls remain:
 
@@ -152,6 +152,8 @@ Task 07E adds:
 Both routes require a valid Entra access token plus the `Admin` role. They accept only `NEW`, `TH`, `PH`, and `VN_MY_ID`, reject unrecognized query parameters, trim returned source strings, mask manager values, use sample terminology, and return sanitized errors/logs. See [Admin-only Legacy Matrix Read API](legacy-matrix-api.md).
 
 Normal `npm test` never connects to production.
+
+Task 07G also uses the same lazy connector for `GET /api/legacy/user-requests`. Its fixed query selects only 13 approved columns from `[dbo].[All_SharepointUserRequest]`, binds `TOP (@limit)`, and omits person, free-text, and infrastructure columns at the SQL projection. Metadata discovery read no business rows and found no primary/unique key, so no detail endpoint was created. See [Legacy User Request Read Integration](legacy-user-request-analysis.md).
 
 ## Future production operating requirements
 

@@ -72,6 +72,8 @@ Task 07E adds backend-only Admin-protected legacy matrix rows and summary routes
 
 Task 07F connects the Access Catalog page to those protected read routes for Admin users only. It adds source selection, bounded 20/50-row views, sampled summary metrics, and sanitized loading/error/empty states. Non-Admin users do not trigger matrix requests, while the API remains the authorization source of truth.
 
+Task 07G adds a backend-only, Admin-protected `GET /api/legacy/user-requests` endpoint. It uses a fixed, explicit 13-column projection from `dbo.All_SharepointUserRequest`, a parameterized 1-50 row bound, and a normalized DTO that omits person, free-text, and infrastructure columns. No Web UI, detail endpoint, import, migration, or production write is included.
+
 ## Validation
 
 ```bash
@@ -96,6 +98,7 @@ npm run prisma:validate
 - [Legacy role matrix discovery](docs/legacy-role-matrix-analysis.md)
 - [Access catalog and approval-rule model](docs/access-catalog-data-model.md)
 - [Admin-only legacy matrix API](docs/legacy-matrix-api.md)
+- [Legacy User Request read integration](docs/legacy-user-request-analysis.md)
 
 ## Current non-goals
 

@@ -10,9 +10,22 @@ export {
   type LegacyMatrixQuery,
   type LegacyMatrixRequest,
 } from "./legacy-matrix-api.js";
+export {
+  DEFAULT_LEGACY_USER_REQUEST_ROWS,
+  LegacyUserRequestInputError,
+  handleLegacyUserRequestList,
+  parseLegacyUserRequestLimit,
+  type LegacyUserRequestApiDependencies,
+  type LegacyUserRequestLogger,
+  type LegacyUserRequestQuery,
+  type LegacyUserRequestRequest,
+} from "./legacy-user-request-api.js";
 export type {
   LegacyMatrixRow as LegacyMatrixRowDto,
   LegacyMatrixRowsResponse,
   LegacyMatrixSummaryResponse,
 } from "@access-portal/contracts";
-export { getRuntimeLegacyCatalogService } from "./runtime.js";
+export {
+  getRuntimeLegacyCatalogService,
+  getRuntimeLegacyUserRequestService,
+} from "./runtime.js";

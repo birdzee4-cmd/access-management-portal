@@ -64,6 +64,32 @@ export interface LegacyMatrixSummaryResponse {
   readonly departmentRolePairsWithMultipleManagers: number;
 }
 
+export interface LegacyUserRequestSummary {
+  readonly externalRequestId: string | null;
+  readonly workItemId: string | null;
+  readonly company: string | null;
+  readonly department: string | null;
+  readonly country: string | null;
+  readonly system: string | null;
+  readonly permission: string | null;
+  readonly lineManagerApprovalStatus: string | null;
+  readonly ceoApprovalStatus: string | null;
+  readonly itManagerApprovalStatus: string | null;
+  readonly vstsStatus: string | null;
+  /**
+   * Trimmed source text. The legacy column is varchar and is not guaranteed to
+   * be ISO 8601 until its value vocabulary is separately validated.
+   */
+  readonly createdDateText: string | null;
+  readonly updatedDateText: string | null;
+}
+
+export interface LegacyUserRequestListResponse {
+  readonly rowsRead: number;
+  readonly limit: number;
+  readonly requests: readonly LegacyUserRequestSummary[];
+}
+
 export interface PilotStatus {
   projectName: "Access Management Portal";
   phase: "LOCAL_SKELETON";

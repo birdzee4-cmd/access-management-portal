@@ -8,7 +8,10 @@ import {
   LegacySqlReadGuardError,
   LegacySqlRowLimitError,
   LegacySqlTableNotAllowedError,
+  LegacyUserRequestRowLimitError,
+  LEGACY_USER_REQUEST_TABLE,
   assertLegacySqlReadOnlyQuery,
+  buildLegacyUserRequestListQuery,
   buildLegacyProductManagementMatrixQuery,
   getLegacyProductManagementMatrixTable,
   readLegacySqlConfig,
@@ -209,6 +212,92 @@ test("matrix row mapping tolerates nulls and uses the capped query", async () =>
   ]);
   assert.match(pool.requestInstance.lastQuery ?? "", /^SELECT TOP \(@limit\)/);
   assert.deepEqual(pool.requestInstance.inputs, [["limit", 50]]);
+});
+
+test("User Request list query is fixed, explicit, SELECT-only, and bounded", () => {
+  const query = buildLegacyUserRequestListQuery(20);
+
+  assert.match(query.text, /^SELECT TOP \(@limit\)/);
+  assert.match(query.text, new RegExp("FROM " + LEGACY_USER_REQUEST_TABLE.replace(/[\[\]]/g, "\\$&") + "$"));
+  assert.equal(/SELECT\s+\*/i.test(query.text), false);
+  assert.equal(query.text.includes("[RequestEmail]"), false);
+  assert.equal(query.text.includes("[CreateBy]"), false);
+  assert.equal(query.text.includes("[Detail]"), false);
+  assert.equal(query.text.includes("[LineManager]"), false);
+  assert.deepEqual(query.parameters, [{ name: "limit", value: 20 }]);
+  assert.equal(assertLegacySqlReadOnlyQuery(query.text), query.text);
+
+  for (const invalidLimit of [0, 51, 1.5, Number.NaN]) {
+    assert.throws(
+      () => buildLegacyUserRequestListQuery(invalidLimit),
+      LegacyUserRequestRowLimitError,
+    );
+  }
+});
+
+test("User Request connector maps only the approved minimal projection", async () => {
+  const omittedEmail = "omitted.person@example.invalid";
+  const omittedDetail = "synthetic detail that must stay outside the DTO";
+  const pool = new RecordingPool([
+    {
+      externalRequestId: " 1001 ",
+      workItemId: " 9001 ",
+      company: " Example Company ",
+      department: " Example Department ",
+      country: " TH ",
+      system: " Example System ",
+      permission: " Reader ",
+      lineManagerApprovalStatus: " Approved ",
+      ceoApprovalStatus: null,
+      itManagerApprovalStatus: " Pending ",
+      vstsStatus: " Active ",
+      createdDateText: " source-created-text ",
+      updatedDateText: " source-updated-text ",
+      requestEmail: omittedEmail,
+      detail: omittedDetail,
+    },
+  ]);
+  const connector = new LegacySqlConnector(
+    readLegacySqlConfig(safeEnvironment),
+    new RecordingDriver(pool),
+  );
+
+  const result = await connector.listLegacyUserRequests(1);
+  const serialized = JSON.stringify(result);
+
+  assert.equal(result.length, 1);
+  assert.equal(serialized.includes(omittedEmail), false);
+  assert.equal(serialized.includes(omittedDetail), false);
+  assert.equal(serialized.includes("requestEmail"), false);
+  assert.equal(serialized.includes("detail"), false);
+  assert.deepEqual(pool.requestInstance.inputs, [["limit", 1]]);
+  assert.match(pool.requestInstance.lastQuery ?? "", /^SELECT TOP \(@limit\)/);
+});
+
+test("User Request query failures expose only the connector error code", async () => {
+  const sensitiveDriverDetail =
+    "synthetic host and credential detail that must not escape";
+  const pool: LegacySqlPool = {
+    request: () => ({
+      input: () => undefined,
+      query: async () => {
+        throw new Error(sensitiveDriverDetail);
+      },
+    }),
+    close: async () => undefined,
+  };
+  const connector = new LegacySqlConnector(
+    readLegacySqlConfig(safeEnvironment),
+    new RecordingDriver(pool as RecordingPool),
+  );
+
+  await assert.rejects(
+    connector.listLegacyUserRequests(1),
+    (error: unknown) =>
+      error instanceof LegacySqlConnectorError &&
+      error.code === "LEGACY_SQL_QUERY_FAILED" &&
+      !error.message.includes(sensitiveDriverDetail),
+  );
 });
 
 test("missing legacy SQL configuration fails without opening a connection", () => {
