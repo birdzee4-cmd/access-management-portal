@@ -54,6 +54,8 @@ Any future connector must add tests proving that its public contract offers no m
 
 Task 07A adds those safeguards for the inactive legacy SQL foundation: every query passes a central SELECT-only guard, dynamic values are parameterized, matrix identifiers come from a fixed allowlist, and driver errors are replaced with messages that do not expose connection details. A future live connection still requires a database identity technically restricted to SELECT. See [Legacy SQL Read-Only Connector Foundation](legacy-sql-integration.md).
 
+Task 07E exposes only two Admin-protected matrix read routes. Authentication and role authorization run before source/limit validation and lazy connector construction. Unknown query parameters are rejected, manager values are masked, responses and logs omit raw rows/identities/credentials, and automated tests inject fakes rather than contacting SQL. See [Admin-only Legacy Matrix Read API](legacy-matrix-api.md).
+
 ## Logging and privacy
 
 Future logs must avoid access tokens, secrets, connection strings, full request payloads, and unnecessary employee data. Audit events should capture actor, action, target, decision, correlation ID, and timestamp, with an approved retention period.

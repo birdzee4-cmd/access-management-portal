@@ -68,6 +68,8 @@ Tasks 07B and 07C validate the connector through a controlled health check and c
 
 Task 07D refines only the new-portal data model: access catalog, typed contexts, versioned approval rules with multiple approver candidates, and source-aware legacy mapping remain separate. It performs no migration, import, production query, or integration activation.
 
+Task 07E adds backend-only Admin-protected legacy matrix rows and summary routes. Inputs are allowlisted and bounded, manager values are masked, and all access continues through the SELECT-only connector. The Web UI remains disconnected.
+
 ## Validation
 
 ```bash
@@ -91,6 +93,7 @@ npm run prisma:validate
 - [Legacy SQL read-only integration](docs/legacy-sql-integration.md)
 - [Legacy role matrix discovery](docs/legacy-role-matrix-analysis.md)
 - [Access catalog and approval-rule model](docs/access-catalog-data-model.md)
+- [Admin-only legacy matrix API](docs/legacy-matrix-api.md)
 
 ## Current non-goals
 

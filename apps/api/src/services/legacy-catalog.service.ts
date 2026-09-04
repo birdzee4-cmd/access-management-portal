@@ -18,11 +18,7 @@ export type LegacyCatalogReader = Pick<
   "listProductManagementMatrix"
 >;
 
-/**
- * API service boundary for future legacy catalog reads.
- * Task 07A does not construct this service with production configuration or
- * expose it through an HTTP route.
- */
+/** Service boundary for bounded legacy catalog reads through a read-only port. */
 export class LegacyCatalogService {
   constructor(private readonly legacySql: LegacyCatalogReader) {}
 

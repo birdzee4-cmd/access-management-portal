@@ -25,7 +25,7 @@ Azure Functions API  ----> New portal Azure SQL database (future)
 Microsoft Entra ID will authenticate users at the web and API boundaries.
 ```
 
-No arrow in this diagram represents an active integration in the initial skeleton.
+The initial skeleton activated no integration. Task 07E later activates only the explicitly approved, Admin-only, bounded legacy SQL read path; SharePoint and Azure DevOps remain unconnected and every write capability remains disabled.
 
 ## Components
 
@@ -39,6 +39,8 @@ Task 06 adds a responsive authenticated shell with React routing, reusable page/
 
 An Azure Functions TypeScript application using the v4 programming model. Its anonymous health endpoint has no dependency on authentication, a database, a cloud resource, or a legacy system. Task 05B wires injectable bearer-token validation to `/api/auth/me` and the Admin-only `/api/auth/admin-test`. These return safe identity test data only and are not business endpoints.
 
+Task 07E adds backend-only `GET /api/legacy/matrix` and `GET /api/legacy/matrix/summary`. Both reuse the Entra validator, require `Admin`, validate the fixed source allowlist and bounded limit before constructing the lazy legacy service, mask manager values, and return safe errors. No Web UI route consumes them.
+
 ### `packages/contracts`
 
 Framework-neutral TypeScript types shared across boundaries. Keeping transport contracts separate prevents frontend code from importing server or database implementation details.
@@ -49,7 +51,7 @@ Cross-cutting safety configuration. Legacy integration settings are parsed with 
 
 ### `packages/connectors`
 
-Ports for legacy integrations. Interfaces expose read operations only and intentionally contain no create, update, delete, provision, revoke, or automation methods. Task 07A adds an inactive `mssql`-based legacy SQL adapter, a SELECT-only guard, and a fixed Product Management matrix allowlist. It is not constructed at API startup, has no HTTP route, and makes no database connection until a future approved activation explicitly invokes it.
+Ports for legacy integrations. Interfaces expose read operations only and intentionally contain no create, update, delete, provision, revoke, or automation methods. Task 07A adds an `mssql`-based legacy SQL adapter, a SELECT-only guard, and a fixed Product Management matrix allowlist. Task 07E constructs it lazily only after successful Admin authorization and parameter validation; builds, health checks, and automated tests make no database connection.
 
 ### `database`
 

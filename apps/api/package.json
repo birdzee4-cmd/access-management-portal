@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
-    "test": "tsc -p tsconfig.test.json && node --test dist-test/services/services.test.js dist-test/services/legacy-matrix-analysis.test.js dist-test/auth/authentication.test.js",
+    "test": "tsc -p tsconfig.test.json && node --test dist-test/services/services.test.js dist-test/services/legacy-matrix-analysis.test.js dist-test/auth/authentication.test.js dist-test/legacy/legacy-matrix-api.test.js",
     "start": "npm run build && func start"
   },
   "dependencies": {
