@@ -13,12 +13,17 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit --pretty false"
+    "typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
+    "test": "tsc -p tsconfig.test.json && node --test dist-test/test/legacy-sql.test.js"
   },
   "dependencies": {
-    "@access-portal/contracts": "*"
+    "@access-portal/contracts": "*",
+    "@access-portal/shared": "*",
+    "mssql": "^12.7.0"
   },
   "devDependencies": {
+    "@types/mssql": "^12.3.0",
+    "@types/node": "^22.20.1",
     "typescript": "^5.8.2"
   }
 }

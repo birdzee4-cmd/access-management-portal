@@ -10,11 +10,13 @@ import type {
   RoleRepository,
   SystemRepository,
 } from "@access-portal/database";
+import type { LegacyCatalogReader } from "./legacy-catalog.service.js";
 
 import { AccessRequestService } from "./access-request.service.js";
 import { ApprovalService } from "./approval.service.js";
 import { AuditService } from "./audit.service.js";
 import { CatalogService } from "./catalog.service.js";
+import { LegacyCatalogService } from "./legacy-catalog.service.js";
 
 test("CatalogService delegates catalog queries to injected repositories", async () => {
   const calls: string[] = [];
@@ -138,4 +140,18 @@ test("AuditService uses the append-only repository method", async () => {
   });
 
   assert.deepEqual(calls, ["ACCESS_REQUEST_CREATED"]);
+});
+
+test("LegacyCatalogService delegates only to the injected read-only connector", async () => {
+  const calls: string[] = [];
+  const reader: LegacyCatalogReader = {
+    listProductManagementMatrix: async (source) => {
+      calls.push(source);
+      return [];
+    },
+  };
+  const service = new LegacyCatalogService(reader);
+
+  assert.deepEqual(await service.listProductManagementMatrix("TH"), []);
+  assert.deepEqual(calls, ["TH"]);
 });

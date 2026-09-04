@@ -37,7 +37,7 @@ docs/
 
 ## Prerequisites
 
-- Node.js 20.19 or later
+- Node.js 22 or later
 - npm 10 or later
 - Azure Functions Core Tools 4 (only when running the API locally)
 
@@ -62,6 +62,8 @@ The authentication-only test routes are `GET /api/auth/me` and `GET /api/auth/ad
 
 Task 06 adds the authenticated portal shell, role-aware navigation, responsive page layouts, and clearly synthetic local data. It does not add business operations or external integrations.
 
+Task 07A adds an inactive legacy SQL connector foundation with a central SELECT-only guard, fixed Product Management matrix table allowlist, separate placeholder configuration, and no API route or database connection.
+
 ## Validation
 
 ```bash
@@ -82,6 +84,7 @@ npm run prisma:validate
 - [Local data-access layer](docs/data-access.md)
 - [Authentication foundation](docs/authentication.md)
 - [Portal UI foundation](docs/ui-foundation.md)
+- [Legacy SQL read-only integration](docs/legacy-sql-integration.md)
 
 ## Current non-goals
 

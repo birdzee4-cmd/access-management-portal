@@ -76,7 +76,7 @@ The two flows are intentionally separate:
 
 - Portal repositories can access only the new normalized portal database through Prisma.
 - Legacy SQL, SharePoint, and Azure DevOps each have a dedicated read-only interface under packages/connectors.
-- No concrete legacy client exists.
+- Task 07A provides an inactive legacy SQL client foundation with a SELECT-only guard and fixed matrix-table allowlist; it is not constructed by the API container and opens no connection automatically.
 - Connector contracts contain no create, update, delete, close, provision, revoke, or automation method.
 - ExternalReference stores correlation identifiers in the new portal database; it does not grant permission to contact or mutate an external system.
 
@@ -121,4 +121,4 @@ The fixture is declarative. There is no executable seed command, so Task 04 cann
 
 ## Testing strategy
 
-Unit tests cover configuration failure and service-to-repository delegation. Service tests inject repository mocks and use no network, Prisma query, SQL Server, or external service. Live database and legacy connector tests are excluded until separately authorized infrastructure exists.
+Unit tests cover configuration failure and service-to-repository delegation. Service tests inject repository mocks and use no network, Prisma query, SQL Server, or external service. Task 07A connector unit tests also use injected fake drivers only. Live database and legacy connector integration tests remain excluded until separately authorized infrastructure exists.

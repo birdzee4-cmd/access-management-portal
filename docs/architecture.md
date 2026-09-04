@@ -49,7 +49,7 @@ Cross-cutting safety configuration. Legacy integration settings are parsed with 
 
 ### `packages/connectors`
 
-Ports for future legacy integrations. Interfaces expose read operations only and intentionally contain no create, update, delete, close, provision, revoke, or automation methods. Concrete network clients are not part of this phase.
+Ports for legacy integrations. Interfaces expose read operations only and intentionally contain no create, update, delete, provision, revoke, or automation methods. Task 07A adds an inactive `mssql`-based legacy SQL adapter, a SELECT-only guard, and a fixed Product Management matrix allowlist. It is not constructed at API startup, has no HTTP route, and makes no database connection until a future approved activation explicitly invokes it.
 
 ### `database`
 

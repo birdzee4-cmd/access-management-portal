@@ -52,6 +52,8 @@ Future integration identities must be technically read-only at the source:
 
 Any future connector must add tests proving that its public contract offers no mutation methods and that unsafe configuration prevents startup.
 
+Task 07A adds those safeguards for the inactive legacy SQL foundation: every query passes a central SELECT-only guard, dynamic values are parameterized, matrix identifiers come from a fixed allowlist, and driver errors are replaced with messages that do not expose connection details. A future live connection still requires a database identity technically restricted to SELECT. See [Legacy SQL Read-Only Connector Foundation](legacy-sql-integration.md).
+
 ## Logging and privacy
 
 Future logs must avoid access tokens, secrets, connection strings, full request payloads, and unnecessary employee data. Audit events should capture actor, action, target, decision, correlation ID, and timestamp, with an approved retention period.
