@@ -201,10 +201,25 @@ and null VSTS Work IDs remain visible through count metadata, and a count window
 reports truncation while returning at most 50 related rows. See [Legacy User
 Request Detail API and Lifecycle](legacy-user-request-detail-api.md).
 
-Task 07I still adds no Portal persistence, SharePoint/VSTS API call, production
-write, UI integration, or automation. A future Task 07J should confirm whether
-to build an Admin-only read UI or continue lifecycle/reconciliation discovery;
-it must not infer business status rules from this endpoint.
+Task 07I adds no Portal persistence, SharePoint/VSTS API call, production write,
+UI integration, or automation. Task 07J later refined the lifecycle evidence
+without turning the endpoint into a business status rule engine.
+
+## Task 07J lifecycle-semantics refinement
+
+Task 07J retained both confirmed relationship keys and analyzed only aggregate
+approval, `OpenCase`, status, multiplicity, and timestamp evidence. It found
+3,358 request references with multiple VSTS rows; every one contains multiple
+distinct Work IDs, and no exact duplicate group was found across the reviewed
+safe fields. Therefore all related Work Items should be represented and no
+primary-item or duplicate-collapse rule is justified.
+
+For request-reference pairs, 15,618 of 17,348 comparable statuses match and
+1,730 differ. Of the mismatches, 842 occur on multi-item requests; VSTS is later
+in 901 timestamp comparisons while SharePoint is later in 829. This strengthens
+the **LIKELY** synchronization relationship but leaves mismatch cause and source
+authority **UNKNOWN**. Detailed evidence and Portal wording constraints are in
+[Legacy Approval and Lifecycle Semantics](legacy-approval-lifecycle-semantics.md).
 
 ## Production safety verification
 

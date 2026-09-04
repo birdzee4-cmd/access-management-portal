@@ -97,6 +97,28 @@ export {
 } from "./query/legacy-user-request-vsts.js";
 export { analyzeLegacyUserRequestVstsRows } from "./LegacyUserRequestVstsAnalysis.js";
 export {
+  analyzeLegacyApprovalLifecycleRows,
+  classifySemanticEvidence,
+} from "./LegacyApprovalLifecycleAnalysis.js";
+export {
+  buildLegacyApprovalPresencePatternQuery,
+  buildLegacyApprovalContinuationSummaryQuery,
+  buildLegacyApprovalStatusDistributionQuery,
+  buildLegacyCrossSourceDateOrderingQuery,
+  buildLegacyDatePatternQuery,
+  buildLegacyDateOrderingQuery,
+  buildLegacyDateTimeSemanticsQuery,
+  buildLegacyMultipleVstsSummaryQuery,
+  buildLegacyMultipleVstsTypeStateQuery,
+  buildLegacyOpenCaseCorrelationQuery,
+  buildLegacyOpenCaseApprovalCorrelationQuery,
+  buildLegacyOpenCaseStatusCorrelationQuery,
+  buildLegacyStatusMismatchPatternQuery,
+  buildLegacyStatusMismatchSummaryQuery,
+  buildLegacyVstsDuplicateSummaryQuery,
+  buildLegacyVstsStatusDistributionQuery,
+} from "./query/legacy-approval-lifecycle.js";
+export {
   LegacySqlRowLimitError,
   LegacySqlTableNotAllowedError,
   MAX_LEGACY_MATRIX_ROWS,
@@ -119,6 +141,15 @@ export type {
   LegacySchemaColumn,
   LegacyUniqueIndexColumn,
 } from "./types/LegacyUserRequestVstsRelationship.js";
+export type {
+  ApprovalPresencePattern,
+  LegacyApprovalLifecycleSummary,
+  LegacyLifecycleSharePointObservation,
+  LegacyLifecycleVstsObservation,
+  SemanticClassification,
+  SemanticFinding,
+  SemanticValueCount,
+} from "./types/LegacyApprovalLifecycleSemantics.js";
 export type {
   LegacySqlDriver,
   LegacySqlParameter,

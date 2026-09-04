@@ -12,6 +12,15 @@ export type {
   LegacyRelatedVstsRows,
   LegacyUserRequestDetailRow,
 } from "./LegacyUserRequestDetailRow.js";
+export type {
+  ApprovalPresencePattern,
+  LegacyApprovalLifecycleSummary,
+  LegacyLifecycleSharePointObservation,
+  LegacyLifecycleVstsObservation,
+  SemanticClassification,
+  SemanticFinding,
+  SemanticValueCount,
+} from "./LegacyApprovalLifecycleSemantics.js";
 
 export const matrixSources = ["NEW", "TH", "PH", "VN_MY_ID"] as const;
 export type MatrixSource = (typeof matrixSources)[number];

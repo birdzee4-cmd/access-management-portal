@@ -52,6 +52,13 @@ privacy-minimized detail plus an observational lifecycle. SharePoint
 mismatching, or unknown. There is no Portal database, SharePoint API, or VSTS
 API dependency in this path.
 
+Task 07J adds no route and does not change the Task 07I DTO. It contributes only
+pure count-based semantic analysis and fixed aggregate legacy SQL query
+builders. The evidence model labels findings `CONFIRMED`, `LIKELY`, `UNKNOWN`,
+or `CONTRADICTED`; it is documentation and discovery support, not an approval,
+authorization, provisioning, or lifecycle rule engine. Production discovery
+uses the same central SELECT-only guard and emits no request or Work Item IDs.
+
 ### `packages/contracts`
 
 Framework-neutral TypeScript types shared across boundaries. Keeping transport contracts separate prevents frontend code from importing server or database implementation details.
@@ -63,6 +70,12 @@ Cross-cutting safety configuration. Legacy integration settings are parsed with 
 ### `packages/connectors`
 
 Ports for legacy integrations. Interfaces expose read operations only and intentionally contain no create, update, delete, provision, revoke, or automation methods. Task 07A adds an `mssql`-based legacy SQL adapter, a SELECT-only guard, and a fixed Product Management matrix allowlist. Task 07E constructs it lazily only after successful Admin authorization and parameter validation; builds, health checks, and automated tests make no database connection.
+
+Task 07J keeps that port query-only and adds aggregate builders limited to the
+fixed User Request and VSTS backup tables. They project only status, reference,
+type, and time evidence; person and free-text columns remain outside the SQL
+projection. Synthetic analysis utilities return counts/classifications without
+identifiers or timestamp values.
 
 ### `database`
 

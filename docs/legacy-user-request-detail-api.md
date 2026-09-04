@@ -160,6 +160,11 @@ claiming agreement for rows outside a truncated response.
 No value overwrites the other. No reconciliation, notification, or workflow is
 triggered.
 
+Task 07J aggregate discovery confirms that this noncommittal representation
+must remain. Approval values are not universally present before related VSTS
+work, `OpenCase` is not a one-to-one request/VSTS state, and mismatch timing
+runs in both directions. See [Legacy Approval and Lifecycle Semantics](legacy-approval-lifecycle-semantics.md).
+
 ## Authorization and safe errors
 
 | Condition | Result |
@@ -200,9 +205,10 @@ request field, VSTS Work ID/state, employee information, raw row, SQL parameter,
 or configuration value was printed, logged, persisted, or committed. The pool
 was closed after the check and no write-capable system or API was contacted.
 
-## Unresolved business semantics
+## Task 07J semantic boundary
 
-Task 07I intentionally does not decide:
+Task 07J confirms that the API may describe recorded source observations, but
+must not decide:
 
 - whether CEO or IT Manager approval is required for a particular request;
 - approval ordering, dependency, or finality;
@@ -215,12 +221,15 @@ Task 07I intentionally does not decide:
 - whether SharePoint-side `Work_ID` is the primary item when several VSTS rows
   share one `IDSharepoint`.
 
-## Recommendation for Task 07J
+The snapshot contradicts treating all approval fields as universally required,
+`OpenCase` as an authoritative request state, multiple VSTS rows as exact
+duplicates, or timestamp names as a strict lifecycle. The existing
+`OBSERVED`/`UNAVAILABLE` DTO therefore remains unchanged.
 
-Do not add persistence or write behavior automatically. A separately approved
-Task 07J should first decide whether the next step is an Admin-only read UI or a
-broader reconciliation design. Before either, confirm lifecycle/status
-vocabularies, date parsing/timezones, duplicate-row semantics, and the intended
-display of multiple VSTS states. Any UI must consume this normalized endpoint,
-retain backend Admin authorization as the security boundary, display
-truncation/discrepancy explicitly, and avoid direct legacy/API access.
+## Recommendation for Task 07K
+
+If separately approved, add only an Admin read view over this endpoint. Present
+the lifecycle as source observations, list every related VSTS item, show
+truncation and discrepancy explicitly, and leave date text unconverted. Do not
+add completion, required-stage, primary-item, persistence, reconciliation, or
+write semantics.
