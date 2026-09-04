@@ -1,6 +1,10 @@
 import type { LegacyProductManagementMatrixRow } from "./types/LegacyProductManagementMatrixRow.js";
 import type { LegacyUserRequestRow } from "./types/LegacyUserRequestRow.js";
 import type {
+  LegacyRelatedVstsRows,
+  LegacyUserRequestDetailRow,
+} from "./types/LegacyUserRequestDetailRow.js";
+import type {
   LegacyRelationshipSummary,
   LegacySchemaColumn,
   LegacySqlQuery,
@@ -24,6 +28,15 @@ export interface ReadOnlyLegacySqlConnector {
   listLegacyUserRequests(
     limit?: number,
   ): Promise<readonly LegacyUserRequestRow[]>;
+
+  findLegacyUserRequestDetail(
+    idSharepoint: number,
+  ): Promise<readonly LegacyUserRequestDetailRow[]>;
+
+  listLegacyVstsItemsBySharepointId(
+    idSharepoint: number,
+    limit?: number,
+  ): Promise<LegacyRelatedVstsRows>;
 
   describeLegacyUserRequestVstsSchema(): Promise<{
     readonly columns: readonly LegacySchemaColumn[];
@@ -62,6 +75,16 @@ export {
   enforceLegacyUserRequestRowLimit,
 } from "./query/legacy-user-request.js";
 export {
+  LEGACY_USER_REQUEST_DETAIL_LIMIT,
+  MAX_RELATED_VSTS_ITEMS,
+  LegacyRelatedVstsLimitError,
+  LegacySharepointIdError,
+  buildLegacyUserRequestDetailQuery,
+  buildRelatedVstsItemsQuery,
+  enforceLegacySharepointId,
+  enforceRelatedVstsLimit,
+} from "./query/legacy-user-request-detail.js";
+export {
   LEGACY_RELATIONSHIP_SAMPLE_LIMIT,
   LEGACY_VSTS_TABLE,
   LegacyRelationshipSampleLimitError,
@@ -84,6 +107,11 @@ export {
 } from "./query/product-management-matrix.js";
 export type { LegacyProductManagementMatrixRow } from "./types/LegacyProductManagementMatrixRow.js";
 export type { LegacyUserRequestRow } from "./types/LegacyUserRequestRow.js";
+export type {
+  LegacyRelatedVstsItemRow,
+  LegacyRelatedVstsRows,
+  LegacyUserRequestDetailRow,
+} from "./types/LegacyUserRequestDetailRow.js";
 export type {
   LegacyRelationshipClassification,
   LegacyRelationshipSampleRow,

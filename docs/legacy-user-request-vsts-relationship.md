@@ -186,21 +186,25 @@ parameter, use the fixed SharePoint table, read at most two rows, and fail
 closed if zero or multiple rows are returned. `Work_ID` should remain an
 Azure DevOps external reference, not the Portal request key.
 
-## Recommendation for Task 07I
+## Task 07I detail API response
 
-There is enough evidence to **design** `GET /api/legacy/user-requests/:id`, but
-Task 07H does not implement it. Task 07I should:
+Task 07I implements the evidence-based design as
+`GET /api/legacy/user-requests/{idSharepoint}`. It uses normalized
+`IDSharepoint`, a fixed explicit SharePoint projection, parameterized `TOP (2)`
+ambiguity detection, and the existing Admin-only boundary. A unique request is
+then associated with zero-to-many bounded VSTS backup rows through VSTS
+`IDSharepoint`.
 
-1. use normalized `IDSharepoint` as the legacy route identifier and preserve a
-   Portal-generated ID for any future persisted Portal record;
-2. use a fixed, explicit, privacy-reviewed projection and `TOP (@limit)` with a
-   hard limit of two for ambiguity detection;
-3. require the existing Admin authentication/authorization boundary and
-   `Cache-Control: no-store`;
-4. return not-found for no row and a sanitized conflict/error for duplicates;
-5. expose `Work_ID` only as a passive external reference and never call VSTS;
-6. keep all write/provisioning/automation flags false and add no generic SQL,
-   SharePoint, VSTS, or Portal-database write path.
+The API retains SharePoint `StatusVSTS` and every VSTS `State` independently.
+It reports `MATCH`, `MISMATCH`, or `UNKNOWN` without reconciliation. Duplicate
+and null VSTS Work IDs remain visible through count metadata, and a count window
+reports truncation while returning at most 50 related rows. See [Legacy User
+Request Detail API and Lifecycle](legacy-user-request-detail-api.md).
+
+Task 07I still adds no Portal persistence, SharePoint/VSTS API call, production
+write, UI integration, or automation. A future Task 07J should confirm whether
+to build an Admin-only read UI or continue lifecycle/reconciliation discovery;
+it must not infer business status rules from this endpoint.
 
 ## Production safety verification
 

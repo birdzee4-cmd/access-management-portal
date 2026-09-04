@@ -12,6 +12,13 @@ export {
   type LegacyUserRequestReader,
 } from "./legacy-user-request.service.js";
 export {
+  LegacyUserRequestDetailService,
+  LegacyUserRequestDuplicateError,
+  LegacyUserRequestNotFoundError,
+  normalizeLegacyUserRequestDetail,
+  type LegacyUserRequestDetailReader,
+} from "./legacy-user-request-detail.service.js";
+export {
   analyzeLegacyMatrixRows,
   analyzeLegacyMatrixSources,
   maskLegacyManager,

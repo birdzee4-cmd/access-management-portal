@@ -5,6 +5,10 @@ import { assertLegacySqlReadOnlyQuery } from "./LegacySqlReadGuard.js";
 import { MssqlLegacySqlDriver } from "./MssqlLegacySqlDriver.js";
 import { analyzeLegacyUserRequestVstsRows } from "./LegacyUserRequestVstsAnalysis.js";
 import {
+  buildLegacyUserRequestDetailQuery,
+  buildRelatedVstsItemsQuery,
+} from "./query/legacy-user-request-detail.js";
+import {
   buildLegacyUserRequestRelationshipSampleQuery,
   buildLegacyUserRequestVstsColumnsQuery,
   buildLegacyUserRequestVstsIndexesQuery,
@@ -14,6 +18,10 @@ import { buildLegacyUserRequestListQuery } from "./query/legacy-user-request.js"
 import { buildLegacyProductManagementMatrixQuery } from "./query/product-management-matrix.js";
 import type { LegacyProductManagementMatrixRow } from "./types/LegacyProductManagementMatrixRow.js";
 import type { LegacyUserRequestRow } from "./types/LegacyUserRequestRow.js";
+import type {
+  LegacyRelatedVstsRows,
+  LegacyUserRequestDetailRow,
+} from "./types/LegacyUserRequestDetailRow.js";
 import type {
   LegacySqlDriver,
   LegacySqlPool,
@@ -180,6 +188,52 @@ export class LegacySqlConnector implements ReadOnlyLegacySqlConnector {
       createdDateText: nullableString(row.createdDateText),
       updatedDateText: nullableString(row.updatedDateText),
     }));
+  }
+
+  async findLegacyUserRequestDetail(
+    idSharepoint: number,
+  ): Promise<readonly LegacyUserRequestDetailRow[]> {
+    const rows = await this.executeSelect<Record<string, unknown>>(
+      buildLegacyUserRequestDetailQuery(idSharepoint),
+    );
+
+    return rows.map((row) => ({
+      externalRequestId: nullableString(row.externalRequestId),
+      workItemId: nullableString(row.workItemId),
+      company: nullableString(row.company),
+      department: nullableString(row.department),
+      country: nullableString(row.country),
+      system: nullableString(row.system),
+      permission: nullableString(row.permission),
+      lineManagerApprovalStatus: nullableString(row.lineManagerApprovalStatus),
+      ceoApprovalStatus: nullableString(row.ceoApprovalStatus),
+      itManagerApprovalStatus: nullableString(row.itManagerApprovalStatus),
+      vstsStatus: nullableString(row.vstsStatus),
+      openCaseStatus: nullableString(row.openCaseStatus),
+      createdDateText: nullableString(row.createdDateText),
+      updatedDateText: nullableString(row.updatedDateText),
+    }));
+  }
+
+  async listLegacyVstsItemsBySharepointId(
+    idSharepoint: number,
+    limit?: number,
+  ): Promise<LegacyRelatedVstsRows> {
+    const rows = await this.executeSelect<Record<string, unknown>>(
+      buildRelatedVstsItemsQuery(idSharepoint, limit),
+    );
+    const relatedRows = rows.map((row) => ({
+      workItemId: nullableString(row.workItemId),
+      state: nullableString(row.state),
+    }));
+
+    return {
+      rows: relatedRows,
+      totalCount: Math.max(
+        relatedRows.length,
+        numberValue(rows[0]?.relatedCount),
+      ),
+    };
   }
 
   async describeLegacyUserRequestVstsSchema(): Promise<{

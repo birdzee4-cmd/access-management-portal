@@ -2,12 +2,14 @@ import { LegacySqlConnector } from "@access-portal/connectors";
 
 import {
   LegacyCatalogService,
+  LegacyUserRequestDetailService,
   LegacyUserRequestService,
 } from "../services/index.js";
 
 let connector: LegacySqlConnector | undefined;
 let service: LegacyCatalogService | undefined;
 let userRequestService: LegacyUserRequestService | undefined;
+let userRequestDetailService: LegacyUserRequestDetailService | undefined;
 
 function getRuntimeLegacySqlConnector(): LegacySqlConnector {
   connector ??= LegacySqlConnector.fromEnvironment(process.env);
@@ -28,4 +30,11 @@ export function getRuntimeLegacyUserRequestService(): LegacyUserRequestService {
     getRuntimeLegacySqlConnector(),
   );
   return userRequestService;
+}
+
+export function getRuntimeLegacyUserRequestDetailService(): LegacyUserRequestDetailService {
+  userRequestDetailService ??= new LegacyUserRequestDetailService(
+    getRuntimeLegacySqlConnector(),
+  );
+  return userRequestDetailService;
 }

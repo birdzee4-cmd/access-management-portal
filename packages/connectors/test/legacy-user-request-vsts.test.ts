@@ -3,15 +3,21 @@ import test from "node:test";
 
 import {
   LEGACY_VSTS_TABLE,
+  LEGACY_USER_REQUEST_DETAIL_LIMIT,
+  MAX_RELATED_VSTS_ITEMS,
   LegacyRelationshipSampleLimitError,
+  LegacyRelatedVstsLimitError,
+  LegacySharepointIdError,
   LegacySqlConnector,
   LegacySqlReadGuardError,
   analyzeLegacyUserRequestVstsRows,
   assertLegacySqlReadOnlyQuery,
   buildLegacyUserRequestRelationshipSampleQuery,
+  buildLegacyUserRequestDetailQuery,
   buildLegacyUserRequestVstsColumnsQuery,
   buildLegacyUserRequestVstsIndexesQuery,
   buildLegacyVstsRelationshipSampleQuery,
+  buildRelatedVstsItemsQuery,
   normalizeLegacyWorkId,
   readLegacySqlConfig,
   type LegacySqlDriver,
@@ -282,4 +288,123 @@ test("prohibited mutations remain rejected during relationship discovery", () =>
   ]) {
     assert.throws(() => assertLegacySqlReadOnlyQuery(sql), LegacySqlReadGuardError);
   }
+});
+
+test("detail query uses fixed TOP (2), fixed table, explicit fields, and bound ID", () => {
+  const query = buildLegacyUserRequestDetailQuery(42);
+
+  assert.match(query.text, /^SELECT TOP \(@detailLimit\)/);
+  assert.match(query.text, /FROM \[dbo\]\.\[All_SharepointUserRequest\]/);
+  assert.equal(/SELECT\s+\*/i.test(query.text), false);
+  assert.deepEqual(query.parameters, [
+    { name: "detailLimit", value: LEGACY_USER_REQUEST_DETAIL_LIMIT },
+    { name: "idSharepoint", value: 42 },
+  ]);
+  for (const omitted of [
+    "[RequestEmail]",
+    "[CreateBy]",
+    "[LineManager]",
+    "[Assign]",
+    "[TopicRequest]",
+    "[Detail]",
+    "[Servername]",
+    "[DBName]",
+    "[StorageName]",
+    "[Tanant]",
+  ]) {
+    assert.equal(query.text.includes(omitted), false, omitted);
+  }
+  assert.equal(assertLegacySqlReadOnlyQuery(query.text), query.text);
+});
+
+test("related VSTS query is fixed, parameterized, bounded, and privacy-minimized", () => {
+  const query = buildRelatedVstsItemsQuery(42);
+
+  assert.match(query.text, /^SELECT TOP \(@limit\)/);
+  assert.match(query.text, /COUNT_BIG\(\*\) OVER \(\)/);
+  assert.match(query.text, /FROM \[dbo\]\.\[All_Azure_Dev\(VSTS\)\]/);
+  assert.equal(/SELECT\s+\*/i.test(query.text), false);
+  assert.deepEqual(query.parameters, [
+    { name: "limit", value: MAX_RELATED_VSTS_ITEMS },
+    { name: "idSharepoint", value: 42 },
+  ]);
+  for (const omitted of [
+    "[RequestEmail]",
+    "[CreateBy]",
+    "[Assign]",
+    "[Owner]",
+    "[Title]",
+    "[Description]",
+  ]) {
+    assert.equal(query.text.includes(omitted), false, omitted);
+  }
+  assert.equal(assertLegacySqlReadOnlyQuery(query.text), query.text);
+});
+
+test("detail ID and related VSTS limits fail closed", () => {
+  for (const invalidId of [0, -1, 1.5, Number.NaN, 2_147_483_648]) {
+    assert.throws(
+      () => buildLegacyUserRequestDetailQuery(invalidId),
+      LegacySharepointIdError,
+    );
+  }
+  for (const invalidLimit of [0, 51, 1.5, Number.NaN]) {
+    assert.throws(
+      () => buildRelatedVstsItemsQuery(42, invalidLimit),
+      LegacyRelatedVstsLimitError,
+    );
+  }
+});
+
+test("connector detail methods map only approved rows and preserve bounded count", async () => {
+  const omittedEmail = "omitted.detail@example.invalid";
+  const pool = new QueuedPool([
+    [
+      {
+        externalRequestId: "42",
+        workItemId: "101",
+        company: "Example",
+        department: null,
+        country: "TH",
+        system: "Portal",
+        permission: "Reader",
+        lineManagerApprovalStatus: "Approved",
+        ceoApprovalStatus: null,
+        itManagerApprovalStatus: "Pending",
+        vstsStatus: "Active",
+        openCaseStatus: "Observed source value",
+        createdDateText: "source-created",
+        updatedDateText: "source-updated",
+        requestEmail: omittedEmail,
+      },
+    ],
+    [
+      {
+        workItemId: 101,
+        state: "Active",
+        relatedCount: "73",
+        requestEmail: omittedEmail,
+      },
+    ],
+  ]);
+  const connector = new LegacySqlConnector(
+    readLegacySqlConfig(safeEnvironment),
+    driverFor(pool),
+  );
+
+  const detail = await connector.findLegacyUserRequestDetail(42);
+  const related = await connector.listLegacyVstsItemsBySharepointId(42);
+  const serialized = JSON.stringify({ detail, related });
+
+  assert.equal(detail.length, 1);
+  assert.deepEqual(related, {
+    rows: [{ workItemId: "101", state: "Active" }],
+    totalCount: 73,
+  });
+  assert.equal(serialized.includes(omittedEmail), false);
+  assert.equal(pool.requestInstance.queries.length, 2);
+  assert.equal(
+    pool.requestInstance.queries.every((sql) => /^SELECT\b/.test(sql)),
+    true,
+  );
 });

@@ -7,6 +7,11 @@ export type {
   LegacySchemaColumn,
   LegacyUniqueIndexColumn,
 } from "./LegacyUserRequestVstsRelationship.js";
+export type {
+  LegacyRelatedVstsItemRow,
+  LegacyRelatedVstsRows,
+  LegacyUserRequestDetailRow,
+} from "./LegacyUserRequestDetailRow.js";
 
 export const matrixSources = ["NEW", "TH", "PH", "VN_MY_ID"] as const;
 export type MatrixSource = (typeof matrixSources)[number];

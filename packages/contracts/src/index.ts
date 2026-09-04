@@ -90,6 +90,68 @@ export interface LegacyUserRequestListResponse {
   readonly requests: readonly LegacyUserRequestSummary[];
 }
 
+export type LegacyStatusComparison = "MATCH" | "MISMATCH" | "UNKNOWN";
+
+export type LegacyLifecycleStageCode =
+  | "REQUEST_CREATED"
+  | "LINE_MANAGER_APPROVAL"
+  | "CEO_APPROVAL"
+  | "IT_MANAGER_APPROVAL"
+  | "VSTS_WORK_ITEM"
+  | "VSTS_STATE"
+  | "REQUEST_UPDATED";
+
+export type LegacyLifecycleAvailability = "OBSERVED" | "UNAVAILABLE";
+
+export interface LegacyLifecycleStage {
+  readonly code: LegacyLifecycleStageCode;
+  readonly availability: LegacyLifecycleAvailability;
+  /** Source status text only; no business meaning is inferred. */
+  readonly value: string | null;
+  /** Preserved legacy text because the SharePoint source column is varchar. */
+  readonly dateText: string | null;
+  /** Present only for the VSTS_WORK_ITEM stage. */
+  readonly relatedItemCount: number | null;
+}
+
+export interface LegacyRelatedVstsItem {
+  readonly workItemId: string | null;
+  readonly state: string | null;
+  readonly statusComparison: LegacyStatusComparison;
+}
+
+export interface LegacyUserRequestDetail {
+  readonly externalRequestId: string;
+  /** The passive Work_ID value observed on the SharePoint backup row. */
+  readonly workItemId: string | null;
+  readonly company: string | null;
+  readonly department: string | null;
+  readonly country: string | null;
+  readonly system: string | null;
+  readonly permission: string | null;
+  readonly workflow: {
+    readonly lineManagerApprovalStatus: string | null;
+    readonly ceoApprovalStatus: string | null;
+    readonly itManagerApprovalStatus: string | null;
+    readonly vstsStatus: string | null;
+    readonly openCaseStatus: string | null;
+    readonly statusComparison: LegacyStatusComparison;
+  };
+  readonly createdDateText: string | null;
+  readonly updatedDateText: string | null;
+  readonly relatedVstsItems: readonly LegacyRelatedVstsItem[];
+  readonly relationship: {
+    /** Total VSTS backup rows for this request-origin reference. */
+    readonly sourceRowCount: number;
+    readonly returnedRowCount: number;
+    readonly workItemCount: number;
+    readonly duplicateWorkItemIdCount: number;
+    readonly nullWorkItemIdCount: number;
+    readonly truncated: boolean;
+  };
+  readonly lifecycle: readonly LegacyLifecycleStage[];
+}
+
 export interface PilotStatus {
   projectName: "Access Management Portal";
   phase: "LOCAL_SKELETON";

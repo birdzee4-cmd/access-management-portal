@@ -43,6 +43,15 @@ Task 07E adds `GET /api/legacy/matrix` and `GET /api/legacy/matrix/summary`. Bot
 
 Task 07G adds backend-only `GET /api/legacy/user-requests`. It reuses the same guarded connector and Admin authorization, reads a fixed minimal projection from the legacy User Request SQL table, and returns normalized bounded summaries without person, free-text, or infrastructure fields. It does not add a UI, detail lookup, persistence, migration, or production feedback path.
 
+Task 07I adds Admin-only `GET /api/legacy/user-requests/{idSharepoint}`. The
+handler normalizes a numeric SharePoint external identifier, fails closed with
+`TOP (2)` when snapshot uniqueness is violated, reads at most 50 related VSTS
+backup rows through the confirmed request-origin reference, and returns a
+privacy-minimized detail plus an observational lifecycle. SharePoint
+`StatusVSTS` and VSTS `State` remain separate and may be reported as matching,
+mismatching, or unknown. There is no Portal database, SharePoint API, or VSTS
+API dependency in this path.
+
 ### `packages/contracts`
 
 Framework-neutral TypeScript types shared across boundaries. Keeping transport contracts separate prevents frontend code from importing server or database implementation details.
