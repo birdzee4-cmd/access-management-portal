@@ -59,6 +59,38 @@ Task 04 adds a reusable environment-configured Prisma client plus repository int
 
 The implementation flow is API service to repository interface to Prisma repository to the new portal database. Legacy systems use a separate read-only connector boundary and never pass through the portal Prisma repositories. See [Local Development Data Layer](data-access.md).
 
+## Task 07D data-model boundaries
+
+Task 07D refines the portal-owned schema around three independent concerns:
+
+- **Access Catalog** describes systems, optional applications/access resources, context-scoped roles, and permissions.
+- **Approval Matrix** uses versioned `ApprovalRule` records with zero-to-many `ApprovalRuleApprover` candidates. It does not infer ANY, ALL, or sequential semantics.
+- **Legacy Mapping** records source provenance, original/normalized comparison values, and optional reviewed destinations. A legacy matrix row is never automatically a catalog role or an approval transaction.
+
+`AccessContext` is a typed, system-scoped concept and is separate from `LegacySource`. This prevents table labels such as `NEW`, `TH`, `PH`, and `VN_MY_ID` from being asserted as country meanings before business confirmation.
+
+```mermaid
+flowchart TD
+    LEGACY["Legacy Matrix<br/>read-only reference"]
+    MAPPING["Legacy Mapping<br/>source + original values"]
+    CATALOG["Access Catalog<br/>System / Application / Role / Permission"]
+    RULES["Approval Matrix<br/>versioned ApprovalRule"]
+    APPROVERS["ApprovalRuleApprover<br/>multiple candidates"]
+    REQUEST["Access Request<br/>catalog/context snapshot"]
+    AUDIT["Approval + AuditLog<br/>historical evidence"]
+
+    LEGACY --> MAPPING
+    MAPPING -. "reviewed candidate mapping" .-> CATALOG
+    MAPPING -. "routing provenance" .-> RULES
+    CATALOG --> RULES
+    RULES --> APPROVERS
+    CATALOG --> REQUEST
+    APPROVERS -. "resolved and snapshotted" .-> REQUEST
+    REQUEST --> AUDIT
+```
+
+No arrow activates an import, approval engine, connector, or production write. See [Access Catalog and Approval Rule Data Model](access-catalog-data-model.md).
+
 ## Data ownership
 
 - The existing platform remains authoritative throughout the pilot.

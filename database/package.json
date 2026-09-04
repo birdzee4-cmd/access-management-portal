@@ -16,7 +16,7 @@
     "generate": "cross-env DATABASE_URL=\"sqlserver://localhost:1433;database=access_management_portal_local;user=local_user;password=replace_me;encrypt=true;trustServerCertificate=true\" prisma generate --schema schema/schema.prisma",
     "build": "npm run generate && tsc -p tsconfig.json",
     "typecheck": "npm run generate && tsc -p tsconfig.json --noEmit --pretty false",
-    "test": "npm run generate && tsc -p tsconfig.test.json && node --test dist-test/client.test.js"
+    "test": "npm run generate && tsc -p tsconfig.test.json && node --test dist-test/client.test.js dist-test/data-model.test.js"
   },
   "dependencies": {
     "@prisma/client": "6.12.0"

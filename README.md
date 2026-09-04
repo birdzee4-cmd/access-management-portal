@@ -66,6 +66,8 @@ Task 07A adds an inactive legacy SQL connector foundation with a central SELECT-
 
 Tasks 07B and 07C validate the connector through a controlled health check and capped, aggregate-only Product Management matrix discovery. No raw production rows, API route, UI integration, migration, or database write is included.
 
+Task 07D refines only the new-portal data model: access catalog, typed contexts, versioned approval rules with multiple approver candidates, and source-aware legacy mapping remain separate. It performs no migration, import, production query, or integration activation.
+
 ## Validation
 
 ```bash
@@ -88,6 +90,7 @@ npm run prisma:validate
 - [Portal UI foundation](docs/ui-foundation.md)
 - [Legacy SQL read-only integration](docs/legacy-sql-integration.md)
 - [Legacy role matrix discovery](docs/legacy-role-matrix-analysis.md)
+- [Access catalog and approval-rule model](docs/access-catalog-data-model.md)
 
 ## Current non-goals
 

@@ -4,7 +4,7 @@
 
 Task 04 prepares a data-access boundary for the NEW ACCESS MANAGEMENT PORTAL only. It does not implement request submission, approvals, provisioning, revocation, automation, authentication, or any live legacy integration.
 
-The Prisma schema remains the Task 03 normalized SQL Server design. No migration was created or executed.
+The Prisma schema remains the normalized SQL Server design established in Task 03 and refined locally in Task 07D. No migration was created or executed.
 
 ## Portal database flow
 
@@ -112,7 +112,8 @@ database/seed/development.seed.json contains synthetic data only:
 - demo IT and Operations departments;
 - fake requester, target user, and approver/manager identities;
 - Azure DevOps, WMS, and OMS catalog examples;
-- roles, permissions, role-permission mappings, and an approval matrix;
+- access contexts, roles, permissions, role-permission mappings, versioned approval rules, and multiple approver candidates;
+- synthetic legacy-source/mapping examples that preserve original and normalized values without importing production rows;
 - one fake ADD request, one item, and one pending approval;
 - DEV-SP-1001 and DEV-ADO-2001 external references;
 - one append-oriented audit event.

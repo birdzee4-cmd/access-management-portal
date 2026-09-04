@@ -20,7 +20,7 @@ The normalized new-portal database and legacy SQL are different data domains:
 - New portal data uses repository interfaces, Prisma, and the dedicated `DATABASE_URL`.
 - Legacy data uses `LegacyCatalogService`, `LegacySqlConnector`, a central read guard, and separate `LEGACY_SQL_*` settings.
 - Prisma has no models for legacy tables and must never introspect or migrate legacy SQL.
-- Legacy matrix rows are nullable source representations, not portal `ApprovalMatrix` records.
+- Legacy matrix rows are nullable source representations, not portal `Role`, `ApprovalRule`, or `ApprovalRuleApprover` records. A future reviewed interpretation would pass through `LegacySource` and `LegacyApprovalMapping`.
 
 ```mermaid
 flowchart TD

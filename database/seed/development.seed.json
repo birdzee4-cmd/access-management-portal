@@ -39,6 +39,15 @@
       "departmentCode": "DEMO-OPS",
       "managerEmployeeId": "EMP-DEMO-002",
       "active": true
+    },
+    {
+      "employeeId": "EMP-DEMO-004",
+      "entraObjectId": "00000000-0000-4000-8000-000000000004",
+      "email": "demo.approver.two@example.invalid",
+      "displayName": "Demo Approver Two",
+      "departmentCode": "DEMO-IT",
+      "managerEmployeeId": null,
+      "active": true
     }
   ],
   "systems": [
@@ -66,10 +75,27 @@
       "active": true
     }
   ],
+  "accessContexts": [
+    {
+      "systemCode": "WMS",
+      "contextType": "DEMO_MARKET",
+      "code": "DEMO_MARKET_A",
+      "name": "Demo Market A",
+      "active": true
+    },
+    {
+      "systemCode": "WMS",
+      "contextType": "DEMO_MARKET",
+      "code": "DEMO_MARKET_B",
+      "name": "Demo Market B",
+      "active": true
+    }
+  ],
   "roles": [
     {
       "systemCode": "AZURE_DEVOPS",
       "applicationCode": "BOARDS",
+      "contextCode": null,
       "code": "READER",
       "name": "Reader",
       "active": true
@@ -77,6 +103,7 @@
     {
       "systemCode": "AZURE_DEVOPS",
       "applicationCode": "BOARDS",
+      "contextCode": null,
       "code": "CONTRIBUTOR",
       "name": "Contributor",
       "active": true
@@ -84,6 +111,7 @@
     {
       "systemCode": "WMS",
       "applicationCode": null,
+      "contextCode": null,
       "code": "ADMINISTRATOR",
       "name": "Administrator",
       "active": true
@@ -91,8 +119,25 @@
     {
       "systemCode": "OMS",
       "applicationCode": null,
+      "contextCode": null,
       "code": "READER",
       "name": "Reader",
+      "active": true
+    },
+    {
+      "systemCode": "WMS",
+      "applicationCode": null,
+      "contextCode": "DEMO_MARKET_A",
+      "code": "OPERATOR",
+      "name": "Operator",
+      "active": true
+    },
+    {
+      "systemCode": "WMS",
+      "applicationCode": null,
+      "contextCode": "DEMO_MARKET_B",
+      "code": "OPERATOR",
+      "name": "Operator",
       "active": true
     }
   ],
@@ -132,14 +177,88 @@
       "permissionCode": "VIEW_PROJECT_METADATA"
     }
   ],
-  "approvalMatrices": [
+  "legacySources": [
     {
+      "code": "DEMO_LEGACY_MATRIX_A",
+      "sourceSystem": "SYNTHETIC_SQL",
+      "sourceObject": "demo.Matrix_A",
+      "systemCode": "WMS",
+      "contextCode": "DEMO_MARKET_A",
+      "active": true
+    }
+  ],
+  "approvalRules": [
+    {
+      "ruleCode": "DEMO-WMS-OPERATOR-APPROVAL",
+      "version": 1,
       "departmentCode": "DEMO-OPS",
-      "systemCode": "AZURE_DEVOPS",
-      "roleCode": "READER",
-      "approverEmployeeId": "EMP-DEMO-002",
+      "systemCode": "WMS",
+      "applicationCode": null,
+      "roleCode": "OPERATOR",
+      "contextCode": "DEMO_MARKET_A",
+      "sourceCode": "DEMO_LEGACY_MATRIX_A",
       "approvalLevel": 1,
       "active": true
+    }
+  ],
+  "approvalRuleApprovers": [
+    {
+      "ruleCode": "DEMO-WMS-OPERATOR-APPROVAL",
+      "ruleVersion": 1,
+      "approverEmployeeId": "EMP-DEMO-002",
+      "approverReference": "EMP-DEMO-002",
+      "sequence": null,
+      "active": true
+    },
+    {
+      "ruleCode": "DEMO-WMS-OPERATOR-APPROVAL",
+      "ruleVersion": 1,
+      "approverEmployeeId": "EMP-DEMO-004",
+      "approverReference": "EMP-DEMO-004",
+      "sequence": null,
+      "active": true
+    }
+  ],
+  "legacyApprovalMappings": [
+    {
+      "sourceCode": "DEMO_LEGACY_MATRIX_A",
+      "sourceRecordKey": null,
+      "sourceRecordFingerprint": "DEMO-FINGERPRINT-001",
+      "originalRoleName": " Operator ",
+      "originalDepartment": " Demo Operations ",
+      "originalManagerReference": " Demo Manager Alpha ",
+      "originalActiveValue": "ACTIVE",
+      "normalizedRoleName": "Operator",
+      "normalizedDepartment": "Demo Operations",
+      "normalizedManagerReference": "Demo Manager Alpha",
+      "mappingStatus": "DEMO_MAPPED",
+      "systemCode": "WMS",
+      "roleCode": "OPERATOR",
+      "departmentCode": "DEMO-OPS",
+      "contextCode": "DEMO_MARKET_A",
+      "approvalRuleCode": "DEMO-WMS-OPERATOR-APPROVAL",
+      "approvalRuleVersion": 1,
+      "approverReference": "EMP-DEMO-002"
+    },
+    {
+      "sourceCode": "DEMO_LEGACY_MATRIX_A",
+      "sourceRecordKey": null,
+      "sourceRecordFingerprint": "DEMO-FINGERPRINT-002",
+      "originalRoleName": "Operator",
+      "originalDepartment": "Demo Operations",
+      "originalManagerReference": "Demo Manager Beta",
+      "originalActiveValue": "ACTIVE",
+      "normalizedRoleName": "Operator",
+      "normalizedDepartment": "Demo Operations",
+      "normalizedManagerReference": "Demo Manager Beta",
+      "mappingStatus": "DEMO_MAPPED",
+      "systemCode": "WMS",
+      "roleCode": "OPERATOR",
+      "departmentCode": "DEMO-OPS",
+      "contextCode": "DEMO_MARKET_A",
+      "approvalRuleCode": "DEMO-WMS-OPERATOR-APPROVAL",
+      "approvalRuleVersion": 1,
+      "approverReference": "EMP-DEMO-004"
     }
   ],
   "accessRequests": [
@@ -164,10 +283,17 @@
       "applicationCode": "BOARDS",
       "roleCode": "READER",
       "permissionCode": null,
+      "contextCode": null,
       "action": "ADD",
       "currentValue": null,
       "requestedValue": {
         "role": "READER"
+      },
+      "catalogSnapshot": {
+        "systemCode": "AZURE_DEVOPS",
+        "applicationCode": "BOARDS",
+        "roleCode": "READER",
+        "contextCode": null
       },
       "status": "PENDING"
     }
@@ -176,9 +302,13 @@
     {
       "requestNumber": "AR-DEMO-000001",
       "approverEmployeeId": "EMP-DEMO-002",
+      "approvalRuleCode": null,
+      "approvalRuleVersion": null,
       "approvalLevel": 1,
       "status": "PENDING",
       "comment": null,
+      "ruleSnapshot": null,
+      "approverSnapshot": "Demo Approver",
       "decidedAt": null
     }
   ],

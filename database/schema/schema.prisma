@@ -16,25 +16,25 @@ datasource db {
 // payloads are serialized as JSON in NVARCHAR(MAX) columns.
 
 model User {
-  id                    String           @id @default(uuid()) @db.UniqueIdentifier
-  employeeId            String           @unique @db.NVarChar(50)
-  entraObjectId         String           @unique @db.UniqueIdentifier
-  email                 String           @unique @db.NVarChar(320)
-  displayName           String           @db.NVarChar(200)
-  departmentId          String?          @db.UniqueIdentifier
-  managerId             String?          @db.UniqueIdentifier
-  active                Boolean          @default(true)
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
-  department            Department?      @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  manager               User?            @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  directReports         User[]           @relation("UserManager")
-  requestedRequests     AccessRequest[]  @relation("AccessRequestRequester")
-  targetRequests        AccessRequest[]  @relation("AccessRequestTargetUser")
-  approvalMatrixEntries ApprovalMatrix[]
+  id                    String                 @id @default(uuid()) @db.UniqueIdentifier
+  employeeId            String                 @unique @db.NVarChar(50)
+  entraObjectId         String                 @unique @db.UniqueIdentifier
+  email                 String                 @unique @db.NVarChar(320)
+  displayName           String                 @db.NVarChar(200)
+  departmentId          String?                @db.UniqueIdentifier
+  managerId             String?                @db.UniqueIdentifier
+  active                Boolean                @default(true)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  department            Department?            @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  manager               User?                  @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  directReports         User[]                 @relation("UserManager")
+  requestedRequests     AccessRequest[]        @relation("AccessRequestRequester")
+  targetRequests        AccessRequest[]        @relation("AccessRequestTargetUser")
+  approvalRuleApprovers ApprovalRuleApprover[]
   approvals             Approval[]
-  auditEventsAsActor    AuditLog[]       @relation("AuditActor")
-  auditEventsForTarget  AuditLog[]       @relation("AuditTargetUser")
+  auditEventsAsActor    AuditLog[]             @relation("AuditActor")
+  auditEventsForTarget  AuditLog[]             @relation("AuditTargetUser")
 
   @@index([departmentId, active])
   @@index([managerId])
@@ -43,51 +43,56 @@ model User {
 }
 
 model Department {
-  id               String           @id @default(uuid()) @db.UniqueIdentifier
-  code             String           @unique @db.NVarChar(50)
-  name             String           @unique @db.NVarChar(200)
-  active           Boolean          @default(true)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  users            User[]
-  approvalMatrices ApprovalMatrix[]
+  id             String                  @id @default(uuid()) @db.UniqueIdentifier
+  code           String                  @unique @db.NVarChar(50)
+  name           String                  @unique @db.NVarChar(200)
+  active         Boolean                 @default(true)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  users          User[]
+  approvalRules  ApprovalRule[]
+  legacyMappings LegacyApprovalMapping[]
 
   @@index([active])
   @@map("Departments")
 }
 
 model System {
-  id               String              @id @default(uuid()) @db.UniqueIdentifier
-  code             String              @unique @db.NVarChar(100)
-  name             String              @unique @db.NVarChar(200)
-  description      String?             @db.NVarChar(1000)
-  active           Boolean             @default(true)
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  applications     Application[]
-  roles            Role[]
-  permissions      Permission[]
-  approvalMatrices ApprovalMatrix[]
-  requestItems     AccessRequestItem[]
-  auditLogs        AuditLog[]
+  id             String                  @id @default(uuid()) @db.UniqueIdentifier
+  code           String                  @unique @db.NVarChar(100)
+  name           String                  @unique @db.NVarChar(200)
+  description    String?                 @db.NVarChar(1000)
+  active         Boolean                 @default(true)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  applications   Application[]
+  roles          Role[]
+  permissions    Permission[]
+  accessContexts AccessContext[]
+  approvalRules  ApprovalRule[]
+  legacySources  LegacySource[]
+  legacyMappings LegacyApprovalMapping[]
+  requestItems   AccessRequestItem[]
+  auditLogs      AuditLog[]
 
   @@index([active])
   @@map("Systems")
 }
 
 model Application {
-  id           String              @id @default(uuid()) @db.UniqueIdentifier
-  systemId     String              @db.UniqueIdentifier
-  code         String              @db.NVarChar(100)
-  name         String              @db.NVarChar(200)
-  description  String?             @db.NVarChar(1000)
-  active       Boolean             @default(true)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  system       System              @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  roles        Role[]
-  permissions  Permission[]
-  requestItems AccessRequestItem[]
+  id            String              @id @default(uuid()) @db.UniqueIdentifier
+  systemId      String              @db.UniqueIdentifier
+  code          String              @db.NVarChar(100)
+  name          String              @db.NVarChar(200)
+  description   String?             @db.NVarChar(1000)
+  active        Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  system        System              @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  roles         Role[]
+  permissions   Permission[]
+  approvalRules ApprovalRule[]
+  requestItems  AccessRequestItem[]
 
   @@unique([systemId, code])
   @@index([systemId, active])
@@ -95,25 +100,51 @@ model Application {
 }
 
 model Role {
-  id               String              @id @default(uuid()) @db.UniqueIdentifier
-  systemId         String              @db.UniqueIdentifier
-  applicationId    String?             @db.UniqueIdentifier
-  code             String              @db.NVarChar(100)
-  name             String              @db.NVarChar(200)
-  description      String?             @db.NVarChar(1000)
-  active           Boolean             @default(true)
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  system           System              @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  application      Application?        @relation(fields: [applicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  rolePermissions  RolePermission[]
-  approvalMatrices ApprovalMatrix[]
-  requestItems     AccessRequestItem[]
+  id              String                  @id @default(uuid()) @db.UniqueIdentifier
+  systemId        String                  @db.UniqueIdentifier
+  applicationId   String?                 @db.UniqueIdentifier
+  contextId       String?                 @db.UniqueIdentifier
+  code            String                  @db.NVarChar(100)
+  name            String                  @db.NVarChar(200)
+  description     String?                 @db.NVarChar(1000)
+  active          Boolean                 @default(true)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  system          System                  @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  application     Application?            @relation(fields: [applicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  context         AccessContext?          @relation(fields: [contextId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rolePermissions RolePermission[]
+  approvalRules   ApprovalRule[]
+  legacyMappings  LegacyApprovalMapping[]
+  requestItems    AccessRequestItem[]
 
-  @@unique([systemId, applicationId, code])
-  @@index([systemId, active])
+  @@unique([systemId, applicationId, contextId, code])
+  @@index([systemId, contextId, active])
   @@index([applicationId])
+  @@index([contextId])
   @@map("Roles")
+}
+
+model AccessContext {
+  id             String                  @id @default(uuid()) @db.UniqueIdentifier
+  systemId       String                  @db.UniqueIdentifier
+  contextType    String                  @db.NVarChar(50)
+  code           String                  @db.NVarChar(100)
+  name           String                  @db.NVarChar(200)
+  description    String?                 @db.NVarChar(1000)
+  active         Boolean                 @default(true)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  system         System                  @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  roles          Role[]
+  approvalRules  ApprovalRule[]
+  requestItems   AccessRequestItem[]
+  legacySources  LegacySource[]
+  legacyMappings LegacyApprovalMapping[]
+
+  @@unique([systemId, contextType, code])
+  @@index([systemId, active])
+  @@map("AccessContexts")
 }
 
 model Permission {
@@ -149,25 +180,116 @@ model RolePermission {
   @@map("RolePermissions")
 }
 
-model ApprovalMatrix {
-  id            String     @id @default(uuid()) @db.UniqueIdentifier
-  departmentId  String     @db.UniqueIdentifier
-  systemId      String     @db.UniqueIdentifier
-  roleId        String?    @db.UniqueIdentifier
-  approverId    String     @db.UniqueIdentifier
-  approvalLevel Int
-  active        Boolean    @default(true)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  department    Department @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  system        System     @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  role          Role?      @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  approver      User       @relation(fields: [approverId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+model ApprovalRule {
+  id             String                  @id @default(uuid()) @db.UniqueIdentifier
+  ruleCode       String                  @db.NVarChar(100)
+  version        Int                     @default(1)
+  departmentId   String                  @db.UniqueIdentifier
+  systemId       String                  @db.UniqueIdentifier
+  applicationId  String?                 @db.UniqueIdentifier
+  roleId         String?                 @db.UniqueIdentifier
+  contextId      String?                 @db.UniqueIdentifier
+  sourceId       String?                 @db.UniqueIdentifier
+  approvalLevel  Int
+  active         Boolean                 @default(true)
+  effectiveFrom  DateTime?
+  effectiveTo    DateTime?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  department     Department              @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  system         System                  @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  application    Application?            @relation(fields: [applicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role           Role?                   @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  context        AccessContext?          @relation(fields: [contextId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  source         LegacySource?           @relation(fields: [sourceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approvers      ApprovalRuleApprover[]
+  approvals      Approval[]
+  legacyMappings LegacyApprovalMapping[]
 
-  @@unique([departmentId, systemId, roleId, approvalLevel, approverId])
-  @@index([departmentId, systemId, roleId, active, approvalLevel])
+  @@unique([ruleCode, version, approvalLevel])
+  @@index([departmentId, systemId, contextId, roleId, active, approvalLevel])
+  @@index([applicationId, active])
+  @@index([sourceId])
+  @@map("ApprovalRules")
+}
+
+model ApprovalRuleApprover {
+  id                String                  @id @default(uuid()) @db.UniqueIdentifier
+  approvalRuleId    String                  @db.UniqueIdentifier
+  approverId        String?                 @db.UniqueIdentifier
+  approverReference String                  @db.NVarChar(320)
+  sequence          Int?
+  active            Boolean                 @default(true)
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  approvalRule      ApprovalRule            @relation(fields: [approvalRuleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approver          User?                   @relation(fields: [approverId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  legacyMappings    LegacyApprovalMapping[]
+
+  @@index([approvalRuleId, active, sequence])
   @@index([approverId, active])
-  @@map("ApprovalMatrices")
+  @@index([approverReference])
+  @@map("ApprovalRuleApprovers")
+}
+
+model LegacySource {
+  id            String                  @id @default(uuid()) @db.UniqueIdentifier
+  code          String                  @unique @db.NVarChar(100)
+  sourceSystem  String                  @db.NVarChar(100)
+  sourceObject  String                  @db.NVarChar(300)
+  systemId      String?                 @db.UniqueIdentifier
+  contextId     String?                 @db.UniqueIdentifier
+  description   String?                 @db.NVarChar(1000)
+  active        Boolean                 @default(true)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  system        System?                 @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  context       AccessContext?          @relation(fields: [contextId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approvalRules ApprovalRule[]
+  mappings      LegacyApprovalMapping[]
+
+  @@unique([sourceSystem, sourceObject])
+  @@index([systemId, active])
+  @@index([contextId])
+  @@map("LegacySources")
+}
+
+model LegacyApprovalMapping {
+  id                       String                @id @default(uuid()) @db.UniqueIdentifier
+  sourceId                 String                @db.UniqueIdentifier
+  sourceRecordKey          String?               @db.NVarChar(200)
+  sourceRecordFingerprint  String?               @db.NVarChar(128)
+  originalRoleName         String?               @db.NVarChar(500)
+  originalDepartment       String?               @db.NVarChar(500)
+  originalManagerReference String?               @db.NVarChar(500)
+  originalActiveValue      String?               @db.NVarChar(100)
+  normalizedRoleName       String?               @db.NVarChar(500)
+  normalizedDepartment     String?               @db.NVarChar(500)
+  normalizedManagerRef     String?               @db.NVarChar(500)
+  mappingStatus            String                @default("UNRESOLVED") @db.NVarChar(40)
+  systemId                 String?               @db.UniqueIdentifier
+  roleId                   String?               @db.UniqueIdentifier
+  departmentId             String?               @db.UniqueIdentifier
+  contextId                String?               @db.UniqueIdentifier
+  approvalRuleId           String?               @db.UniqueIdentifier
+  approvalRuleApproverId   String?               @db.UniqueIdentifier
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  source                   LegacySource          @relation(fields: [sourceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  system                   System?               @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role                     Role?                 @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  department               Department?           @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  context                  AccessContext?        @relation(fields: [contextId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approvalRule             ApprovalRule?         @relation(fields: [approvalRuleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approvalRuleApprover     ApprovalRuleApprover? @relation(fields: [approvalRuleApproverId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([sourceId, sourceRecordKey])
+  @@index([sourceId, sourceRecordFingerprint])
+  @@index([systemId, roleId, contextId])
+  @@index([departmentId, approvalRuleId])
+  @@index([approvalRuleApproverId])
+  @@index([mappingStatus])
+  @@map("LegacyApprovalMappings")
 }
 
 model AccessRequest {
@@ -201,9 +323,11 @@ model AccessRequestItem {
   applicationId   String?         @db.UniqueIdentifier
   roleId          String?         @db.UniqueIdentifier
   permissionId    String?         @db.UniqueIdentifier
+  contextId       String?         @db.UniqueIdentifier
   action          String          @db.NVarChar(20)
   currentValue    String?         @db.NVarChar(Max)
   requestedValue  String?         @db.NVarChar(Max)
+  catalogSnapshot String?         @db.NVarChar(Max)
   status          String          @default("PENDING") @db.NVarChar(40)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -212,6 +336,7 @@ model AccessRequestItem {
   application     Application?    @relation(fields: [applicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   role            Role?           @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   permission      Permission?     @relation(fields: [permissionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  context         AccessContext?  @relation(fields: [contextId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   automationJobs  AutomationJob[]
 
   @@index([accessRequestId, status])
@@ -219,25 +344,31 @@ model AccessRequestItem {
   @@index([applicationId])
   @@index([roleId, status])
   @@index([permissionId])
+  @@index([contextId, status])
   @@map("AccessRequestItems")
 }
 
 model Approval {
-  id              String        @id @default(uuid()) @db.UniqueIdentifier
-  accessRequestId String        @db.UniqueIdentifier
-  approverId      String        @db.UniqueIdentifier
-  approvalLevel   Int
-  status          String        @default("PENDING") @db.NVarChar(30)
-  comment         String?       @db.NVarChar(2000)
-  decidedAt       DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  accessRequest   AccessRequest @relation(fields: [accessRequestId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  approver        User          @relation(fields: [approverId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id               String        @id @default(uuid()) @db.UniqueIdentifier
+  accessRequestId  String        @db.UniqueIdentifier
+  approverId       String        @db.UniqueIdentifier
+  approvalRuleId   String?       @db.UniqueIdentifier
+  approvalLevel    Int
+  status           String        @default("PENDING") @db.NVarChar(30)
+  comment          String?       @db.NVarChar(2000)
+  ruleSnapshot     String?       @db.NVarChar(Max)
+  approverSnapshot String?       @db.NVarChar(500)
+  decidedAt        DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  accessRequest    AccessRequest @relation(fields: [accessRequestId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approver         User          @relation(fields: [approverId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approvalRule     ApprovalRule? @relation(fields: [approvalRuleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([accessRequestId, approvalLevel, approverId])
   @@index([accessRequestId, approvalLevel, status])
   @@index([approverId, status, createdAt])
+  @@index([approvalRuleId])
   @@map("Approvals")
 }
 

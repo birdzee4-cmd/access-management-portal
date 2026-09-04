@@ -79,11 +79,11 @@ The actual role, department, and manager values are intentionally not recorded h
 
 | Legacy value | Future portal concept | Required mapping behavior |
 | --- | --- | --- |
-| `RoleName` | `Role` candidate | Resolve within source/country and system context; do not assume global uniqueness. |
+| `RoleName` | `Role` candidate | Stage in `LegacyApprovalMapping`; resolve within source, system, and confirmed `AccessContext`. Do not assume global uniqueness or that it is provisionable. |
 | `Department` | `Department` candidate | Trim for comparison while preserving the source value for traceability; resolve aliases through reviewed rules. |
-| `Manager` | `ApprovalMatrix.approver` candidate | Resolve to an authoritative portal/Entra user identity; never use display text alone as permanent identity. |
-| `Active` | Mapping or approval-matrix active state | Define an explicit source-value mapping after confirming the full legacy vocabulary. |
-| Matrix source | Legacy mapping context | Preserve as `legacySource` and associate with confirmed country/region semantics. |
+| `Manager` | `ApprovalRuleApprover` candidate | Preserve the original value in `LegacyApprovalMapping`; resolve to an authoritative portal/Entra user later. Never use display text alone as permanent identity. |
+| `Active` | Mapping or approval-rule active candidate | Define an explicit source-value mapping after confirming the full legacy vocabulary. |
+| Matrix source | `LegacySource` | Preserve the exact source independently of country/region semantics. Associate an `AccessContext` only after confirmation. |
 
 One legacy row is a mapping candidate, not a complete enterprise role or entitlement definition. Multiple rows may legitimately represent different approvers, departments, countries, or approval routes.
 
@@ -91,8 +91,17 @@ One legacy row is a mapping candidate, not a complete enterprise role or entitle
 
 The discovery sample is capped, has no confirmed stable ordering key, and already shows cross-source collisions and one-to-many relationships. Migrating now would risk incorrect role uniqueness, department matching, manager identity resolution, and approval routing.
 
-No Prisma schema change was made. Before any schema change or migration, the team should review a source-aware mapping model, confirm table ownership and stable keys, profile complete value vocabularies through a separately authorized process, define identity-resolution rules, and obtain data-owner/security approval.
+Task 07C made no Prisma schema change. Task 07D subsequently designed a source-aware mapping model, but still performs no migration or import. Before any migration, the team must confirm table ownership and stable keys, profile complete value vocabularies through a separately authorized process, define identity-resolution rules, and obtain data-owner/security approval.
 
-## Recommended next step
+## Task 07D design response
 
-Prepare a reviewed mapping specification that defines source/country identity, canonical role and department resolution, manager-to-Entra matching, active-status vocabulary, conflict handling, and traceability. Validate it with source owners using non-production fixtures before authorizing any migration, portal-database write, API exposure, or UI integration.
+The new-portal schema now separates:
+
+- `AccessContext` from `LegacySource`, so source labels are preserved without guessing their country meaning;
+- catalog `Role` from `LegacyApprovalMapping`, so a matrix label remains only a candidate until reviewed;
+- `ApprovalRule` from `ApprovalRuleApprover`, so one Department + Role + Context may retain multiple approver candidates;
+- approval configuration from request-specific `Approval` snapshots.
+
+The application-level normalization rule remains trim, blank-to-null, and case-insensitive comparison while preserving original source values. No source value was cleaned, imported, or resolved in Task 07D.
+
+See [Access Catalog and Approval Rule Data Model](access-catalog-data-model.md) for schema rationale, traceability, history, and unresolved business questions.
