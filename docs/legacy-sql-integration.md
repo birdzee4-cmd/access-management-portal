@@ -138,19 +138,25 @@ The connector must not log:
 
 Operational logs may record a safe connector operation name, result, elapsed time, correlation ID, and generic error code.
 
-## Future Task 07B activation
+## Controlled production validation
 
-Task 07B must be separately reviewed and authorized before any real connection. At minimum it must:
+Task 07B used ignored local configuration to run the connector's single `SELECT 1 AS ok` health check successfully. The pool was closed afterward; no business table was queried and no tracked configuration changed.
 
-1. confirm source ownership and the exact approved schemas and columns;
-2. provision a dedicated SELECT-only identity outside this repository;
-3. store real local values only in ignored `apps/api/local.settings.json` and hosted secrets in an approved secret store;
+Task 07C then added a hard, parameterized maximum of 50 rows to matrix reads and queried only the four fixed Product Management matrix identifiers. Automated tests continue to use injected fake drivers. The sanitized aggregate findings and mapping recommendations are recorded in [Legacy Product Management Matrix Discovery](legacy-role-matrix-analysis.md).
+
+No connector is added to API startup, no external endpoint exists, and normal `npm test` never connects to production.
+
+## Future production operating requirements
+
+Any additional activation must still:
+
+1. confirm source ownership, stable keys, and approved schemas and columns;
+2. use a database identity restricted to SELECT;
+3. keep real local values only in ignored `apps/api/local.settings.json` and hosted secrets in an approved secret store;
 4. verify network restrictions, encryption, certificate policy, and timeouts;
-5. review every query template and its parameterization;
-6. add integration tests in a non-production environment;
-7. explicitly construct and inject the connector without adding startup queries;
-8. protect and authorize any API route, minimize returned employee data, and add safe audit/monitoring;
+5. review and cap every query template;
+6. use non-production fixtures for automated tests;
+7. avoid automatic startup queries;
+8. authorize any future API route on the backend, minimize returned employee data, and add safe audit/monitoring;
 9. validate that all write flags remain false and that the identity cannot mutate data;
-10. obtain change and security approval before production use.
-
-Task 07A does not authorize any of these activation steps.
+10. obtain change, data-owner, and security approval before expanding production use.

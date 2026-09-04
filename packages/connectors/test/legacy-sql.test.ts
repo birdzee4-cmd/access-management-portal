@@ -6,8 +6,10 @@ import {
   LegacySqlConnector,
   LegacySqlConnectorError,
   LegacySqlReadGuardError,
+  LegacySqlRowLimitError,
   LegacySqlTableNotAllowedError,
   assertLegacySqlReadOnlyQuery,
+  buildLegacyProductManagementMatrixQuery,
   getLegacyProductManagementMatrixTable,
   readLegacySqlConfig,
   type LegacySqlConfig,
@@ -167,6 +169,46 @@ test("approved matrix sources map to fixed SQL identifiers", () => {
       VN_MY_ID: "dbo.MatrixProductManagement_VN_MY_ID",
     },
   );
+});
+
+test("matrix queries enforce and parameterize a maximum 50-row limit", () => {
+  const query = buildLegacyProductManagementMatrixQuery("TH", 25);
+
+  assert.match(query.text, /^SELECT TOP \(@limit\)/);
+  assert.deepEqual(query.parameters, [{ name: "limit", value: 25 }]);
+
+  for (const invalidLimit of [0, 51, 1.5, Number.NaN]) {
+    assert.throws(
+      () => buildLegacyProductManagementMatrixQuery("TH", invalidLimit),
+      LegacySqlRowLimitError,
+    );
+  }
+});
+
+test("matrix row mapping tolerates nulls and uses the capped query", async () => {
+  const pool = new RecordingPool([
+    {
+      roleName: null,
+      manager: null,
+      department: null,
+      active: null,
+    },
+  ]);
+  const connector = new LegacySqlConnector(
+    readLegacySqlConfig(safeEnvironment),
+    new RecordingDriver(pool),
+  );
+
+  assert.deepEqual(await connector.listProductManagementMatrix("PH"), [
+    {
+      roleName: null,
+      manager: null,
+      department: null,
+      active: null,
+    },
+  ]);
+  assert.match(pool.requestInstance.lastQuery ?? "", /^SELECT TOP \(@limit\)/);
+  assert.deepEqual(pool.requestInstance.inputs, [["limit", 50]]);
 });
 
 test("missing legacy SQL configuration fails without opening a connection", () => {

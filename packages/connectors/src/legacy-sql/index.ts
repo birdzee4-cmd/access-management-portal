@@ -11,6 +11,7 @@ export interface ReadOnlyLegacySqlConnector {
 
   listProductManagementMatrix(
     source: MatrixSource,
+    limit?: number,
   ): Promise<readonly LegacyProductManagementMatrixRow[]>;
 
   healthCheck(): Promise<boolean>;
@@ -34,8 +35,11 @@ export {
 } from "./LegacySqlReadGuard.js";
 export { MssqlLegacySqlDriver } from "./MssqlLegacySqlDriver.js";
 export {
+  LegacySqlRowLimitError,
   LegacySqlTableNotAllowedError,
+  MAX_LEGACY_MATRIX_ROWS,
   buildLegacyProductManagementMatrixQuery,
+  enforceLegacyMatrixRowLimit,
   getLegacyProductManagementMatrixTable,
   matrixSources,
 } from "./query/product-management-matrix.js";

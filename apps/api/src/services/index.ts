@@ -6,3 +6,12 @@ export {
   LegacyCatalogService,
   type LegacyCatalogReader,
 } from "./legacy-catalog.service.js";
+export {
+  analyzeLegacyMatrixRows,
+  analyzeLegacyMatrixSources,
+  maskLegacyManager,
+  normalizeLegacyMatrixValue,
+  type LegacyMatrixCrossSourceSummary,
+  type LegacyMatrixFieldQuality,
+  type LegacyMatrixSummary,
+} from "./legacy-matrix-analysis.js";

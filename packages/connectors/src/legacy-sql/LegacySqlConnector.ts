@@ -106,9 +106,10 @@ export class LegacySqlConnector implements ReadOnlyLegacySqlConnector {
 
   async listProductManagementMatrix(
     source: MatrixSource,
+    limit?: number,
   ): Promise<readonly LegacyProductManagementMatrixRow[]> {
     const rows = await this.executeSelect<Record<string, unknown>>(
-      buildLegacyProductManagementMatrixQuery(source),
+      buildLegacyProductManagementMatrixQuery(source, limit),
     );
 
     return rows.map((row) => ({

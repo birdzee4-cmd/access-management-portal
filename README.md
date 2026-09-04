@@ -64,6 +64,8 @@ Task 06 adds the authenticated portal shell, role-aware navigation, responsive p
 
 Task 07A adds an inactive legacy SQL connector foundation with a central SELECT-only guard, fixed Product Management matrix table allowlist, separate placeholder configuration, and no API route or database connection.
 
+Tasks 07B and 07C validate the connector through a controlled health check and capped, aggregate-only Product Management matrix discovery. No raw production rows, API route, UI integration, migration, or database write is included.
+
 ## Validation
 
 ```bash
@@ -85,6 +87,7 @@ npm run prisma:validate
 - [Authentication foundation](docs/authentication.md)
 - [Portal UI foundation](docs/ui-foundation.md)
 - [Legacy SQL read-only integration](docs/legacy-sql-integration.md)
+- [Legacy role matrix discovery](docs/legacy-role-matrix-analysis.md)
 
 ## Current non-goals
 
