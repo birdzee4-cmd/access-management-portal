@@ -157,4 +157,11 @@ Applications may depend on packages. `connectors` may depend on `contracts`; con
 
 ## Future decision points
 
+Task 07N adds an internal LegacyCatalogPreviewService and pure catalog mapping
+analysis. It uses a new three-column matrix projection through the existing
+SELECT-only connector, retains each observation, reports collisions, and keeps
+unproven catalog dimensions unresolved. It has no runtime registration,
+persistence, schema change, API, or UI. Catalog candidates remain separate from
+approval configuration. See [Legacy catalog mapping](access-catalog-legacy-mapping.md).
+
 Before any live integration, the team must approve identity flows, authorization roles, network boundaries, audit retention, connector permissions, data classification, and a production-read validation plan. Enabling writes requires a separate project phase and security review; changing an environment variable alone is not sufficient authorization.

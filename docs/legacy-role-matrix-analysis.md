@@ -105,3 +105,14 @@ The new-portal schema now separates:
 The application-level normalization rule remains trim, blank-to-null, and case-insensitive comparison while preserving original source values. No source value was cleaned, imported, or resolved in Task 07D.
 
 See [Access Catalog and Approval Rule Data Model](access-catalog-data-model.md) for schema rationale, traceability, history, and unresolved business questions.
+
+## Task 07N catalog analysis
+
+The internal catalog preview now reads only RoleName, Department, and Active.
+Manager is excluded. Source is preserved as provenance; country, region, and
+other context semantics remain UNKNOWN. Repeated role labels are observations,
+not an instruction to merge or import. Department is not automatically a Role
+identity component, and Active does not trigger any lifecycle action.
+See [Legacy catalog mapping](access-catalog-legacy-mapping.md) for versioned
+normalization, generated-code collision handling, aggregate findings, and
+business decisions required before separate approval analysis.

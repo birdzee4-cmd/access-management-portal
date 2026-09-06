@@ -62,6 +62,15 @@ Task 07G adds an Admin-only legacy User Request list route. Its SQL projection n
 
 ## Logging and privacy
 
+Task 07N catalog preview selects only RoleName, Department, and Active from the
+four existing allowlisted matrices, at most 50 observations per source. It
+excludes Manager/person fields and row IDs from candidates and fingerprints.
+Hashes are correlation aids, not anonymization. Production reporting is limited
+to count-only summaries; candidates and raw observations must not be logged or
+committed. The service has no runtime/API/UI registration or persistence port.
+All safety flags and existing guards remain unchanged. See
+[Legacy catalog mapping](access-catalog-legacy-mapping.md).
+
 Future logs must avoid access tokens, secrets, connection strings, full request payloads, and unnecessary employee data. Audit events should capture actor, action, target, decision, correlation ID, and timestamp, with an approved retention period.
 
 ## Threats to address before pilot

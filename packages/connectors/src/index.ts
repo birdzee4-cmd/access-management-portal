@@ -50,6 +50,7 @@ export {
   buildLegacyUserRequestVstsIndexesQuery,
   buildLegacyVstsRelationshipSampleQuery,
   buildLegacyProductManagementMatrixQuery,
+  buildLegacyCatalogObservationsQuery,
   enforceLegacyMatrixRowLimit,
   enforceLegacyRelationshipSampleLimit,
   enforceLegacySharepointId,

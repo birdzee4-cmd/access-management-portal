@@ -69,6 +69,7 @@ export {
   assertLegacySqlReadOnlyQuery,
 } from "./LegacySqlReadGuard.js";
 export { MssqlLegacySqlDriver } from "./MssqlLegacySqlDriver.js";
+export { buildLegacyCatalogObservationsQuery } from "./query/catalog-observations.js";
 export {
   LEGACY_USER_REQUEST_TABLE,
   MAX_LEGACY_USER_REQUEST_ROWS,
