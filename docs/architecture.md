@@ -155,6 +155,16 @@ No arrow activates an import, approval engine, connector, or production write. S
 
 Applications may depend on packages. `connectors` may depend on `contracts`; contracts do not depend on applications, infrastructure SDKs, or Prisma. This keeps domain boundaries testable and prevents infrastructure code from leaking into the frontend.
 
+## Task 07O approval candidate analysis
+
+LegacyApprovalPreviewService reads the existing explicit four-column matrix
+projection through the guarded SELECT-only connector. Pure analysis retains
+observations in hypothetical source/role/department groups, emits no raw Manager
+values, and keeps identity, scope, decision mode and sequence unresolved. Catalog
+linkage is observation correlation only using the unchanged Task 07N mapper on
+the same batch. No API, UI, schema, persistence or workflow registration is added.
+See [Approval rule legacy mapping](approval-rule-legacy-mapping.md).
+
 ## Future decision points
 
 Task 07N adds an internal LegacyCatalogPreviewService and pure catalog mapping

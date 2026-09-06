@@ -195,6 +195,15 @@ an intermediate missing connector export was corrected before the successful
 checks. No migration or database push was run. Existing unrelated auth changes
 were included in working-tree validation but are excluded from this task's commit.
 
+## Task 07O linkage boundary
+
+Task 07O now consumes this mapper without changing catalog identity logic.
+It passes a person-free projection of the same matrix batch and links only a
+unique non-collision catalog observation. A RESOLVED observation link does not
+resolve a Portal Role or approval scope. Multiple matching observations and
+catalog collision warnings fail closed. Manager never participates in catalog
+identity. See [Approval rule legacy mapping](approval-rule-legacy-mapping.md).
+
 ## Business decisions and Task 07O recommendation
 
 Before Task 07O, owners/Admins must confirm source semantics, authoritative

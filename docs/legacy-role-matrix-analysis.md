@@ -116,3 +116,13 @@ identity component, and Active does not trigger any lifecycle action.
 See [Legacy catalog mapping](access-catalog-legacy-mapping.md) for versioned
 normalization, generated-code collision handling, aggregate findings, and
 business decisions required before separate approval analysis.
+
+## Task 07O approval candidate analysis
+
+The approval preview uses the existing four-column bounded read but outputs no
+raw Manager strings. Source + role + department is only a hypothetical grouping;
+all observations and duplicate approver entries remain representable. Identity,
+approval mode and sequence stay unresolved/UNKNOWN. Count-only comparisons of
+alternative groupings do not establish business semantics or authority.
+See [Approval rule legacy mapping](approval-rule-legacy-mapping.md) for privacy,
+catalog linkage, ambiguity counts, and decisions required before Task 07P.

@@ -62,6 +62,15 @@ Task 07G adds an Admin-only legacy User Request list route. Its SQL projection n
 
 ## Logging and privacy
 
+Task 07O uses the existing guarded matrix projection for internal approval
+analysis. Raw Manager values are processed only in memory and are absent from
+candidate output. Approver fingerprints are correlation aids, not anonymization
+or security identities; production reporting emits only counts via summarize().
+No person values or fingerprints are committed, logged or exposed through a new
+API/UI. There is no Graph/Entra lookup, identity assignment, approval execution,
+persistence or safety-flag change. See
+[Approval rule legacy mapping](approval-rule-legacy-mapping.md).
+
 Task 07N catalog preview selects only RoleName, Department, and Active from the
 four existing allowlisted matrices, at most 50 observations per source. It
 excludes Manager/person fields and row IDs from candidates and fingerprints.
