@@ -28,6 +28,7 @@ export const navigationItems: readonly NavigationItem[] = [
     roles: ["Admin", "Approver"],
   },
   { label: "Users", path: "/users", icon: "♙", roles: ["Admin"] },
+  { label: "Resolution Workspace", path: "/admin/resolution", icon: "▦", roles: ["Admin"] },
   {
     label: "Legacy Requests",
     path: "/legacy-requests",

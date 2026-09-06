@@ -233,6 +233,11 @@ excluded from this task's commit. Their original file hashes remain unchanged.
 
 ## Business/Admin decisions before Task 07P
 
+Task 07P now demonstrates a separate Admin-only synthetic workspace. It does not
+consume this service's production observations or expose Manager values. Draft
+mode/identity/scope selections have no authority, persistence or activation
+effect. See [Admin resolution workspace](admin-resolution-workspace.md).
+
 Confirm what Manager values represent and the authoritative identity reference
 and verification process. Decide scope boundaries for source, department, catalog
 target and approval level; resolve catalog/code collisions and missing evidence.

@@ -62,6 +62,14 @@ Task 07G adds an Admin-only legacy User Request list route. Its SQL projection n
 
 ## Logging and privacy
 
+Task 07P `/admin/resolution` reuses the existing Admin route/navigation guard.
+Only bundled synthetic fixtures are rendered; Viewer/Approver are denied and
+unauthenticated users follow the existing sign-in flow. The page adds no
+production candidate endpoint, Matrix read or person lookup. Drafts live only
+in React memory, with no browser storage or network persistence. Completeness
+never grants authority or activates workflows. Safety flags remain unchanged.
+See [Admin resolution workspace](admin-resolution-workspace.md).
+
 Task 07O uses the existing guarded matrix projection for internal approval
 analysis. Raw Manager values are processed only in memory and are absent from
 candidate output. Approver fingerprints are correlation aids, not anonymization

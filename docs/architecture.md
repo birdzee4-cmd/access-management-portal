@@ -167,6 +167,13 @@ See [Approval rule legacy mapping](approval-rule-legacy-mapping.md).
 
 ## Future decision points
 
+Task 07P adds an Admin-guarded `/admin/resolution` workspace with bundled
+synthetic fixtures and frontend-only draft validation. It has no dependency on
+the Task 07N/07O production preview services and no candidate API. React memory
+holds explicit catalog/approval/scope decisions until reset or unmount; preview
+readiness has no persistence or activation meaning. Existing authentication and
+schema remain unchanged. See [Admin resolution workspace](admin-resolution-workspace.md).
+
 Task 07N adds an internal LegacyCatalogPreviewService and pure catalog mapping
 analysis. It uses a new three-column matrix projection through the existing
 SELECT-only connector, retains each observation, reports collisions, and keeps

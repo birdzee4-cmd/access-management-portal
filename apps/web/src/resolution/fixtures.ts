@@ -1,0 +1,30 @@
+import type { SyntheticResolutionCandidate } from "./model.js";
+
+/** Authored demo values only; no 07N/07O production rows or person data. */
+export const resolutionCandidates: readonly SyntheticResolutionCandidate[] = [
+  { candidateId: "DEMO-A", label: "Candidate A", scenario: "Single observation",
+    dataSource: "SYNTHETIC", legacySource: "NEW", observedRole: "ROLE-DEMO-001",
+    observedDepartments: ["Department Alpha"], observedActive: "DEMO-OBSERVED-YES",
+    approvers: [{ code: "APPROVER-DEMO-A", label: "Synthetic Approver A" }],
+    catalogCollision: false, catalogLinkAmbiguous: false, warnings: ["Catalog and approver authority are unconfirmed in this synthetic scenario."] },
+  { candidateId: "DEMO-B", label: "Candidate B", scenario: "Role across departments",
+    dataSource: "SYNTHETIC", legacySource: "TH", observedRole: "ROLE-DEMO-001",
+    observedDepartments: ["Department Alpha", "Department Beta"], observedActive: "DEMO-OBSERVED-YES",
+    approvers: [{ code: "APPROVER-DEMO-B", label: "Synthetic Approver B" }],
+    catalogCollision: false, catalogLinkAmbiguous: false, warnings: ["Two departments are observations, not proof of department-specific access."] },
+  { candidateId: "DEMO-C", label: "Candidate C", scenario: "Multiple approver observations",
+    dataSource: "SYNTHETIC", legacySource: "PH", observedRole: "ROLE-DEMO-002",
+    observedDepartments: ["Department Gamma"], observedActive: "DEMO-OBSERVED-YES",
+    approvers: [{ code: "APPROVER-DEMO-C", label: "Synthetic Approver C" }, { code: "APPROVER-DEMO-D", label: "Synthetic Approver D" }],
+    catalogCollision: false, catalogLinkAmbiguous: false, warnings: ["Multiple observations do not establish ANY, ALL, or sequence."] },
+  { candidateId: "DEMO-D", label: "Candidate D", scenario: "Role-code collision",
+    dataSource: "SYNTHETIC", legacySource: "VN_MY_ID", observedRole: "ROLE-DEMO-COLLISION",
+    observedDepartments: ["Department Delta"], observedActive: "DEMO-OBSERVED-UNKNOWN",
+    approvers: [{ code: "APPROVER-DEMO-E", label: "Synthetic Approver E" }],
+    catalogCollision: true, catalogLinkAmbiguous: false, warnings: ["Two synthetic role labels share a candidate code. No merge is performed."] },
+  { candidateId: "DEMO-E", label: "Candidate E", scenario: "Catalog linkage ambiguity",
+    dataSource: "SYNTHETIC", legacySource: "NEW", observedRole: "ROLE-DEMO-LINK",
+    observedDepartments: ["Department Epsilon"], observedActive: "DEMO-OBSERVED-UNKNOWN",
+    approvers: [{ code: "APPROVER-DEMO-F", label: "Synthetic Approver F" }],
+    catalogCollision: false, catalogLinkAmbiguous: true, warnings: ["More than one synthetic catalog observation could match this candidate."] },
+];

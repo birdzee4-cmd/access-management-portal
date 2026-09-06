@@ -17,6 +17,7 @@ import { LegacyUserRequestDetailPage } from "../pages/LegacyUserRequestDetailPag
 import { MyRequestsPage } from "../pages/MyRequestsPage.js";
 import { SettingsPage } from "../pages/SettingsPage.js";
 import { UsersPage } from "../pages/UsersPage.js";
+import { ResolutionWorkspacePage } from "../pages/ResolutionWorkspacePage.js";
 import { AppShell } from "./AppShell.js";
 import { hasRequiredRole } from "./navigation.js";
 
@@ -56,6 +57,11 @@ export function PortalView({ identity, onSignOut, api }: PortalViewProps) {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/requests" element={<MyRequestsPage />} />
+        <Route path="/admin/resolution" element={
+          <RoleRoute userRoles={identity.roles} requiredRoles={["Admin"]}>
+            <ResolutionWorkspacePage />
+          </RoleRoute>
+        } />
         <Route
           path="/catalog"
           element={<AccessCatalogPage roles={identity.roles} api={api} />}

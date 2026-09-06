@@ -197,6 +197,10 @@ were included in working-tree validation but are excluded from this task's commi
 
 ## Task 07O linkage boundary
 
+Task 07P adds a separate synthetic Admin resolution workspace. It does not
+load these production candidates, change this mapper, merge collisions or save
+catalog decisions. See [Admin resolution workspace](admin-resolution-workspace.md).
+
 Task 07O now consumes this mapper without changing catalog identity logic.
 It passes a person-free projection of the same matrix batch and links only a
 unique non-collision catalog observation. A RESOLVED observation link does not
