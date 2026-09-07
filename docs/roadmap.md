@@ -8,6 +8,12 @@ requested scope and STOP when complete; do not automatically continue.
 
 ## M1 — Portal-native Request Engine
 
+**Status (2026-09-07): IMPLEMENTED; operational acceptance blocked.** Code,
+schema, migration artifact, API, UI and synthetic validation are complete. No
+migration was applied because an approved local Portal SQL target is unavailable;
+database-backed E2E and approved catalog/user population remain entry blockers.
+See [M1 implementation](portal-request-engine.md). Do not begin M2 automatically.
+
 - **Objective:** submit and track portal-owned access requests without granting access.
 - **Major deliverables:** reviewed request lifecycle, catalog/context snapshots,
   authenticated submission/read UI/API, ownership checks, validation, idempotency,

@@ -110,3 +110,14 @@ test("department, role, and context can map to more than one manager", () => {
     2,
   );
 });
+
+test("M1 schema and baseline migration enforce request safety invariants", () => {
+  const schema = readFileSync(fileURLToPath(new URL("../schema/schema.prisma", import.meta.url)), "utf8");
+  const migration = readFileSync(fileURLToPath(new URL("../migrations/20260907120000_m1_portal_request_engine/migration.sql", import.meta.url)), "utf8");
+  assert.match(schema, /idempotencyKey String/);
+  assert.match(schema, /currentRoleId\s+String\?/);
+  assert.match(migration, /CREATE TABLE \[dbo\]\.\[AccessRequests\]/);
+  assert.match(migration, /AccessRequestItems_role_shape_check/);
+  assert.match(migration, /AccessRequests_requesterId_idempotencyKey_key/);
+  assert.doesNotMatch(migration, /(?:INSERT|UPDATE|DELETE|MERGE)\s+(?:INTO\s+)?(?:Legacy|SharePoint|VSTS)/i);
+});

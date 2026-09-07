@@ -15,10 +15,11 @@ const noOperation = async () => undefined;
 const forbidden = async (): Promise<never> => { throw new Error("Workspace must not call a legacy API."); };
 const api = { getLegacyMatrixRows: forbidden, getLegacyMatrixSummary: forbidden,
   getLegacyUserRequests: forbidden, getLegacyUserRequestDetail: forbidden };
+const requestApi = { catalog: forbidden, list: forbidden, submit: forbidden };
 function portal(roles: readonly PortalRole[]) {
   return <MemoryRouter initialEntries={["/admin/resolution"]}><PortalView
     identity={{ authenticated: true, displayName: "Synthetic Admin", email: "", roles }}
-    onSignOut={noOperation} api={api} /></MemoryRouter>;
+    onSignOut={noOperation} api={api} requestApi={requestApi} /></MemoryRouter>;
 }
 
 async function withDom(element: ReactNode, run: (ui: {

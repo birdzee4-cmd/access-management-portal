@@ -112,6 +112,12 @@ Task 04 adds a reusable environment-configured Prisma client plus repository int
 
 The implementation flow is API service to repository interface to Prisma repository to the new portal database. Legacy systems use a separate read-only connector boundary and never pass through the portal Prisma repositories. See [Local Development Data Layer](data-access.md).
 
+M1 adds a separate authenticated Portal request API/service/repository path for
+self-service ADD/REMOVE/CHANGE intent. It resolves the actor by verified Entra
+object ID, snapshots active Portal catalog roles, and creates the request, single
+item and audit event atomically. It stops at SUBMITTED and does not enter the
+Approval or AutomationJob paths. See [M1 Request Engine](portal-request-engine.md).
+
 ## Task 07D data-model boundaries
 
 Task 07D refines the portal-owned schema around three independent concerns:

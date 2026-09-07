@@ -6,6 +6,7 @@ import { AuthApiClient } from "../auth/authApi.js";
 import type { AuthContextValue, PortalRole } from "../auth/types.js";
 import { useAuth } from "../auth/useAuth.js";
 import { StatusBadge } from "../components/StatusBadge.js";
+import { PortalRequestApiClient } from "../requests/portalRequestApi.js";
 import { AccessCatalogPage } from "../pages/AccessCatalogPage.js";
 import { AccessDeniedPage } from "../pages/AccessDeniedPage.js";
 import { ApprovalsPage } from "../pages/ApprovalsPage.js";
@@ -49,14 +50,15 @@ export interface PortalViewProps {
     | "getLegacyUserRequests"
     | "getLegacyUserRequestDetail"
   >;
+  readonly requestApi: Pick<PortalRequestApiClient, "catalog" | "list" | "submit">;
 }
 
-export function PortalView({ identity, onSignOut, api }: PortalViewProps) {
+export function PortalView({ identity, onSignOut, api, requestApi }: PortalViewProps) {
   return (
     <AppShell identity={identity} onSignOut={onSignOut}>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
-        <Route path="/requests" element={<MyRequestsPage />} />
+        <Route path="/requests" element={<MyRequestsPage api={requestApi} />} />
         <Route path="/admin/resolution" element={
           <RoleRoute userRoles={identity.roles} requiredRoles={["Admin"]}>
             <ResolutionWorkspacePage />
@@ -227,6 +229,10 @@ function AuthenticatedPortal({ auth }: { readonly auth: AuthContextValue }) {
     () => new AuthApiClient(auth.getAccessToken),
     [auth.getAccessToken],
   );
+  const requestApi = useMemo(
+    () => new PortalRequestApiClient(auth.getAccessToken),
+    [auth.getAccessToken],
+  );
 
   useEffect(() => {
     let active = true;
@@ -286,7 +292,7 @@ function AuthenticatedPortal({ auth }: { readonly auth: AuthContextValue }) {
     );
   }
 
-  return <PortalView identity={identity} onSignOut={auth.logout} api={api} />;
+  return <PortalView identity={identity} onSignOut={auth.logout} api={api} requestApi={requestApi} />;
 }
 
 export function PortalApplication() {

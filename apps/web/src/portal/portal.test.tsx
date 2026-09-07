@@ -22,6 +22,11 @@ const portalApi = {
     throw new Error("Not called during server rendering.");
   },
 };
+const requestApi = {
+  catalog: async () => ({ roles: [] }),
+  list: async () => ({ requests: [] }),
+  submit: async () => { throw new Error("Not called during server rendering."); },
+};
 
 function identity(roles: readonly PortalRole[]): AuthenticatedIdentityResponse {
   return {
@@ -39,6 +44,7 @@ function renderPortal(path: string, roles: readonly PortalRole[]): string {
         identity={identity(roles)}
         onSignOut={noOperation}
         api={portalApi}
+        requestApi={requestApi}
       />
     </MemoryRouter>,
   );

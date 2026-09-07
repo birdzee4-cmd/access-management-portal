@@ -10,6 +10,7 @@ Portal request/approval execution and provisioning remain future work.
 - [Current project state](docs/project-state.md)
 - [Production safety boundary](docs/production-safety-boundary.md)
 - [M1–M4 roadmap](docs/roadmap.md)
+- [M1 Portal-native Request Engine](docs/portal-request-engine.md)
 
 Legacy Production remains READ ONLY; writes, provisioning, revocation and
 automation are disabled. Configured legacy read views can contact production when

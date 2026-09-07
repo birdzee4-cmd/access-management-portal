@@ -60,6 +60,9 @@ only, and no Power Automate editing or execution permissions.
 - 07P is synthetic and React-memory-only with no save/production candidate path.
   07Q contracts/helpers neither persist, verify identities, authorize, activate nor
   emit audit events. Bounded unordered absence is not proof of source deletion.
+- M1 introduces only Portal-owned request writes behind the explicit Portal
+  database ownership guard. Submission atomically records intent and audit, stops
+  at SUBMITTED, and does not call any legacy connector or execution component.
 
 ## Identity and data handling
 

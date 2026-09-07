@@ -51,6 +51,11 @@ This compromise retains SQL Server compatibility without introducing a large col
 | `AutomationJob.status` | `PENDING`, `RUNNING`, `SUCCEEDED`, `FAILED`, `CANCELLED` |
 | `AuditLog.result` | `SUCCESS`, `FAILURE`, `DENIED` |
 
+M1 adds immutable submission metadata (`version`, `submittedAt`, scoped
+`idempotencyKey`, canonical `payloadHash`) and `AccessRequestItem.currentRoleId`.
+ADD uses requested `roleId`; REMOVE uses `currentRoleId`; CHANGE requires both,
+distinct and within one Portal system. See [M1 request engine](portal-request-engine.md).
+
 Connector, external-system, entity-type, and audit-action codes remain strings because they are extension points rather than closed vocabularies.
 
 ## Entity descriptions

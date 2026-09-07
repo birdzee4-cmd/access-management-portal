@@ -5,6 +5,8 @@ export type DatabaseEnvironment = Readonly<Record<string, string | undefined>>;
 const missingDatabaseUrlMessage =
   "DATABASE_URL is required for the new Access Management Portal database. " +
   "Use a local SQL Server connection string during development; never use a legacy or production database.";
+const missingOwnershipMessage =
+  "PORTAL_DATABASE_OWNERSHIP must be CONFIRMED_PORTAL_OWNED before Portal database access.";
 
 let singleton: PrismaClient | undefined;
 
@@ -27,6 +29,9 @@ export function getPrismaClient(environment: DatabaseEnvironment = process.env):
     return singleton;
   }
 
+  if (environment.PORTAL_DATABASE_OWNERSHIP !== "CONFIRMED_PORTAL_OWNED") {
+    throw new Error(missingOwnershipMessage);
+  }
   const databaseUrl = requireDatabaseUrl(environment);
   singleton = new PrismaClient({
     datasources: {

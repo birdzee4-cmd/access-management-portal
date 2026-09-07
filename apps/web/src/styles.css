@@ -73,7 +73,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -85,10 +86,19 @@ a {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid rgba(15, 108, 189, 0.32);
   outline-offset: 2px;
 }
+
+.request-form { margin-bottom: 1.5rem; }
+.request-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.request-form__reason { grid-column: 1 / -1; }
+.request-form textarea { min-height: 7rem; resize: vertical; padding: .7rem; border: 1px solid #b9c9da; border-radius: .35rem; }
+.request-form__policy { color: var(--muted); font-size: .88rem; line-height: 1.5; }
+.request-form__message { padding: .7rem; border-radius: .35rem; background: #eef6fd; }
+@media (max-width: 700px) { .request-form__grid { grid-template-columns: 1fr; } .request-form__reason { grid-column: auto; } }
 
 h1,
 h2,

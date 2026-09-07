@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
-    "test": "npm run build && node --test test/resolution-design.test.mjs"
+    "test": "npm run build && node --test test/resolution-design.test.mjs test/portal-request.test.mjs"
   },
   "devDependencies": {
     "typescript": "^5.8.2"

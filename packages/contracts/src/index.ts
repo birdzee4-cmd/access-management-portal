@@ -172,6 +172,65 @@ export interface HealthResponse {
   legacyIntegrationMode: LegacyIntegrationMode | "BLOCKED";
 }
 
+export const portalRequestTypes = ["ADD", "REMOVE", "CHANGE"] as const;
+export type PortalRequestType = (typeof portalRequestTypes)[number];
+
+export interface PortalCatalogRole {
+  readonly id: string;
+  readonly systemId: string;
+  readonly systemCode: string;
+  readonly systemName: string;
+  readonly applicationId: string | null;
+  readonly applicationName: string | null;
+  readonly contextId: string | null;
+  readonly contextName: string | null;
+  readonly code: string;
+  readonly name: string;
+}
+
+export interface PortalRequestCatalogResponse {
+  readonly roles: readonly PortalCatalogRole[];
+}
+
+export interface PortalAccessRequestSubmission {
+  readonly requestType: PortalRequestType;
+  readonly currentRoleId?: string;
+  readonly requestedRoleId?: string;
+  readonly reason: string;
+  readonly effectiveDate?: string;
+  readonly expirationDate?: string;
+  readonly idempotencyKey: string;
+}
+
+export interface PortalAccessRequestItem {
+  readonly action: PortalRequestType;
+  readonly currentRole: PortalCatalogRole | null;
+  readonly requestedRole: PortalCatalogRole | null;
+  readonly status: "PENDING";
+}
+
+export interface PortalAccessRequest {
+  readonly id: string;
+  readonly requestNumber: string;
+  readonly requestType: PortalRequestType;
+  readonly reason: string;
+  readonly status: "SUBMITTED";
+  readonly version: number;
+  readonly submittedAt: string;
+  readonly effectiveDate: string | null;
+  readonly expirationDate: string | null;
+  readonly item: PortalAccessRequestItem;
+}
+
+export interface PortalAccessRequestListResponse {
+  readonly requests: readonly PortalAccessRequest[];
+}
+
+export interface PortalAccessRequestSubmissionResponse {
+  readonly request: PortalAccessRequest;
+  readonly replayed: boolean;
+}
+
 export interface LegacyAccessRecord {
   readonly externalId: string;
   readonly employeeId: string;

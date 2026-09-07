@@ -5,6 +5,7 @@ import {
   PrismaAuditLogRepository,
   PrismaDepartmentRepository,
   PrismaExternalReferenceRepository,
+  PrismaPortalRequestRepository,
   PrismaRoleRepository,
   PrismaSystemRepository,
   PrismaUserRepository,
@@ -15,6 +16,7 @@ import {
   ApprovalService,
   AuditService,
   CatalogService,
+  PortalRequestService,
 } from "../services/index.js";
 
 export function createApiDataLayer() {
@@ -27,6 +29,7 @@ export function createApiDataLayer() {
     accessRequests: new PrismaAccessRequestRepository(database),
     approvals: new PrismaApprovalRepository(database),
     externalReferences: new PrismaExternalReferenceRepository(database),
+    portalRequests: new PrismaPortalRequestRepository(database),
     auditLogs: new PrismaAuditLogRepository(database),
   };
 
@@ -35,6 +38,7 @@ export function createApiDataLayer() {
     services: {
       catalog: new CatalogService(repositories),
       accessRequests: new AccessRequestService(repositories),
+      portalRequests: new PortalRequestService(repositories.portalRequests),
       approvals: new ApprovalService(repositories.approvals),
       audit: new AuditService(repositories.auditLogs),
     },

@@ -116,7 +116,8 @@ model Role {
   rolePermissions RolePermission[]
   approvalRules   ApprovalRule[]
   legacyMappings  LegacyApprovalMapping[]
-  requestItems    AccessRequestItem[]
+  requestItems        AccessRequestItem[] @relation("RequestedRole")
+  currentRequestItems AccessRequestItem[] @relation("CurrentRole")
 
   @@unique([systemId, applicationId, contextId, code])
   @@index([systemId, contextId, active])
@@ -302,6 +303,10 @@ model AccessRequest {
   effectiveDate  DateTime?           @db.Date
   expirationDate DateTime?           @db.Date
   status         String              @default("DRAFT") @db.NVarChar(40)
+  version        Int                 @default(1)
+  idempotencyKey String              @db.NVarChar(100)
+  payloadHash    String              @db.NVarChar(64)
+  submittedAt    DateTime
   metadata       String?             @db.NVarChar(Max)
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
@@ -313,6 +318,7 @@ model AccessRequest {
   @@index([status, createdAt])
   @@index([requesterId, createdAt])
   @@index([targetUserId, status, createdAt])
+  @@unique([requesterId, idempotencyKey])
   @@map("AccessRequests")
 }
 
@@ -322,6 +328,7 @@ model AccessRequestItem {
   systemId        String          @db.UniqueIdentifier
   applicationId   String?         @db.UniqueIdentifier
   roleId          String?         @db.UniqueIdentifier
+  currentRoleId   String?         @db.UniqueIdentifier
   permissionId    String?         @db.UniqueIdentifier
   contextId       String?         @db.UniqueIdentifier
   action          String          @db.NVarChar(20)
@@ -334,7 +341,8 @@ model AccessRequestItem {
   accessRequest   AccessRequest   @relation(fields: [accessRequestId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   system          System          @relation(fields: [systemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   application     Application?    @relation(fields: [applicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  role            Role?           @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role            Role?           @relation("RequestedRole", fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  currentRole     Role?           @relation("CurrentRole", fields: [currentRoleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   permission      Permission?     @relation(fields: [permissionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   context         AccessContext?  @relation(fields: [contextId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   automationJobs  AutomationJob[]
@@ -343,6 +351,7 @@ model AccessRequestItem {
   @@index([systemId, status])
   @@index([applicationId])
   @@index([roleId, status])
+  @@index([currentRoleId])
   @@index([permissionId])
   @@index([contextId, status])
   @@map("AccessRequestItems")

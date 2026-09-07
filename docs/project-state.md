@@ -1,21 +1,22 @@
 # Project state
 
-OPT-01 snapshot, 2026-09-07; implementation baseline `1170d9a` (07Q), verified from
-repository docs/source without production refresh. Read [safety](production-safety-boundary.md)
+M1 implementation snapshot, 2026-09-07; based on repository docs and source
+without production refresh. Read [safety](production-safety-boundary.md)
 and [roadmap](roadmap.md). Historical findings are scoped to their dates/samples.
 
 ## Purpose and architecture
 
 Centralized access management for approximately 1,000 employees; VSTS is the first
-planned provisioning pilot. Legacy remains the system of record; the portal is
-not yet an operating request/approval engine.
+planned provisioning pilot. Legacy remains the system of record. The portal now
+implements self-service request submission but no approval or execution engine.
 
 npm workspaces: React/TypeScript/Vite Web; Azure Functions v4 TypeScript API;
 transport contracts; shared safety policy; read-only connectors; Prisma schema,
 client and repositories for a separate future portal SQL Server database.
 API services depend on repository interfaces; legacy mssql reads bypass Prisma.
-Schema/repositories and synthetic seed fixtures exist; migrations, a seed executor
-and operational request writes do not. See [architecture](architecture.md),
+Schema/repositories, synthetic fixtures and an initial Portal baseline migration
+exist. The migration was not applied because no approved local Portal SQL target
+was available. See [M1 request engine](portal-request-engine.md), [architecture](architecture.md),
 [data access](data-access.md), [data model](data-model.md).
 
 ## Authentication and completed capabilities
@@ -38,6 +39,10 @@ configuration. See [authentication](authentication.md).
   reads, request/VSTS relationship/lifecycle analysis and list/detail/filter views.
   See [list API](legacy-user-request-api.md), [detail API](legacy-user-request-detail-api.md)
   and [lifecycle semantics](legacy-approval-lifecycle-semantics.md).
+- M1 adds authenticated self-service ADD/REMOVE/CHANGE submission and owned list/
+  detail APIs, Portal catalog selection, immutable catalog snapshots, idempotency,
+  version 1, atomic audit, and a real My Requests UI. It stops at SUBMITTED and
+  performs no approval, activation or target-system action.
 
 ## 07N–07Q outcomes
 
@@ -59,14 +64,16 @@ mode is READ_ONLY and all write/provision/revoke/automation flags are false; see
 [canonical controls](production-safety-boundary.md). OPT-01 performs no production
 access and asserts no deployment or database readiness.
 
-Catalog/rule models and read-oriented services exist. Request submission, approval
-execution, resolution persistence/governance/activation, provisioning,
+Catalog/rule models and request persistence exist. Approval execution, resolution
+persistence/governance/activation, provisioning,
 reconciliation and JML are future work. 07Q POST examples are unregistered designs.
 OBSERVED, RESOLVED, APPROVED, ACTIVE and PROVISIONED remain separate states.
 
 ## POLICY REQUIRED
 
-Unresolved: catalog IDs/applicability; source/department/context meaning and stable
+Unresolved: requests for another person; verification of current target access and
+inactive historical roles for REMOVE/CHANGE; catalog population/ownership and
+applicability; source/department/context meaning and stable
 keys; collision/duplicate handling and complete evidence; Manager authority and
 eligible issuer-scoped identities/groups; ANY/ALL/SEQUENTIAL and ordering;
 ownership, reviewer scope, self-approval/separation, delegation/escalation;
@@ -84,11 +91,14 @@ never print/commit them. Mock needs development, enable flag and header, yieldin
 fake Viewer. Configured legacy views can initiate real reads; do not use them for
 routine documentation verification.
 
-Tests use fakes/synthetic fixtures, not live SQL integration. Build generates Prisma
+Tests use fakes/synthetic fixtures, not live SQL integration. Portal DB access now
+requires `PORTAL_DATABASE_OWNERSHIP=CONFIRMED_PORTAL_OWNED`. Build generates Prisma
 client with a local placeholder; prisma:validate is syntax-only. Sandbox network
 or child-process restrictions may block tooling; report limitations. Stop on
 CreateProcessWithLogonW failed: 1907. At OPT-01 entry the two authApi files had
 unrelated unstaged edits; preserve if present and inspect current status each time.
 
+M1 code is complete but operational acceptance awaits an approved local Portal DB,
+baseline application, synthetic catalog/user population and database-backed E2E.
 Future prompts may name a milestone and bounded deliverables. Use M1–M4 planning,
 retain 07A–07Q traceability, and never start the next milestone automatically.
