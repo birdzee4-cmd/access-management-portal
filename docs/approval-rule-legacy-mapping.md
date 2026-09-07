@@ -233,6 +233,12 @@ excluded from this task's commit. Their original file hashes remain unchanged.
 
 ## Business/Admin decisions before Task 07P
 
+Task 07Q now documents resolution persistence and configuration governance as
+separate future concerns. No Manager observation is promoted to a verified
+approver, and governance approval is not employee access approval or activation.
+Only design types and pure simulations are added; this service is unchanged.
+See [Resolution persistence and audit design](resolution-persistence-audit-design.md).
+
 Task 07P now demonstrates a separate Admin-only synthetic workspace. It does not
 consume this service's production observations or expose Manager values. Draft
 mode/identity/scope selections have no authority, persistence or activation

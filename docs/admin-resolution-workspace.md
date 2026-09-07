@@ -149,6 +149,12 @@ responsive rendering in a real browser.
 
 ## Future persistence boundary — design only
 
+Task 07Q now defines shared design contracts and pure versioning, drift,
+concurrency and eligibility helpers. It adds no storage or write API and does
+not connect these helpers to the workspace. This page remains synthetic,
+React-memory-only and no-save. See
+[Resolution persistence and audit design](resolution-persistence-audit-design.md).
+
 Before any resolution can be saved, Business/Admin must approve ownership and
 scope: who owns each decision, which reviewers may propose/review/accept it,
 and which source/system/context each reviewer may access. Reviewer identity

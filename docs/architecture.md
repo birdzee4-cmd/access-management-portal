@@ -167,6 +167,13 @@ See [Approval rule legacy mapping](approval-rule-legacy-mapping.md).
 
 ## Future decision points
 
+Task 07Q adds DESIGN ONLY resolution contracts and pure validators in
+packages/contracts. Resolution, governance, activation and future execution
+remain distinct; immutable decisions, audit, source evidence and separate
+decision-version/aggregate-revision concepts are proposed without persistence.
+No Prisma, repository, write service, endpoint or 07P UI behavior changes.
+See [Resolution persistence and audit design](resolution-persistence-audit-design.md).
+
 Task 07P adds an Admin-guarded `/admin/resolution` workspace with bundled
 synthetic fixtures and frontend-only draft validation. It has no dependency on
 the Task 07N/07O production preview services and no candidate API. React memory

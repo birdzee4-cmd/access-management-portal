@@ -62,6 +62,15 @@ Task 07G adds an Admin-only legacy User Request list route. Its SQL projection n
 
 ## Logging and privacy
 
+Task 07Q defines DESIGN ONLY resolution/audit contracts. Future actor references
+are immutable and issuer-scoped, without display names, raw Manager strings or
+credentials. Source hashes are correlation evidence, not anonymization. Pure
+helpers validate synthetic transitions, revision conflicts and explicit
+activation eligibility; they grant no authority, perform no lookup and emit no
+audit event. Retention, self-approval and ownership policies remain POLICY
+REQUIRED. No UI save, API write, DB change or safety-flag change is enabled. See
+[Resolution persistence and audit design](resolution-persistence-audit-design.md).
+
 Task 07P `/admin/resolution` reuses the existing Admin route/navigation guard.
 Only bundled synthetic fixtures are rendered; Viewer/Approver are denied and
 unauthenticated users follow the existing sign-in flow. The page adds no

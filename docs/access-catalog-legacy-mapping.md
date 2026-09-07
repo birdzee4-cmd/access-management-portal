@@ -197,6 +197,12 @@ were included in working-tree validation but are excluded from this task's commi
 
 ## Task 07O linkage boundary
 
+Task 07Q proposes immutable resolution decisions and versioned source evidence
+without changing this mapper. A source fingerprint or unique observation link
+is not governance approval, activation or a stable source key. No candidates
+are imported or saved. See
+[Resolution persistence and audit design](resolution-persistence-audit-design.md).
+
 Task 07P adds a separate synthetic Admin resolution workspace. It does not
 load these production candidates, change this mapper, merge collisions or save
 catalog decisions. See [Admin resolution workspace](admin-resolution-workspace.md).

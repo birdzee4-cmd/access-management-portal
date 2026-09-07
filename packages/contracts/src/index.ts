@@ -1,4 +1,5 @@
 export type LegacyIntegrationMode = "READ_ONLY";
+export * from "./resolution-design.js";
 
 export const portalRoles = ["Admin", "Approver", "Viewer"] as const;
 export type PortalRole = (typeof portalRoles)[number];
