@@ -138,7 +138,7 @@ flowchart LR
     RO -. "Approved reads only" .-> PROD
 ```
 
-The dotted line is a policy boundary, not an implemented connection. No production connector exists in the repository at this stage.
+At this historical baseline no connector existed. Later tasks added guarded SQL reads; see [current state](project-state.md).
 
 ### Later phases — future scope, not authorized by this baseline
 
@@ -158,30 +158,9 @@ Listing these phases does not authorize Task 03 or any implementation work.
 
 ## Production Safety Boundary
 
-The required Phase 1 controls are:
-
-```dotenv
-ENABLE_SHAREPOINT_WRITE=false
-ENABLE_LEGACY_SQL_WRITE=false
-ENABLE_VSTS_WRITE=false
-ENABLE_ACCESS_PROVISIONING=false
-ENABLE_ACCESS_REVOCATION=false
-ENABLE_AUTOMATION=false
-```
-
-In addition, `LEGACY_INTEGRATION_MODE` remains `READ_ONLY`.
-
-These flags document and enforce the application-side default, but they are not sufficient on their own. Any future production reader must also use a technically read-only identity and least-privilege source permissions.
-
-The project must not:
-
-- create, update, or delete SharePoint records;
-- modify, close, or create VSTS work items;
-- write to, migrate, or change the existing Azure SQL database;
-- alter or trigger either Power Automate flow;
-- provision or revoke access;
-- create or store production credentials, tokens, tenant secrets, PATs, usernames, or passwords;
-- deploy any resource or application as part of this task.
+The [canonical production safety boundary](production-safety-boundary.md) defines
+mandatory flags, prohibited operations, least privilege and data handling.
+This historical baseline does not authorize additional production access.
 
 ## Baseline gaps requiring later confirmation
 

@@ -1,22 +1,20 @@
 # Access Management Portal
 
-Initial local project skeleton for a centralized access-management platform intended to serve approximately 1,000 employees. The first planned pilot integration is Azure DevOps / VSTS.
+Centralized access management with Entra authentication, Admin-only legacy SQL
+read views, synthetic resolution preview and design-only resolution contracts.
+Portal request/approval execution and provisioning remain future work.
 
-This repository does **not** connect to production, provision or revoke access, create Azure resources, or deploy anything.
+## Start here
 
-## Safety boundary
+- [Repository instructions](AGENTS.md)
+- [Current project state](docs/project-state.md)
+- [Production safety boundary](docs/production-safety-boundary.md)
+- [M1–M4 roadmap](docs/roadmap.md)
 
-The existing Power Apps, SharePoint, Power Automate, SQL Server, and Azure DevOps / VSTS solution remains the system of record. Every legacy integration in this phase is read-only.
-
-The following actions are explicitly prohibited:
-
-- SharePoint writes
-- `INSERT`, `UPDATE`, or `DELETE` against the existing SQL Server
-- Azure DevOps / VSTS writes or work-item closure
-- Access provisioning or revocation
-- Power Automate changes or execution
-
-The `.env.example` feature flags disable these operations. The shared safety parser also fails closed: missing, malformed, or permissive values are rejected. Connector contracts expose query operations only.
+Legacy Production remains READ ONLY; writes, provisioning, revocation and
+automation are disabled. Configured legacy read views can contact production when
+invoked; documentation work does not authorize reads. Historical notes below
+record incremental delivery; current state covers outcomes through 07Q.
 
 ## Repository layout
 
@@ -81,6 +79,7 @@ npm run typecheck
 npm test
 npm run build
 npm run prisma:validate
+npm audit --audit-level=moderate
 ```
 
 `prisma:validate` validates schema syntax only and deliberately forces a local placeholder URL. It never reads a production connection string.
@@ -105,7 +104,7 @@ npm run prisma:validate
 - Azure resource provisioning
 - Deployment pipelines
 - Production authentication configuration, app registrations, or credentials
-- Live integration clients
+- SharePoint/VSTS API clients and write-capable integrations
 - Data migration
 - Access approval, provisioning, or revocation workflows
 - Automatic database migration or seed execution

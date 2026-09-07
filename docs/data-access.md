@@ -80,17 +80,9 @@ The two flows are intentionally separate:
 - Connector contracts contain no create, update, delete, close, provision, revoke, or automation method.
 - ExternalReference stores correlation identifiers in the new portal database; it does not grant permission to contact or mutate an external system.
 
-The Production Safety Boundary remains:
-
-~~~text
-LEGACY_INTEGRATION_MODE=READ_ONLY
-ENABLE_SHAREPOINT_WRITE=false
-ENABLE_LEGACY_SQL_WRITE=false
-ENABLE_VSTS_WRITE=false
-ENABLE_ACCESS_PROVISIONING=false
-ENABLE_ACCESS_REVOCATION=false
-ENABLE_AUTOMATION=false
-~~~
+See the [canonical production safety boundary](production-safety-boundary.md).
+Task 07E later registered a separate lazy Admin SQL read runtime; the Task 04
+portal container remains separate.
 
 ## Local SQL Server limitation
 

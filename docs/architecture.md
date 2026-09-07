@@ -2,7 +2,7 @@
 
 ## Scope
 
-This phase creates a local, deployable-in-the-future code layout without creating infrastructure or connecting to any external system. Azure DevOps / VSTS is the first planned pilot, but its current contract is query-only.
+See [project state](project-state.md) for current implementation and the [production safety boundary](production-safety-boundary.md) for operational restrictions. VSTS is the first planned provisioning pilot; its connector contract remains query-only.
 
 This document describes the **NEW ACCESS MANAGEMENT PORTAL** architecture. The working **CURRENT PRODUCTION SYSTEM** is a separate architecture domain and remains unchanged. Its components, workflow, correlation identifiers, legacy SQL sources, and safety boundary are documented in [Existing System Architecture Baseline](existing-system.md).
 
@@ -20,9 +20,9 @@ Azure Functions API  ----> New portal Azure SQL database (future)
       +----> Read-only connector boundary
                  |----> Azure DevOps / VSTS (future)
                  |----> SharePoint (future)
-                 `----> Existing SQL Server (future)
+                 `----> Existing SQL Server (guarded Admin reads)
 
-Microsoft Entra ID will authenticate users at the web and API boundaries.
+Microsoft Entra ID authenticates users at the web and API boundaries.
 ```
 
 The initial skeleton activated no integration. Task 07E later activates only the explicitly approved, Admin-only, bounded legacy SQL read path; SharePoint and Azure DevOps remain unconnected and every write capability remains disabled.

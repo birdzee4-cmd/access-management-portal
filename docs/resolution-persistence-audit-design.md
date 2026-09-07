@@ -339,7 +339,8 @@ service implementations and Task 07P page/state/fixtures are unchanged. Existing
 unrelated auth edits participate in working-tree tests but remain outside this
 task's commit, with their original file hashes preserved.
 
-Recommended Task 07R: obtain Business/Admin approval of those policies and define
-the corresponding synthetic acceptance cases and transaction/API specification.
-Keep persistence, production candidate exposure, migrations, activation and
-provisioning separately authorized. Task 07Q does not begin Task 07R.
+Future work follows the [M1–M4 roadmap](roadmap.md). Obtain Business/Admin policy
+approval and synthetic acceptance cases within explicitly requested scope.
+Persistence, production exposure, migrations, activation and provisioning remain
+separately authorized under the [safety boundary](production-safety-boundary.md).
+Task 07Q is complete; no subsequent milestone starts automatically.

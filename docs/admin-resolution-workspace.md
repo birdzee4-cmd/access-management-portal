@@ -1,5 +1,9 @@
 # Admin Resolution Workspace preview
 
+Historical task report; subsequent outcomes are in [project state](project-state.md).
+Earlier next-task recommendations below remain for traceability but are superseded
+for future planning by the [M1–M4 roadmap](roadmap.md).
+
 Task 07P adds `/admin/resolution`, titled Resolution Workspace, using the
 existing Portal role guard and Admin-only navigation. It demonstrates explicit
 review of unresolved catalog and approval observations using **bundled synthetic

@@ -1,5 +1,9 @@
 # Legacy Matrix to Approval Rule candidates
 
+Historical task report; subsequent outcomes are in [project state](project-state.md).
+Earlier next-task recommendations below remain for traceability but are superseded
+for future planning by the [M1–M4 roadmap](roadmap.md).
+
 Task 07O is an internal analysis foundation. Catalog describes what access may
 be requested; approval describes who may need to approve. The Task 07N catalog
 identity implementation and Prisma schema are unchanged. No candidate can be

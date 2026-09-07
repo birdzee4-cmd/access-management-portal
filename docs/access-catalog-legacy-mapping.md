@@ -1,5 +1,9 @@
 # Legacy Matrix to Access Catalog candidates
 
+Historical task report; subsequent outcomes are in [project state](project-state.md).
+Earlier next-task recommendations below remain for traceability but are superseded
+for future planning by the [M1–M4 roadmap](roadmap.md).
+
 Task 07N adds an internal, read-only analysis foundation. A candidate is an
 observation for review, not a Portal Role, entitlement, approval decision, or
 import instruction. The existing Prisma schema is compatible and unchanged.

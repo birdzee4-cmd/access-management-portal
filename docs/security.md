@@ -1,24 +1,11 @@
 # Security
 
-## Phase-one security posture
+## Current security posture
 
-This repository is a local skeleton. It contains no production credentials, cloud resources, live clients, deployment automation, or write-capable legacy connector contract.
-
-## Mandatory safety controls
-
-All legacy integrations operate in `READ_ONLY` mode. The expected configuration is:
-
-```dotenv
-LEGACY_INTEGRATION_MODE=READ_ONLY
-ENABLE_SHAREPOINT_WRITE=false
-ENABLE_LEGACY_SQL_WRITE=false
-ENABLE_VSTS_WRITE=false
-ENABLE_ACCESS_PROVISIONING=false
-ENABLE_ACCESS_REVOCATION=false
-ENABLE_AUTOMATION=false
-```
-
-The parser in `packages/shared` accepts only these exact safe values and throws on absent, malformed, or permissive values. This is defense in depth; feature flags do not replace least-privilege identities, network controls, API permissions, database permissions, code review, or change approval.
+The [production safety boundary](production-safety-boundary.md) is authoritative
+for default flags, prohibited actions, source permissions, secrets, privacy and
+validation. [Project state](project-state.md) distinguishes implemented SQL reads
+from previews and future workflows.
 
 ## Identity and authorization
 
@@ -34,23 +21,10 @@ A later configuration phase must:
 
 No application registration, secret, certificate, or production tenant identifier is created here. The committed development-authentication mock is disabled by default, requires APP_ENV=development plus an explicit request header, and returns only a fixed fake Viewer identity.
 
-## Secrets
+## Legacy connector implementation history
 
-- Commit `.env.example` and `local.settings.example.json` only.
-- Never commit `.env`, `local.settings.json`, connection strings, tokens, client secrets, certificates, or personal access tokens.
-- Use managed identities and a managed secret store in future hosted environments.
-- Use synthetic/local data for development.
-
-## Legacy connector controls
-
-Future integration identities must be technically read-only at the source:
-
-- SharePoint: read scopes only; no list or item mutation permissions.
-- Existing SQL Server: a dedicated login restricted to `SELECT` on approved views; no DML or DDL grants.
-- Azure DevOps / VSTS: read scopes only; no work-item, membership, permission, pipeline, or repository mutation scopes.
-- Power Automate: no flow editing, triggering, enabling, or disabling permissions.
-
-Any future connector must add tests proving that its public contract offers no mutation methods and that unsafe configuration prevents startup.
+These notes describe controls as introduced, not new production authorization.
+Current request filters are documented in the [list API](legacy-user-request-api.md).
 
 Task 07A adds those safeguards for the inactive legacy SQL foundation: every query passes a central SELECT-only guard, dynamic values are parameterized, matrix identifiers come from a fixed allowlist, and driver errors are replaced with messages that do not expose connection details. A future live connection still requires a database identity technically restricted to SELECT. See [Legacy SQL Read-Only Connector Foundation](legacy-sql-integration.md).
 
