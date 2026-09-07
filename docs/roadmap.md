@@ -8,10 +8,11 @@ requested scope and STOP when complete; do not automatically continue.
 
 ## M1 — Portal-native Request Engine
 
-**Status (2026-09-07): IMPLEMENTED; operational acceptance blocked.** Code,
-schema, migration artifact, API, UI and synthetic validation are complete. No
-migration was applied because an approved local Portal SQL target is unavailable;
-database-backed E2E and approved catalog/user population remain entry blockers.
+**Status (2026-09-07): IMPLEMENTED; database-backed API acceptance PASS.** Code,
+schema, API and synthetic validation are complete. The baseline and synthetic
+user/catalog were applied to the explicitly approved Azure SQL DEV database.
+Submission/read/audit/idempotency passed against that database; live browser
+Entra sign-in was not rerun. See [DEV acceptance](m1-db-acceptance.md).
 See [M1 implementation](portal-request-engine.md). Do not begin M2 automatically.
 
 - **Objective:** submit and track portal-owned access requests without granting access.

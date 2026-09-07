@@ -71,9 +71,9 @@ reason, display identity, tokens and raw payloads.
 
 Database access additionally requires
 `PORTAL_DATABASE_OWNERSHIP=CONFIRMED_PORTAL_OWNED`. This guard does not authorize
-or identify a target; operators must still verify it independently. No migration
-was applied in M1 because the repository has no approved/available local SQL
-Server target. The generated artifact was reviewed and schema-validated only.
+or identify a target; operators must still verify it independently. The baseline
+was subsequently applied to the explicitly approved Azure SQL DEV database, with
+schema and constraint verification. See [DEV acceptance](m1-db-acceptance.md).
 
 ## UI
 
@@ -91,8 +91,8 @@ of inactive historical roles; catalog population/ownership and applicability;
 retention; request cancellation/amendment; and the long-term idempotency replay
 window. M1 does not invent these decisions.
 
-Code, schema, migration artifact, API, UI and synthetic tests are complete. Full
-M1 operational acceptance remains blocked until an explicitly verified local
-Portal database is available, the baseline migration is reviewed/applied there,
-synthetic Portal users/catalog are loaded through an approved process, and the
-end-to-end database-backed flow is exercised. M2 has not started.
+Code, schema, migration artifact, API, UI and synthetic tests are complete. M1
+database-backed API acceptance passed on the explicitly approved Azure SQL DEV
+database, including baseline, synthetic seed, submission/read, atomic audit and
+idempotency. Live browser Entra sign-in was not rerun. See the precise scope and
+repeatable test in [DEV acceptance](m1-db-acceptance.md). M2 has not started.

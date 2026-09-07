@@ -15,8 +15,8 @@ transport contracts; shared safety policy; read-only connectors; Prisma schema,
 client and repositories for a separate future portal SQL Server database.
 API services depend on repository interfaces; legacy mssql reads bypass Prisma.
 Schema/repositories, synthetic fixtures and an initial Portal baseline migration
-exist. The migration was not applied because no approved local Portal SQL target
-was available. See [M1 request engine](portal-request-engine.md), [architecture](architecture.md),
+exist. The baseline was applied to the explicitly approved Azure SQL DEV target
+during [M1 DB acceptance](m1-db-acceptance.md). See [M1 request engine](portal-request-engine.md), [architecture](architecture.md),
 [data access](data-access.md), [data model](data-model.md).
 
 ## Authentication and completed capabilities
@@ -98,7 +98,9 @@ or child-process restrictions may block tooling; report limitations. Stop on
 CreateProcessWithLogonW failed: 1907. At OPT-01 entry the two authApi files had
 unrelated unstaged edits; preserve if present and inspect current status each time.
 
-M1 code is complete but operational acceptance awaits an approved local Portal DB,
-baseline application, synthetic catalog/user population and database-backed E2E.
+M1 database-backed API operational acceptance passed on the approved Azure SQL DEV
+target on 2026-09-07: baseline applied, synthetic user/catalog seeded, and
+submission/read/audit/idempotency verified. Live browser Entra sign-in was not
+rerun. See [DEV acceptance evidence](m1-db-acceptance.md).
 Future prompts may name a milestone and bounded deliverables. Use M1–M4 planning,
 retain 07A–07Q traceability, and never start the next milestone automatically.
