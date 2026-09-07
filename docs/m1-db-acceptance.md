@@ -41,6 +41,14 @@ example.invalid email, mapped in DEV to the current authenticated account's obje
 ID. That identifier was not printed or committed. Seeded one synthetic System,
 one Application and two Roles. No production catalog or person data was imported.
 
+Follow-up browser diagnosis found that this original mapping used the account's
+object ID from the Azure subscription tenant, while the Portal API validates a
+different Entra tenant. With explicit approval, the one synthetic user's mapping
+was transactionally corrected to the same signed-in account's object ID in the
+Portal API tenant. Exact DEV target, synthetic row, zero-conflict, one-row update
+and one-row post-update guards passed. No Entra or Azure setting changed. See the
+updated [browser acceptance](m1-browser-acceptance.md).
+
 ## Acceptance evidence
 
 - Runtime Prisma connection verifies exact target and TLS.

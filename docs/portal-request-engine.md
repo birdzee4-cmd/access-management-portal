@@ -91,8 +91,11 @@ of inactive historical roles; catalog population/ownership and applicability;
 retention; request cancellation/amendment; and the long-term idempotency replay
 window. M1 does not invent these decisions.
 
-Code, schema, migration artifact, API, UI and synthetic tests are complete. M1
+Code, schema, migration artifact, API and synthetic tests are complete. M1
 database-backed API acceptance passed on the explicitly approved Azure SQL DEV
 database, including baseline, synthetic seed, submission/read, atomic audit and
-idempotency. Live browser Entra sign-in was not rerun. See the precise scope and
-repeatable test in [DEV acceptance](m1-db-acceptance.md). M2 has not started.
+idempotency. Browser Entra sign-in, catalog, ADD, owned history, audit and
+idempotency also passed after the synthetic user's cross-tenant Entra mapping was
+corrected. Browser Detail remains incomplete because the Web UI has no Portal
+Request Detail route/page. See [DEV acceptance](m1-db-acceptance.md) and
+[browser evidence](m1-browser-acceptance.md). M2 has not started.

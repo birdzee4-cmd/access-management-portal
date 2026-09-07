@@ -100,7 +100,10 @@ unrelated unstaged edits; preserve if present and inspect current status each ti
 
 M1 database-backed API operational acceptance passed on the approved Azure SQL DEV
 target on 2026-09-07: baseline applied, synthetic user/catalog seeded, and
-submission/read/audit/idempotency verified. Live browser Entra sign-in was not
-rerun. See [DEV acceptance evidence](m1-db-acceptance.md).
+submission/read/audit/idempotency verified. Browser Entra sign-in, catalog, ADD,
+owned history, audit and idempotency subsequently passed after correcting the one
+synthetic user's cross-tenant Entra mapping. Browser Detail remains incomplete
+because the Web UI has no Portal Request Detail route/page. See
+[DEV acceptance](m1-db-acceptance.md) and [browser evidence](m1-browser-acceptance.md).
 Future prompts may name a milestone and bounded deliverables. Use M1–M4 planning,
 retain 07A–07Q traceability, and never start the next milestone automatically.
