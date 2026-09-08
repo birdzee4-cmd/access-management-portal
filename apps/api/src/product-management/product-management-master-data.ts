@@ -2,16 +2,19 @@ import type {
   ProductManagementCountriesResponse,
   ProductManagementFormDefinition,
   ProductManagementLookupContext,
+  ProductManagementLookupName,
   ProductManagementLookupResponse,
   ProductManagementOption,
   ProductManagementTopicsResponse,
 } from "@access-portal/contracts";
 import {
+  isProductManagementCountry,
   isSupportedProductManagementContext,
-  mockProductManagementForm,
   productManagementCountries,
+  productManagementForm,
   productManagementTopics,
-} from "./mock-product-management.js";
+  type ProductManagementCountry,
+} from "./product-management-model.js";
 
 export type ProductManagementEnvironment = Readonly<Record<string, string | undefined>>;
 
@@ -34,46 +37,93 @@ export interface ProductManagementMasterDataAdapter {
 }
 
 const option = (value: string): ProductManagementOption => ({ value, label: value });
-const supportedLookups = ["providerType", "package", "packageAddOn", "appName", "product", "account", "role"] as const;
+const supportedLookups = [
+  "providerType",
+  "package",
+  "packageAddOn",
+  "appName",
+  "product",
+  "account",
+  "customerRole",
+  "internalRole",
+] as const satisfies readonly ProductManagementLookupName[];
+
+const countryCode: Readonly<Record<ProductManagementCountry, string>> = {
+  Thailand: "TH",
+  Philippines: "PH",
+  Vietnam: "VN",
+  Malaysia: "MY",
+  Indonesia: "ID",
+};
+
+const providerTypes = ["SAML", "Office 365", "Hotmail/Outlook", "Google", "Local Account"] as const;
+const sharedProducts = ["Synthetic Shared Product A", "Synthetic Shared Product B"] as const;
+
+function countryValues(country: ProductManagementCountry, kind: "Package" | "Package Add On" | "App" | "Account"): readonly string[] {
+  const prefix = countryCode[country];
+  return [`${prefix} Synthetic ${kind} A`, `${prefix} Synthetic ${kind} B`];
+}
+
+function internalRoleValues(country: ProductManagementCountry): readonly string[] {
+  const prefix = country === "Thailand" ? "TH" : country === "Philippines" ? "PH" : "VN-MY-ID";
+  return [`${prefix} Synthetic Internal Role A`, `${prefix} Synthetic Internal Role B`];
+}
 
 export class MockProductManagementMasterDataAdapter implements ProductManagementMasterDataAdapter {
   readonly source = "MOCK" as const;
+
   async countries() { return productManagementCountries.map(option); }
+
   async topics(country: string) {
-    if (!(productManagementCountries as readonly string[]).includes(country)) throw new ProductManagementMasterDataValidationError();
+    if (!isProductManagementCountry(country)) throw new ProductManagementMasterDataValidationError();
     return productManagementTopics.map(option);
   }
+
   async form(country: string, topic: string) {
     if (!isSupportedProductManagementContext(country, topic)) throw new ProductManagementMasterDataValidationError();
-    return { ...mockProductManagementForm(country, topic), source: this.source };
+    return { ...productManagementForm(country, topic), source: this.source };
   }
+
   async lookup(name: string, context: ProductManagementLookupContext) {
-    if (!isSupportedProductManagementContext(context.country, context.topic) || !(supportedLookups as readonly string[]).includes(name)) throw new ProductManagementMasterDataValidationError();
+    if (
+      !isSupportedProductManagementContext(context.country, context.topic)
+      || !isProductManagementCountry(context.country)
+      || !(supportedLookups as readonly string[]).includes(name)
+    ) {
+      throw new ProductManagementMasterDataValidationError();
+    }
+
     let values: readonly string[];
-    switch (name) {
-      case "providerType": values = ["Manufacturer", "Distributor"]; break;
+    switch (name as ProductManagementLookupName) {
+      case "providerType":
+        values = providerTypes;
+        break;
       case "package":
-        if (!context.providerType) throw new ProductManagementMasterDataValidationError();
-        values = context.providerType === "Manufacturer" ? ["Core", "Premium"] : context.providerType === "Distributor" ? ["Partner"] : [];
+        values = countryValues(context.country, "Package");
         break;
       case "packageAddOn":
-        if (!context.package) throw new ProductManagementMasterDataValidationError();
-        values = context.package === "Core" ? ["Analytics", "Workflow"] : context.package === "Premium" ? ["Advanced Analytics"] : context.package === "Partner" ? ["Partner Connect"] : [];
+        values = countryValues(context.country, "Package Add On");
         break;
       case "appName":
-        if (!context.package) throw new ProductManagementMasterDataValidationError();
-        values = context.package === "Core" ? ["Product Hub"] : context.package === "Premium" ? ["Product Studio"] : context.package === "Partner" ? ["Partner Portal"] : [];
+        values = countryValues(context.country, "App");
         break;
-      case "product": values = context.country === "Thailand" ? ["Synthetic TH Product"] : ["Synthetic VN Product"]; break;
+      case "product":
+        values = sharedProducts;
+        break;
       case "account":
-        if (!context.appName) throw new ProductManagementMasterDataValidationError();
-        values = context.appName ? [`${context.country} Synthetic Account`] : [];
+        values = countryValues(context.country, "Account");
         break;
-      case "role":
-        if (!context.appName) throw new ProductManagementMasterDataValidationError();
-        values = ["Viewer", "Editor"];
+      case "customerRole": {
+        if (!context.account) throw new ProductManagementMasterDataValidationError();
+        const knownAccounts = countryValues(context.country, "Account");
+        values = knownAccounts.includes(context.account)
+          ? [`${countryCode[context.country]} Synthetic Customer Role A`, `${countryCode[context.country]} Synthetic Customer Role B`]
+          : [];
         break;
-      default: throw new ProductManagementMasterDataValidationError();
+      }
+      case "internalRole":
+        values = internalRoleValues(context.country);
+        break;
     }
     return values.map(option);
   }

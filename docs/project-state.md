@@ -67,9 +67,15 @@ flag. See [Product Management MVP](product-management-mvp.md).
 
 PM-02 adds an API-backed read-only master-data service/adapter boundary, explicit
 `PRODUCT_MANAGEMENT_DATA_SOURCE=mock|real` configuration, countries/topics/form/
-lookup endpoints, and dependent mock dropdowns. Repository evidence does not
-identify authoritative Product Management master sources, so real mode fails
-closed and no production read or adapter is active.
+lookup endpoints, and dependent mock dropdowns. PM-02A-R2 offline export evidence
+confirmed five hard-coded Countries, one shared ordered set of 13 hard-coded
+Topics, topic-specific legacy forms, Country-partitioned Package/Add-On/App/Account
+sources, shared `DB - Product_TH`, Account-to-customer-Role filtering, and
+Department/Manager-based internal Role matrices. PM-02B aligns mock mode and the
+dynamic schema registry to that evidence. All 13 Portal schemas remain `PARTIAL`
+pending requiredness, field-meaning, ownership, stable-key, lifecycle, privacy and
+authorization decisions. Real mode still fails closed; no production read,
+production adapter, workflow invocation or legacy write is active.
 
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration

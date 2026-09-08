@@ -41,7 +41,7 @@ export function NewProductManagementRequestPage({ api }: { readonly api: Api }) 
     return () => { active = false; };
   }, [api, country, topic, reload]);
 
-  const context = useMemo(() => ({ country, topic, providerType: fields.providerType, package: fields.package, appName: fields.appName }), [country, topic, fields.providerType, fields.package, fields.appName]);
+  const context = useMemo(() => ({ country, topic, account: fields.account }), [country, topic, fields.account]);
   const loadLookup = useCallback((key: string, lookup: string) => {
     setState("loading");
     api.lookup(lookup, context).then((response) => { setLookups((current) => ({ ...current, [key]: response.options })); setState("ready"); }).catch(() => setState("error"));
@@ -58,9 +58,7 @@ export function NewProductManagementRequestPage({ api }: { readonly api: Api }) 
   const changeField = (key: string, value: string) => {
     setFields((current) => {
       const next = { ...current, [key]: value };
-      if (key === "providerType") { delete next.package; delete next.packageAddOn; delete next.appName; delete next.account; delete next.role; }
-      if (key === "package") { delete next.packageAddOn; delete next.appName; delete next.account; delete next.role; }
-      if (key === "appName") { delete next.account; delete next.role; }
+      for (const field of form?.fields ?? []) if (field.dependsOn?.includes(key)) delete next[field.key];
       return next;
     });
     setLookups((current) => {
@@ -76,11 +74,11 @@ export function NewProductManagementRequestPage({ api }: { readonly api: Api }) 
       if (!field.lookup || !field.dependsOn?.length || !field.dependsOn.every((dependency) => fields[dependency])) continue;
       void loadLookup(field.key, field.lookup);
     }
-  }, [form, fields.providerType, fields.package, fields.appName, loadLookup]);
+  }, [form, fields.account, loadLookup]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!form || form.fields.some((field) => field.required && !fields[field.key]?.trim())) return;
+    if (!form || form.schema.implementationStatus !== "CONFIRMED" || form.fields.some((field) => field.required && !fields[field.key]?.trim())) return;
     setState("saving");
     try { await api.submit({ country, topic, fields, idempotencyKey: crypto.randomUUID() }); navigate("/requests"); }
     catch { setState("error"); }
@@ -98,9 +96,10 @@ export function NewProductManagementRequestPage({ api }: { readonly api: Api }) 
       {state === "loading" ? <p role="status" className="request-form__message">Loading Product Management master data…</p> : null}
       {state === "error" ? <p role="alert" className="request-form__message">Product Management master data is unavailable. <button className="button button--secondary button--compact" type="button" onClick={() => setReload((value) => value + 1)}>Retry</button></p> : null}
       {form ? <>
-        <div className="panel-heading request-form__step"><div><p className="panel-kicker">Step 2</p><h2>{country} · {topic}</h2></div><StatusBadge tone={form.source === "REAL" ? "success" : "neutral"}>{form.source ?? "MOCK"} data</StatusBadge></div>
+        <div className="panel-heading request-form__step"><div><p className="panel-kicker">Step 2</p><h2>{country} · {topic}</h2></div><StatusBadge tone="neutral">{form.schema.implementationStatus} schema · {form.source ?? "MOCK"} data</StatusBadge></div>
+        {form.schema.implementationStatus !== "CONFIRMED" ? <p role="status" className="request-form__message">This request type is being mapped from the existing Product Management system. Requiredness and submission mapping are not complete.</p> : null}
         <div className="request-form__grid">{form.fields.map((field) => <label key={field.key} className="field request-form__reason"><span>{field.label}{field.required ? " *" : ""}</span>{field.type === "textarea" ? <textarea required={field.required} value={fields[field.key] ?? ""} onChange={(event) => changeField(field.key, event.target.value)} /> : field.type === "select" ? <select required={field.required} disabled={Boolean(field.dependsOn?.some((dependency) => !fields[dependency]))} value={fields[field.key] ?? ""} onChange={(event) => changeField(field.key, event.target.value)}><option value="">Select</option>{(field.lookup ? lookups[field.key] : field.options?.map((value) => ({ value, label: value })))?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select> : <input required={field.required} value={fields[field.key] ?? ""} onChange={(event) => changeField(field.key, event.target.value)} />}</label>)}</div>
-        <button className="button button--primary" disabled={state === "saving" || state === "loading"} type="submit">{state === "saving" ? "Submitting…" : "Submit mock request"}</button>
+        <button className="button button--primary" disabled={form.schema.implementationStatus !== "CONFIRMED" || state === "saving" || state === "loading"} type="submit">{state === "saving" ? "Submitting…" : form.schema.implementationStatus === "CONFIRMED" ? "Submit mock request" : "Schema mapping incomplete"}</button>
       </> : null}
     </form>
   </div>;

@@ -249,10 +249,18 @@ export type ProductManagementDataSource = "MOCK" | "REAL";
 export interface ProductManagementOption { readonly value: string; readonly label: string; }
 export interface ProductManagementCountriesResponse { readonly source: ProductManagementDataSource; readonly countries: readonly ProductManagementOption[]; }
 export interface ProductManagementTopicsResponse { readonly source: ProductManagementDataSource; readonly country: string; readonly topics: readonly ProductManagementOption[]; }
-export interface ProductManagementLookupContext { readonly country: string; readonly topic: string; readonly providerType?: string; readonly package?: string; readonly appName?: string; }
+export type ProductManagementLookupName = "providerType" | "package" | "packageAddOn" | "appName" | "product" | "account" | "customerRole" | "internalRole";
+export interface ProductManagementLookupContext { readonly country: string; readonly topic: string; readonly account?: string; }
 export interface ProductManagementLookupResponse { readonly source: ProductManagementDataSource; readonly lookup: string; readonly options: readonly ProductManagementOption[]; }
-export interface ProductManagementFormField { readonly key: string; readonly label: string; readonly required: boolean; readonly type: "text" | "textarea" | "select"; readonly options?: readonly string[]; readonly lookup?: string; readonly dependsOn?: readonly string[]; }
-export interface ProductManagementFormDefinition { readonly source?: ProductManagementDataSource; readonly country: string; readonly topic: string; readonly fields: readonly ProductManagementFormField[]; }
+export type ProductManagementSchemaImplementationStatus = "CONFIRMED" | "PARTIAL" | "UNKNOWN";
+export interface ProductManagementFormField { readonly key: string; readonly label: string; readonly required: boolean; readonly type: "text" | "textarea" | "select"; readonly options?: readonly string[]; readonly lookup?: ProductManagementLookupName; readonly dependsOn?: readonly string[]; readonly serverResolvedBy?: "AUTHENTICATED_USER_DEPARTMENT_OR_MANAGER"; }
+export interface ProductManagementFormSchemaMetadata {
+  readonly legacyScreenPattern: string;
+  readonly legacyFormPattern: string;
+  readonly lookupRequirements: readonly ProductManagementLookupName[];
+  readonly implementationStatus: ProductManagementSchemaImplementationStatus;
+}
+export interface ProductManagementFormDefinition { readonly source?: ProductManagementDataSource; readonly country: string; readonly topic: string; readonly schema: ProductManagementFormSchemaMetadata; readonly fields: readonly ProductManagementFormField[]; }
 export interface ProductManagementRequestSubmission { readonly country: string; readonly topic: string; readonly fields: Readonly<Record<string, string>>; readonly idempotencyKey: string; }
 export interface ProductManagementRequestSubmissionResponse { readonly source: "MOCK"; readonly request: ProductManagementRequest; readonly replayed: boolean; }
 
