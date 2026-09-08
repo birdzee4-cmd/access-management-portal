@@ -26,6 +26,7 @@ function parseSubmission(value: unknown): ProductManagementRequestSubmission | n
   if (!isSupportedProductManagementContext(input.country, input.topic)) return null;
   const fields = input.fields as Record<string, string>;
   const form = mockProductManagementForm(input.country, input.topic);
+  if (form.schema.implementationStatus !== "CONFIRMED") return null;
   const supportedFieldKeys = new Set(form.fields.map((field) => field.key));
   if (!Object.keys(fields).length || Object.keys(fields).some((key) => !supportedFieldKeys.has(key))) return null;
   if (form.fields.some((field) => field.required && !fields[field.key]?.trim())) return null;

@@ -253,12 +253,47 @@ export type ProductManagementLookupName = "providerType" | "package" | "packageA
 export interface ProductManagementLookupContext { readonly country: string; readonly topic: string; readonly account?: string; }
 export interface ProductManagementLookupResponse { readonly source: ProductManagementDataSource; readonly lookup: string; readonly options: readonly ProductManagementOption[]; }
 export type ProductManagementSchemaImplementationStatus = "CONFIRMED" | "PARTIAL" | "UNKNOWN";
-export interface ProductManagementFormField { readonly key: string; readonly label: string; readonly required: boolean; readonly type: "text" | "textarea" | "select"; readonly options?: readonly string[]; readonly lookup?: ProductManagementLookupName; readonly dependsOn?: readonly string[]; readonly serverResolvedBy?: "AUTHENTICATED_USER_DEPARTMENT_OR_MANAGER"; }
+export type ProductManagementFieldRequiredness = "CONFIRMED_REQUIRED" | "CONFIRMED_OPTIONAL" | "CONDITIONAL" | "UNKNOWN";
+export type ProductManagementFieldMultiplicity = "SINGLE" | "MULTIPLE" | "DELIMITED_TEXT" | "UNKNOWN";
+export type ProductManagementPortalHandling = "DISPLAY" | "HIDE" | "AUTO_FILL" | "LOCK" | "ALLOW_EDIT";
+export type ProductManagementSchemaPartialReason =
+  | "UNKNOWN_REQUIREDNESS"
+  | "UNKNOWN_MULTIPLICITY"
+  | "UNKNOWN_SUBMISSION_MAPPING"
+  | "UNKNOWN_VISIBILITY"
+  | "UNKNOWN_LOOKUP_AUTHORITY"
+  | "UNKNOWN_TEXT_LIST_FORMAT"
+  | "UNAPPROVED_LEGACY_FIELD_REUSE"
+  | "LEGACY_REQUIREDNESS_ANOMALY"
+  | "DUPLICATE_LEGACY_ROUTE";
+export interface ProductManagementFormField {
+  readonly key: string;
+  readonly label: string;
+  readonly required: boolean;
+  readonly type: "text" | "textarea" | "select";
+  readonly options?: readonly string[];
+  readonly lookup?: ProductManagementLookupName;
+  readonly dependsOn?: readonly string[];
+  readonly serverResolvedBy?: "AUTHENTICATED_USER_DEPARTMENT_OR_MANAGER";
+  readonly legacyDataField?: string;
+  readonly legacyLabel?: string;
+  readonly legacyControl?: string;
+  readonly legacyBinding?: string;
+  readonly legacyDefault?: string;
+  readonly legacyVisibility?: "VISIBLE" | "HIDDEN" | "CONDITIONAL" | "UNKNOWN";
+  readonly legacyLookupSource?: string;
+  readonly requiredness?: ProductManagementFieldRequiredness;
+  readonly multiplicity?: ProductManagementFieldMultiplicity;
+  readonly portalHandling?: ProductManagementPortalHandling;
+  readonly submitDestination?: string;
+  readonly transformation?: string;
+}
 export interface ProductManagementFormSchemaMetadata {
   readonly legacyScreenPattern: string;
   readonly legacyFormPattern: string;
   readonly lookupRequirements: readonly ProductManagementLookupName[];
   readonly implementationStatus: ProductManagementSchemaImplementationStatus;
+  readonly partialReasons: readonly ProductManagementSchemaPartialReason[];
 }
 export interface ProductManagementFormDefinition { readonly source?: ProductManagementDataSource; readonly country: string; readonly topic: string; readonly schema: ProductManagementFormSchemaMetadata; readonly fields: readonly ProductManagementFormField[]; }
 export interface ProductManagementRequestSubmission { readonly country: string; readonly topic: string; readonly fields: Readonly<Record<string, string>>; readonly idempotencyKey: string; }

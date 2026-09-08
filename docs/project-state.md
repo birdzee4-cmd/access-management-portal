@@ -72,10 +72,15 @@ confirmed five hard-coded Countries, one shared ordered set of 13 hard-coded
 Topics, topic-specific legacy forms, Country-partitioned Package/Add-On/App/Account
 sources, shared `DB - Product_TH`, Account-to-customer-Role filtering, and
 Department/Manager-based internal Role matrices. PM-02B aligns mock mode and the
-dynamic schema registry to that evidence. All 13 Portal schemas remain `PARTIAL`
-pending requiredness, field-meaning, ownership, stable-key, lifecycle, privacy and
-authorization decisions. Real mode still fails closed; no production read,
-production adapter, workflow invocation or legacy write is active.
+dynamic schema registry to that evidence. PM-03 inspected all 65 effective
+supported forms and the exported flows, documented the complete observed field
+and submission contract, added missing List Feature/List Email schema fields, and
+records requiredness, multiplicity, legacy bindings, transformations, destination
+and machine-readable gap reasons. The result remains `0 CONFIRMED / 13 PARTIAL`;
+both Web and API mock boundaries reject submission for a partial schema. See
+[Product Management form contract](product-management-form-contract.md). Real
+mode still fails closed; no production read, production adapter, workflow
+invocation or legacy write is active.
 
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration

@@ -28,7 +28,7 @@ const options = (values: readonly string[]) => values.map((value) => ({ value, l
 const emptyApi = {
   countries: async () => ({ source: "MOCK" as const, countries: [] }),
   topics: async (country: string) => ({ source: "MOCK" as const, country, topics: [] }),
-  form: async (country: string, topic: string) => ({ source: "MOCK" as const, country, topic, schema: { legacyScreenPattern: "Synthetic", legacyFormPattern: "Synthetic", lookupRequirements: [], implementationStatus: "PARTIAL" as const }, fields: [] }),
+  form: async (country: string, topic: string) => ({ source: "MOCK" as const, country, topic, schema: { legacyScreenPattern: "Synthetic", legacyFormPattern: "Synthetic", lookupRequirements: [], implementationStatus: "PARTIAL" as const, partialReasons: ["UNKNOWN_SUBMISSION_MAPPING" as const] }, fields: [] }),
   lookup: async (lookup: string) => ({ source: "MOCK" as const, lookup, options: [] }),
   submit: async () => { throw new Error("Submission is not called during server rendering."); },
 };
@@ -63,7 +63,7 @@ test("New Request renders five Countries, common Topics, partial schema state an
       source: "MOCK" as const,
       country,
       topic,
-      schema: { legacyScreenPattern: "TH base; other {CC}_เพิ่ม Permission เข้า Role(ลูกค้า)_{CC}", legacyFormPattern: "Form* (DataSource: USR_PowerApp)", lookupRequirements: ["account", "customerRole"] as const, implementationStatus: "PARTIAL" as const },
+      schema: { legacyScreenPattern: "TH base; other {CC}_เพิ่ม Permission เข้า Role(ลูกค้า)_{CC}", legacyFormPattern: "Form* (DataSource: USR_PowerApp)", lookupRequirements: ["account", "customerRole"] as const, implementationStatus: "PARTIAL" as const, partialReasons: ["UNKNOWN_TEXT_LIST_FORMAT" as const] },
       fields: [
         { key: "account", label: "Account", required: false, type: "select" as const, lookup: "account" as const },
         { key: "customerRole", label: "Customer Role", required: false, type: "select" as const, lookup: "customerRole" as const, dependsOn: ["account"] },

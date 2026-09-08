@@ -3,7 +3,6 @@ import type {
   ProductManagementFormDefinition,
   ProductManagementLookupResponse,
   ProductManagementRequestListResponse,
-  ProductManagementRequestSubmissionResponse,
   ProductManagementTopicsResponse,
 } from "@access-portal/contracts";
 import assert from "node:assert/strict";
@@ -70,6 +69,7 @@ test("all 65 Country and Topic pairs return compatible schema registry contracts
       assert.equal(body.country, country);
       assert.equal(body.topic, topic);
       assert.equal(body.schema.implementationStatus, "PARTIAL");
+      assert.ok(body.schema.partialReasons.length > 0);
       assert.ok(body.schema.legacyScreenPattern);
       assert.ok(body.fields.length > 0);
     }
@@ -130,14 +130,10 @@ test("form rejects missing or unsupported Country and Topic with HTTP 400", asyn
   }
 });
 
-test("mock submit keeps its response contract and rejects invalid schema input", async () => {
+test("mock submit rejects PARTIAL schemas and invalid schema input", async () => {
   const valid = { country: "Thailand", topic: productManagementTopics[0], fields: { companyName: "Synthetic Company" }, idempotencyKey: "synthetic-key" };
   const response = await handleProductManagementSubmit(request(valid), dependencies());
-  assert.equal(response.status, 201);
-  const body: ProductManagementRequestSubmissionResponse = response.jsonBody as ProductManagementRequestSubmissionResponse;
-  assert.equal(body.source, "MOCK");
-  assert.equal(body.request.requester, viewer.displayName);
-  assert.equal(body.request.workId, null);
+  assert.equal(response.status, 400);
   for (const invalid of [{}, { ...valid, country: "" }, { ...valid, topic: "Unsupported" }, { ...valid, idempotencyKey: "" }, { ...valid, fields: {} }, { ...valid, fields: { unknown: "value" } }, { ...valid, fields: { companyName: 42 } }, { ...valid, unexpected: true }]) {
     assert.equal((await handleProductManagementSubmit(request(invalid), dependencies())).status, 400);
   }

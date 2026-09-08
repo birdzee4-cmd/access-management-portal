@@ -431,10 +431,15 @@ master-data source for Country or Topic.
   translate this only after contract review.
 - Unreachable/stale Product screens and the Thailand-only navigation branch need
   owner confirmation before being considered supported Topics.
-- Exact validation, multiplicity, and requiredness vary by screen; the exports
+- Exact observed validation, multiplicity, requiredness, field reuse, and
+  downstream mappings were completed in PM-03 and are recorded in the
+  [legacy form contract](product-management-form-contract.md). The exports
   establish current implementation, not approved future Portal policy.
 
-## Recommended PM-02B approach
+## Historical PM-02B recommendation and remaining follow-up
+
+PM-02B implemented the mock/schema alignment described below. The ownership,
+stable-key, policy, and real-adapter gates remain open after PM-03.
 
 1. Obtain Product Management owner confirmation for the 5-country/13-topic
    inventory, stale screens, Provider variants, cross-country Product source, and

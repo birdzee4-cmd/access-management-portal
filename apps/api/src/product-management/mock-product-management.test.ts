@@ -42,11 +42,40 @@ test("every Country and Topic resolves through the evidence-based schema registr
       assert.equal(form.country, country);
       assert.equal(form.topic, topic);
       assert.equal(form.schema.implementationStatus, "PARTIAL");
+      assert.ok(form.schema.partialReasons.length > 0);
       assert.ok(form.schema.legacyScreenPattern);
       assert.match(form.schema.legacyFormPattern, /USR_PowerApp/);
       assert.deepEqual(form.schema.lookupRequirements, form.fields.flatMap((field) => field.lookup ? [field.lookup] : []));
+      assert.ok(form.fields.every((field) => field.requiredness && field.multiplicity && field.legacyDataField && field.legacyLabel));
+      assert.ok(form.fields.every((field) => field.legacyControl && field.legacyBinding && field.legacyDefault));
+      assert.ok(form.fields.every((field) => field.legacyVisibility && field.portalHandling && field.submitDestination));
+      assert.ok(form.fields.every((field) => field.required === (field.requiredness === "CONFIRMED_REQUIRED")));
     }
   }
+});
+
+test("registry records discovered multiplicity, missing legacy fields, and reused destinations", () => {
+  const byTopic = new Map(productManagementSchemaRegistry.map((entry) => [entry.topic, entry]));
+  const createAccount = byTopic.get(productManagementTopics[0])!;
+  assert.equal(createAccount.fields.find((field) => field.key === "appName")?.multiplicity, "MULTIPLE");
+  assert.equal(createAccount.fields.find((field) => field.key === "packageAddOn")?.requiredness, "CONFIRMED_OPTIONAL");
+  assert.ok(createAccount.partialReasons.includes("UNKNOWN_SUBMISSION_MAPPING"));
+
+  const addAppToInternalRole = byTopic.get(productManagementTopics[5])!;
+  assert.equal(addAppToInternalRole.fields.find((field) => field.key === "appName")?.requiredness, "CONFIRMED_OPTIONAL");
+  assert.ok(addAppToInternalRole.partialReasons.includes("LEGACY_REQUIREDNESS_ANOMALY"));
+
+  const createRole = byTopic.get(productManagementTopics[8])!;
+  assert.equal(createRole.fields.find((field) => field.key === "featureList")?.requiredness, "CONFIRMED_REQUIRED");
+  assert.equal(createRole.fields.find((field) => field.key === "featureList")?.multiplicity, "DELIMITED_TEXT");
+
+  const changeProvider = byTopic.get(productManagementTopics[9])!;
+  assert.equal(changeProvider.fields.find((field) => field.key === "emailList")?.requiredness, "CONFIRMED_REQUIRED");
+  assert.match(changeProvider.fields.find((field) => field.key === "providerType")?.transformation ?? "", /Reuses RoleName/);
+
+  const addOn = byTopic.get(productManagementTopics[7])!;
+  assert.match(addOn.fields.find((field) => field.key === "customerRole")?.submitDestination ?? "", /ProductName/);
+  assert.match(addOn.fields.find((field) => field.key === "packageAddOn")?.submitDestination ?? "", /AppName/);
 });
 
 test("schema dependencies contain Account to Customer Role and no obsolete synthetic chains", () => {
@@ -65,7 +94,7 @@ test("schema dependencies contain Account to Customer Role and no obsolete synth
   assert.ok(internalRoles.every((field) => field.serverResolvedBy === "AUTHENTICATED_USER_DEPARTMENT_OR_MANAGER"));
 });
 
-test("mock request history and submission use only confirmed contexts", () => {
+test("mock request history uses only confirmed contexts and PARTIAL schemas cannot submit", () => {
   const result = listMockProductManagementRequests();
   assert.equal(result.source, "MOCK");
   assert.equal(result.requests.length, 2);
@@ -74,13 +103,12 @@ test("mock request history and submission use only confirmed contexts", () => {
     assert.ok(confirmedTopics.includes(row.topic));
     assert.equal(row.system, "Product Management");
   }
-  const submission = submitMockProductManagementRequest({
+  assert.throws(() => submitMockProductManagementRequest({
     country: "Thailand",
     topic: productManagementTopics[0],
     fields: { companyName: "Synthetic Company" },
     idempotencyKey: "synthetic",
-  }, "Synthetic");
-  assert.equal(submission.request.status, "SUBMITTED");
+  }, "Synthetic"), /PRODUCT_MANAGEMENT_SCHEMA_NOT_CONFIRMED/);
 });
 
 test("invalid Country and Topic contexts fail closed", () => {

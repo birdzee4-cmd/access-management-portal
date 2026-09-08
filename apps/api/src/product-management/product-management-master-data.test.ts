@@ -33,6 +33,7 @@ test("all Country and Topic pairs resolve schema registry metadata", async () =>
       assert.equal(form.country, country);
       assert.equal(form.topic, currentTopic);
       assert.equal(form.schema.implementationStatus, "PARTIAL");
+      assert.ok(form.schema.partialReasons.length > 0);
       assert.ok(form.schema.legacyScreenPattern);
       assert.ok(form.fields.length > 0);
     }

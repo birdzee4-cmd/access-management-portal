@@ -48,15 +48,22 @@ entry corresponding to the legacy `Navigate(...)` then `NewForm(...)` behavior:
 ## Schema registry coverage
 
 Every one of the 13 Topics has a registry entry containing its legacy screen
-pattern, `USR_PowerApp` form pattern, known controls/fields, lookup requirements,
-and implementation status. All 13 entries are currently `PARTIAL`: the export
-confirms the controls and operational routing, but exact requiredness,
-multiplicity, reused submission-field meaning, and future Portal policy remain
-unapproved or `UNKNOWN`.
+pattern, `USR_PowerApp` form pattern, controls/fields, lookup requirements,
+effective requiredness, multiplicity, legacy binding/default/visibility, Portal
+handling, submit destination, transformations, implementation status, and
+machine-readable `partialReasons`. See the complete
+[legacy form contract](product-management-form-contract.md).
+
+PM-03 inspected all 65 effective supported Country/Topic forms. It added the
+previously omitted List Feature field for Create New Role and List Email field
+for Change Provider, and recorded the observed multi-value and reused-field
+behavior. All 13 entries remain `PARTIAL` because each still has an explicit
+evidence or owner-policy gap; the registry result is `0 CONFIRMED / 13 PARTIAL`.
 
 The Web renders only fields supported by the discovery evidence. A `PARTIAL`
 schema displays a mapping-in-progress message and disables mock submission so it
-cannot appear production-ready. No topic is currently marked `CONFIRMED`.
+cannot appear production-ready. The API mock submission boundary now rejects a
+`PARTIAL` schema as well. No topic is currently marked `CONFIRMED`.
 
 ## Read-only master-data boundary
 
