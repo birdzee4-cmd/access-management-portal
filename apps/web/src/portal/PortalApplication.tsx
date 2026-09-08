@@ -56,7 +56,7 @@ export interface PortalViewProps {
     | "getLegacyUserRequestDetail"
   >;
   readonly requestApi: Pick<PortalRequestApiClient, "catalog" | "list" | "detail" | "submit">;
-  readonly productManagementApi?: Pick<ProductManagementApiClient, "list" | "form" | "submit">;
+  readonly productManagementApi?: Pick<ProductManagementApiClient, "list" | "countries" | "topics" | "form" | "lookup" | "submit">;
   readonly features?: PortalFeatures;
 }
 

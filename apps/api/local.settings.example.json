@@ -9,6 +9,7 @@
     "ENABLE_DEV_AUTH_MOCK": "false",
     "PRODUCT_MANAGEMENT_MVP": "true",
     "ACCESS_MANAGEMENT_UI": "false",
+    "PRODUCT_MANAGEMENT_DATA_SOURCE": "mock",
     "DATABASE_URL": "sqlserver://localhost:1433;database=access_management_portal_local;user=local_user;password=replace_me;encrypt=true;trustServerCertificate=true",
     "PORTAL_DATABASE_OWNERSHIP": "CONFIRMED_PORTAL_OWNED",
     "LEGACY_SQL_SERVER": "replace_me",

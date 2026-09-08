@@ -2,12 +2,14 @@ import type { ProductManagementFormDefinition, ProductManagementRequestListRespo
 import assert from "node:assert/strict";
 import test from "node:test";
 import { AuthenticationService, type AuthenticatedUser } from "../auth/index.js";
-import { handleProductManagementForm, handleProductManagementList, handleProductManagementSubmit, type ProductManagementApiDependencies, type ProductManagementHttpRequest } from "./product-management-api.js";
+import { handleProductManagementCountries, handleProductManagementForm, handleProductManagementList, handleProductManagementLookup, handleProductManagementSubmit, handleProductManagementTopics, type ProductManagementApiDependencies, type ProductManagementHttpRequest } from "./product-management-api.js";
+import { MockProductManagementMasterDataAdapter, ProductManagementMasterDataConfigurationError, ProductManagementMasterDataService } from "./product-management-master-data.js";
 
 const viewer: AuthenticatedUser = { entraObjectId: "00000000-0000-4000-8000-000000000001", email: "synthetic@example.invalid", displayName: "Synthetic User", roles: ["Viewer"], claims: {}, authenticationSource: "ENTRA" };
 const authenticated = new AuthenticationService({ validate: async () => viewer });
-const dependencies = (authentication = authenticated): ProductManagementApiDependencies => ({ getAuthenticationService: () => authentication });
-const request = (body: unknown = {}, params: Readonly<Record<string, string | undefined>> = {}): ProductManagementHttpRequest => ({ headers: { get: (name) => name.toLowerCase() === "authorization" ? "Bearer synthetic" : null }, params, json: async () => body });
+const masterData = new ProductManagementMasterDataService(new MockProductManagementMasterDataAdapter());
+const dependencies = (authentication = authenticated, service = masterData): ProductManagementApiDependencies => ({ getAuthenticationService: () => authentication, getMasterDataService: () => service });
+const request = (body: unknown = {}, params: Readonly<Record<string, string | undefined>> = {}, query = new URLSearchParams()): ProductManagementHttpRequest => ({ headers: { get: (name) => name.toLowerCase() === "authorization" ? "Bearer synthetic" : null }, params, query, json: async () => body });
 
 test("list returns authenticated mock requests compatible with the response contract", async () => {
   const response = await handleProductManagementList(request(), dependencies());
@@ -24,14 +26,27 @@ test("supported Country and Topic combinations return dynamic form contracts", a
   }
 });
 
+test("countries, country-filtered topics and dependent lookups return HTTP 200", async () => {
+  const countries = await handleProductManagementCountries(request(), dependencies()); assert.equal(countries.status, 200); assert.equal((countries.jsonBody as { countries: unknown[] }).countries.length, 2);
+  const topics = await handleProductManagementTopics(request({}, { country: "Thailand" }), dependencies()); assert.equal(topics.status, 200); assert.equal((topics.jsonBody as { country: string }).country, "Thailand");
+  const providerTypes = await handleProductManagementLookup(request({}, { lookup: "providerType" }, new URLSearchParams({ country: "Thailand", topic: "New Product" })), dependencies()); assert.equal(providerTypes.status, 200);
+  const packages = await handleProductManagementLookup(request({}, { lookup: "package" }, new URLSearchParams({ country: "Thailand", topic: "New Product", providerType: "Manufacturer" })), dependencies()); assert.equal(packages.status, 200); assert.deepEqual((packages.jsonBody as { options: Array<{ value: string }> }).options.map((item) => item.value), ["Core", "Premium"]);
+});
+
+test("topics and lookups reject invalid context or missing dependencies with HTTP 400", async () => {
+  assert.equal((await handleProductManagementTopics(request({}, { country: "Unsupported" }), dependencies())).status, 400);
+  assert.equal((await handleProductManagementLookup(request({}, { lookup: "package" }, new URLSearchParams({ country: "Thailand", topic: "New Product" })), dependencies())).status, 400);
+  assert.equal((await handleProductManagementLookup(request({}, { lookup: "unknown" }, new URLSearchParams({ country: "Thailand", topic: "New Product" })), dependencies())).status, 400);
+});
+
 test("form rejects missing or unsupported Country and Topic with HTTP 400", async () => {
   for (const params of [{}, { country: "Thailand" }, { topic: "New Product" }, { country: "Unsupported", topic: "New Product" }, { country: "Thailand", topic: "Unsupported" }]) {
-    const response = await handleProductManagementForm(request({}, params), dependencies()); assert.equal(response.status, 400); assert.deepEqual(response.jsonBody, { error: "invalid_product_management_request" });
+    const response = await handleProductManagementForm(request({}, params), dependencies()); assert.equal(response.status, 400); assert.deepEqual(response.jsonBody, { error: "invalid_product_management_master_data_request" });
   }
 });
 
 test("submit returns HTTP 201 contract and rejects missing required input with HTTP 400", async () => {
-  const valid = { country: "Thailand", topic: "New Product", fields: { productName: "Synthetic", description: "Synthetic description" }, idempotencyKey: "synthetic-key" };
+  const valid = { country: "Thailand", topic: "New Product", fields: { productName: "Synthetic", description: "Synthetic description", providerType: "Manufacturer", package: "Core", appName: "Product Hub", product: "Synthetic TH Product", account: "Thailand Synthetic Account", role: "Viewer" }, idempotencyKey: "synthetic-key" };
   const response = await handleProductManagementSubmit(request(valid), dependencies()); assert.equal(response.status, 201);
   const body: ProductManagementRequestSubmissionResponse = response.jsonBody as ProductManagementRequestSubmissionResponse;
   assert.equal(body.source, "MOCK"); assert.equal(body.request.requester, viewer.displayName); assert.equal(body.request.workId, null);
@@ -45,4 +60,11 @@ test("authentication and authorization remain authoritative", async () => {
   assert.equal((await handleProductManagementList(missing, dependencies())).status, 401);
   const noRole = new AuthenticationService({ validate: async () => ({ ...viewer, roles: [] }) });
   assert.equal((await handleProductManagementList(request(), dependencies(noRole))).status, 403);
+  assert.equal((await handleProductManagementCountries(missing, dependencies())).status, 401);
+  assert.equal((await handleProductManagementTopics(request({}, { country: "Thailand" }), dependencies(noRole))).status, 403);
+});
+
+test("unavailable configured master-data source returns HTTP 503 after authentication", async () => {
+  const unavailable = new ProductManagementMasterDataService({ source: "REAL", countries: async () => { throw new ProductManagementMasterDataConfigurationError("Unavailable"); }, topics: async () => [], form: async () => { throw new Error("unused"); }, lookup: async () => [] });
+  assert.equal((await handleProductManagementCountries(request(), dependencies(authenticated, unavailable))).status, 503);
 });

@@ -30,7 +30,10 @@ const requestApi = {
 };
 const productManagementApi = {
   list: async () => ({ source: "MOCK" as const, requests: [] }),
+  countries: async () => ({ source: "MOCK" as const, countries: [] }),
+  topics: async (country: string) => ({ source: "MOCK" as const, country, topics: [] }),
   form: async () => ({ country: "Thailand", topic: "New Product", fields: [] }),
+  lookup: async (lookup: string) => ({ source: "MOCK" as const, lookup, options: [] }),
   submit: async () => { throw new Error("Not called during server rendering."); },
 };
 

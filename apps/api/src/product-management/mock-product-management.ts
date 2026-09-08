@@ -10,7 +10,16 @@ export function isSupportedProductManagementContext(country: string, topic: stri
 export function listMockProductManagementRequests(): ProductManagementRequestListResponse { return { source: "MOCK", requests }; }
 export function mockProductManagementForm(country: string, topic: string): ProductManagementFormDefinition {
   if (!isSupportedProductManagementContext(country, topic)) throw new Error("INVALID_PRODUCT_MANAGEMENT_CONTEXT");
-  const fields = topic === "New Product" ? [{ key: "productName", label: "Product name", required: true, type: "text" as const }, { key: "description", label: "Description", required: true, type: "textarea" as const }, { key: "priority", label: "Priority", required: false, type: "select" as const, options: ["Normal", "High"] }] : [{ key: "changeSummary", label: "Change summary", required: true, type: "textarea" as const }, { key: "releaseType", label: "Release type", required: true, type: "select" as const, options: ["Standard", "Urgent"] }];
+  const lookupFields = [
+    { key: "providerType", label: "Provider Type", required: true, type: "select" as const, lookup: "providerType" },
+    { key: "package", label: "Package", required: true, type: "select" as const, lookup: "package", dependsOn: ["providerType"] },
+    { key: "packageAddOn", label: "Package Add On", required: false, type: "select" as const, lookup: "packageAddOn", dependsOn: ["package"] },
+    { key: "appName", label: "App Name", required: true, type: "select" as const, lookup: "appName", dependsOn: ["package"] },
+    { key: "product", label: "Product", required: true, type: "select" as const, lookup: "product" },
+    { key: "account", label: "Account", required: true, type: "select" as const, lookup: "account", dependsOn: ["appName"] },
+    { key: "role", label: "Role", required: true, type: "select" as const, lookup: "role", dependsOn: ["appName"] },
+  ];
+  const fields = topic === "New Product" ? [{ key: "productName", label: "Product name", required: true, type: "text" as const }, { key: "description", label: "Description", required: true, type: "textarea" as const }, ...lookupFields] : [{ key: "changeSummary", label: "Change summary", required: true, type: "textarea" as const }, ...lookupFields];
   return { country, topic, fields };
 }
 export function submitMockProductManagementRequest(input: ProductManagementRequestSubmission, requester: string): ProductManagementRequestSubmissionResponse {

@@ -65,6 +65,12 @@ contracts without a production adapter, workflow invocation, persistence or
 write. Existing Access Management UI/code remains recoverable behind the latter
 flag. See [Product Management MVP](product-management-mvp.md).
 
+PM-02 adds an API-backed read-only master-data service/adapter boundary, explicit
+`PRODUCT_MANAGEMENT_DATA_SOURCE=mock|real` configuration, countries/topics/form/
+lookup endpoints, and dependent mock dropdowns. Repository evidence does not
+identify authoritative Product Management master sources, so real mode fails
+closed and no production read or adapter is active.
+
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration
 mode is READ_ONLY and all write/provision/revoke/automation flags are false; see

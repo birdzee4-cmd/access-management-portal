@@ -2,14 +2,17 @@ import type { ProductManagementRequestSubmission } from "@access-portal/contract
 import type { HttpResponseInit } from "@azure/functions";
 import { AuthenticationConfigurationError, AuthenticationError, AuthorizationError, requireAuthenticatedUser, requireRole, type AuthenticationRequest, type AuthenticationService } from "../auth/index.js";
 import { isSupportedProductManagementContext, listMockProductManagementRequests, mockProductManagementForm, submitMockProductManagementRequest } from "./mock-product-management.js";
+import { ProductManagementMasterDataConfigurationError, ProductManagementMasterDataService, ProductManagementMasterDataValidationError } from "./product-management-master-data.js";
 
-export interface ProductManagementHttpRequest extends AuthenticationRequest { readonly params?: Readonly<Record<string, string | undefined>>; json(): Promise<unknown>; }
-export interface ProductManagementApiDependencies { readonly getAuthenticationService: () => AuthenticationService; }
+export interface ProductManagementHttpRequest extends AuthenticationRequest { readonly params?: Readonly<Record<string, string | undefined>>; readonly query?: Pick<URLSearchParams, "get">; json(): Promise<unknown>; }
+export interface ProductManagementApiDependencies { readonly getAuthenticationService: () => AuthenticationService; readonly getMasterDataService: () => ProductManagementMasterDataService; }
 const result = (status: number, jsonBody: unknown): HttpResponseInit => ({ status, headers: { "cache-control": "no-store" }, jsonBody });
 function errorResponse(error: unknown): HttpResponseInit {
   if (error instanceof AuthenticationError) return { ...result(401, { error: error.code }), headers: { "cache-control": "no-store", "www-authenticate": "Bearer" } };
   if (error instanceof AuthorizationError) return result(403, { error: error.code });
   if (error instanceof AuthenticationConfigurationError) return result(503, { error: "authentication_not_configured" });
+  if (error instanceof ProductManagementMasterDataValidationError) return result(400, { error: "invalid_product_management_master_data_request" });
+  if (error instanceof ProductManagementMasterDataConfigurationError) return result(503, { error: "product_management_master_data_unavailable" });
   return result(500, { error: "product_management_unavailable" });
 }
 async function identity(request: ProductManagementHttpRequest, dependencies: ProductManagementApiDependencies) { return requireRole(await requireAuthenticatedUser(request, dependencies.getAuthenticationService()), "Admin", "Approver", "Viewer"); }
@@ -26,5 +29,8 @@ function parseSubmission(value: unknown): ProductManagementRequestSubmission | n
   return { country: input.country, topic: input.topic, fields, idempotencyKey: input.idempotencyKey };
 }
 export async function handleProductManagementList(request: ProductManagementHttpRequest, dependencies: ProductManagementApiDependencies): Promise<HttpResponseInit> { try { await identity(request, dependencies); return result(200, listMockProductManagementRequests()); } catch (error) { return errorResponse(error); } }
-export async function handleProductManagementForm(request: ProductManagementHttpRequest, dependencies: ProductManagementApiDependencies): Promise<HttpResponseInit> { try { await identity(request, dependencies); const country = request.params?.country ?? "", topic = request.params?.topic ?? ""; return isSupportedProductManagementContext(country, topic) ? result(200, mockProductManagementForm(country, topic)) : invalid(); } catch (error) { return errorResponse(error); } }
+export async function handleProductManagementCountries(request: ProductManagementHttpRequest, dependencies: ProductManagementApiDependencies): Promise<HttpResponseInit> { try { await identity(request, dependencies); return result(200, await dependencies.getMasterDataService().countries()); } catch (error) { return errorResponse(error); } }
+export async function handleProductManagementTopics(request: ProductManagementHttpRequest, dependencies: ProductManagementApiDependencies): Promise<HttpResponseInit> { try { await identity(request, dependencies); return result(200, await dependencies.getMasterDataService().topics(request.params?.country ?? "")); } catch (error) { return errorResponse(error); } }
+export async function handleProductManagementForm(request: ProductManagementHttpRequest, dependencies: ProductManagementApiDependencies): Promise<HttpResponseInit> { try { await identity(request, dependencies); return result(200, await dependencies.getMasterDataService().form(request.params?.country ?? "", request.params?.topic ?? "")); } catch (error) { return errorResponse(error); } }
+export async function handleProductManagementLookup(request: ProductManagementHttpRequest, dependencies: ProductManagementApiDependencies): Promise<HttpResponseInit> { try { await identity(request, dependencies); const get = (name: string) => request.query?.get(name)?.trim() || undefined; const country = get("country"), topic = get("topic"); if (!country || !topic) throw new ProductManagementMasterDataValidationError(); return result(200, await dependencies.getMasterDataService().lookup(request.params?.lookup ?? "", { country, topic, providerType: get("providerType"), package: get("package"), appName: get("appName") })); } catch (error) { return errorResponse(error); } }
 export async function handleProductManagementSubmit(request: ProductManagementHttpRequest, dependencies: ProductManagementApiDependencies): Promise<HttpResponseInit> { try { const authenticated = await identity(request, dependencies); const input = parseSubmission(await request.json()); return input ? result(201, submitMockProductManagementRequest(input, authenticated.displayName)) : invalid(); } catch (error) { return errorResponse(error); } }
