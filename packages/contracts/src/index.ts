@@ -231,6 +231,25 @@ export interface PortalAccessRequestSubmissionResponse {
   readonly replayed: boolean;
 }
 
+/** Phase-1 contract. A future adapter may translate this to USR_PowerApp. */
+export interface ProductManagementRequest {
+  readonly id: string;
+  readonly requestId: string;
+  readonly system: "Product Management";
+  readonly country: string;
+  readonly topic: string;
+  readonly requester: string;
+  readonly createdDate: string;
+  readonly status: "DRAFT" | "SUBMITTED";
+  readonly workId: string | null;
+  readonly fields: Readonly<Record<string, string>>;
+}
+export interface ProductManagementRequestListResponse { readonly source: "MOCK"; readonly requests: readonly ProductManagementRequest[]; }
+export interface ProductManagementFormField { readonly key: string; readonly label: string; readonly required: boolean; readonly type: "text" | "textarea" | "select"; readonly options?: readonly string[]; }
+export interface ProductManagementFormDefinition { readonly country: string; readonly topic: string; readonly fields: readonly ProductManagementFormField[]; }
+export interface ProductManagementRequestSubmission { readonly country: string; readonly topic: string; readonly fields: Readonly<Record<string, string>>; readonly idempotencyKey: string; }
+export interface ProductManagementRequestSubmissionResponse { readonly source: "MOCK"; readonly request: ProductManagementRequest; readonly replayed: boolean; }
+
 export interface LegacyAccessRecord {
   readonly externalId: string;
   readonly employeeId: string;

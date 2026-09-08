@@ -7,6 +7,7 @@ import type { AuthContextValue, PortalRole } from "../auth/types.js";
 import { useAuth } from "../auth/useAuth.js";
 import { StatusBadge } from "../components/StatusBadge.js";
 import { PortalRequestApiClient } from "../requests/portalRequestApi.js";
+import { ProductManagementApiClient } from "../requests/productManagementApi.js";
 import { AccessCatalogPage } from "../pages/AccessCatalogPage.js";
 import { AccessDeniedPage } from "../pages/AccessDeniedPage.js";
 import { ApprovalsPage } from "../pages/ApprovalsPage.js";
@@ -15,13 +16,16 @@ import { AutomationJobsPage } from "../pages/AutomationJobsPage.js";
 import { DashboardPage } from "../pages/DashboardPage.js";
 import { LegacyRequestsPage } from "../pages/LegacyRequestsPage.js";
 import { LegacyUserRequestDetailPage } from "../pages/LegacyUserRequestDetailPage.js";
-import { MyRequestsPage } from "../pages/MyRequestsPage.js";
+import { AccessManagementRequestsPage } from "../pages/MyRequestsPage.js";
+import { ProductManagementRequestsPage } from "../pages/ProductManagementRequestsPage.js";
+import { NewProductManagementRequestPage } from "../pages/NewProductManagementRequestPage.js";
 import { PortalRequestDetailPage } from "../pages/PortalRequestDetailPage.js";
 import { SettingsPage } from "../pages/SettingsPage.js";
 import { UsersPage } from "../pages/UsersPage.js";
 import { ResolutionWorkspacePage } from "../pages/ResolutionWorkspacePage.js";
 import { AppShell } from "./AppShell.js";
 import { hasRequiredRole } from "./navigation.js";
+import { readPortalFeatures, type PortalFeatures } from "./features.js";
 
 interface RoleRouteProps {
   readonly userRoles: readonly PortalRole[];
@@ -52,14 +56,17 @@ export interface PortalViewProps {
     | "getLegacyUserRequestDetail"
   >;
   readonly requestApi: Pick<PortalRequestApiClient, "catalog" | "list" | "detail" | "submit">;
+  readonly productManagementApi?: Pick<ProductManagementApiClient, "list" | "form" | "submit">;
+  readonly features?: PortalFeatures;
 }
 
-export function PortalView({ identity, onSignOut, api, requestApi }: PortalViewProps) {
+export function PortalView({ identity, onSignOut, api, requestApi, productManagementApi, features = readPortalFeatures() }: PortalViewProps) {
   return (
-    <AppShell identity={identity} onSignOut={onSignOut}>
+    <AppShell identity={identity} onSignOut={onSignOut} features={features}>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
-        <Route path="/requests" element={<MyRequestsPage api={requestApi} />} />
+        <Route path="/requests" element={features.productManagementMvp && productManagementApi ? <ProductManagementRequestsPage api={productManagementApi} /> : <AccessManagementRequestsPage api={requestApi} />} />
+        <Route path="/requests/new" element={features.productManagementMvp && productManagementApi ? <NewProductManagementRequestPage api={productManagementApi} /> : <AccessDeniedPage />} />
         <Route path="/requests/:id" element={<PortalRequestDetailPage api={requestApi} />} />
         <Route path="/admin/resolution" element={
           <RoleRoute userRoles={identity.roles} requiredRoles={["Admin"]}>
@@ -235,6 +242,10 @@ function AuthenticatedPortal({ auth }: { readonly auth: AuthContextValue }) {
     () => new PortalRequestApiClient(auth.getAccessToken),
     [auth.getAccessToken],
   );
+  const productManagementApi = useMemo(
+    () => new ProductManagementApiClient(auth.getAccessToken),
+    [auth.getAccessToken],
+  );
 
   useEffect(() => {
     let active = true;
@@ -294,7 +305,7 @@ function AuthenticatedPortal({ auth }: { readonly auth: AuthContextValue }) {
     );
   }
 
-  return <PortalView identity={identity} onSignOut={auth.logout} api={api} requestApi={requestApi} />;
+  return <PortalView identity={identity} onSignOut={auth.logout} api={api} requestApi={requestApi} productManagementApi={productManagementApi} />;
 }
 
 export function PortalApplication() {

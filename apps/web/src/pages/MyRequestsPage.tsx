@@ -18,7 +18,7 @@ const columns: readonly DataTableColumn<PortalAccessRequest>[] = [
 ];
 const roleLabel = (role: PortalCatalogRole) => `${role.systemName} · ${role.name}${role.contextName ? ` · ${role.contextName}` : ""}`;
 
-export function MyRequestsPage({ api }: { readonly api: Api }) {
+export function AccessManagementRequestsPage({ api }: { readonly api: Api }) {
   const [roles, setRoles] = useState<readonly PortalCatalogRole[]>([]);
   const [requests, setRequests] = useState<readonly PortalAccessRequest[]>([]);
   const [draft, setDraft] = useState<RequestDraft>(emptyRequestDraft);

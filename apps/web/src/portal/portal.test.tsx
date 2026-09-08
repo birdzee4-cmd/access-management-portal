@@ -28,6 +28,11 @@ const requestApi = {
   detail: async () => { throw new Error("Not called during server rendering."); },
   submit: async () => { throw new Error("Not called during server rendering."); },
 };
+const productManagementApi = {
+  list: async () => ({ source: "MOCK" as const, requests: [] }),
+  form: async () => ({ country: "Thailand", topic: "New Product", fields: [] }),
+  submit: async () => { throw new Error("Not called during server rendering."); },
+};
 
 function identity(roles: readonly PortalRole[]): AuthenticatedIdentityResponse {
   return {
@@ -46,6 +51,7 @@ function renderPortal(path: string, roles: readonly PortalRole[]): string {
         onSignOut={noOperation}
         api={portalApi}
         requestApi={requestApi}
+        productManagementApi={productManagementApi}
       />
     </MemoryRouter>,
   );
@@ -69,11 +75,11 @@ test("authenticated user sees the portal dashboard", () => {
   assert.match(html, /Local pilot/);
 });
 
-test("Admin sees all Admin navigation", () => {
+test("Admin sees Phase-1 Admin navigation only", () => {
   const html = renderPortal("/", ["Admin"]);
 
-  assert.match(html, />Users</);
-  assert.match(html, />Automation Jobs</);
+  assert.doesNotMatch(html, />Users</);
+  assert.doesNotMatch(html, />Automation Jobs</);
   assert.match(html, />Audit Logs</);
   assert.match(html, />Settings</);
 });
@@ -88,10 +94,10 @@ test("Viewer does not see Admin-only navigation", () => {
   assert.doesNotMatch(html, />Legacy Requests</);
 });
 
-test("Approver sees Approvals navigation", () => {
+test("Approver does not see feature-hidden access navigation", () => {
   const html = renderPortal("/", ["Approver"]);
 
-  assert.match(html, />Approvals</);
+  assert.doesNotMatch(html, />Approvals</);
   assert.doesNotMatch(html, />Users</);
 });
 
@@ -114,16 +120,12 @@ test("safety settings are displayed as read-only and disabled", () => {
   assert.doesNotMatch(html, /type="checkbox"/);
 });
 
-test("every Task 06 page route renders for Admin", () => {
+test("Phase-1 Product Management routes render for Admin", () => {
   const routes = [
     ["/", "Dashboard"],
     ["/requests", "My Requests"],
-    ["/requests/00000000-0000-4000-8000-000000000101", "Request Detail"],
-    ["/catalog", "Access Catalog"],
-    ["/approvals", "Approvals"],
-    ["/users", "Users"],
-    ["/legacy-requests", "Legacy Requests"],
-    ["/automation-jobs", "Automation Jobs"],
+    ["/requests/new", "New Request"],
+    ["/admin/resolution", "Request Workspace"],
     ["/audit-logs", "Audit Logs"],
     ["/settings", "Settings"],
   ] as const;

@@ -75,7 +75,7 @@ async function withDom(element: ReactNode, run: (ui: {
 test("Admin navigation and route display only bundled synthetic scenarios and safety labels", () => {
   assert.ok(visibleNavigation(["Admin"]).some((item) => item.path === "/admin/resolution"));
   const html = renderToStaticMarkup(portal(["Admin"]));
-  for (const label of ["Resolution Workspace", "Candidate A", "Candidate E", "Synthetic Approver A", "ADMIN ONLY", "PREVIEW", "NOT SAVED", "SYNTHETIC DATA"]) assert.ok(html.includes(label));
+  for (const label of ["Request Workspace", "Candidate A", "Candidate E", "Synthetic Approver A", "ADMIN ONLY", "PREVIEW", "NOT SAVED", "SYNTHETIC DATA"]) assert.ok(html.includes(label));
   assert.match(html, /Preview only — changes are not saved/);
 });
 

@@ -58,6 +58,13 @@ production verification. Neither analysis is registered in runtime/API/UI.
 
 ## Safety and implemented versus design-only
 
+Phase-1 Product Management UI is a feature-flagged mock implementation:
+`VITE_PRODUCT_MANAGEMENT_MVP=true` and `VITE_ACCESS_MANAGEMENT_UI=false` by
+default. It adds `/requests/new`, dynamic Country/Topic mock forms and mock API
+contracts without a production adapter, workflow invocation, persistence or
+write. Existing Access Management UI/code remains recoverable behind the latter
+flag. See [Product Management MVP](product-management-mvp.md).
+
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration
 mode is READ_ONLY and all write/provision/revoke/automation flags are false; see

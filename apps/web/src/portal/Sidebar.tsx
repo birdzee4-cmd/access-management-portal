@@ -2,13 +2,15 @@ import { NavLink } from "react-router-dom";
 
 import type { PortalRole } from "../auth/types.js";
 import { visibleNavigation } from "./navigation.js";
+import type { PortalFeatures } from "./features.js";
 
 export interface SidebarProps {
   readonly roles: readonly PortalRole[];
+  readonly features: PortalFeatures;
 }
 
-export function Sidebar({ roles }: SidebarProps) {
-  const items = visibleNavigation(roles);
+export function Sidebar({ roles, features }: SidebarProps) {
+  const items = visibleNavigation(roles, features);
 
   return (
     <aside className="sidebar">

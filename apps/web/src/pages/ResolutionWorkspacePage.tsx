@@ -75,7 +75,7 @@ export function ResolutionWorkspacePage() {
   const onAction = (action: DraftAction) => setDrafts((previous) => ({ ...previous,
     [selected]: updateResolutionDraft(candidate, previous[selected] ?? createResolutionDraft(selected), action) }));
   return <div className="resolution-workspace">
-    <PageHeader eyebrow="Synthetic review lab" title="Resolution Workspace"
+    <PageHeader eyebrow="Synthetic review lab" title="Request Workspace"
       description="This workspace demonstrates how unresolved legacy catalog and approval observations can be reviewed. Decisions made in this preview are not saved or activated." />
     <aside className="resolution-banner" aria-label="Preview safety"><div className="resolution-badges"><StatusBadge tone="info">ADMIN ONLY</StatusBadge><StatusBadge tone="warning">PREVIEW</StatusBadge><StatusBadge tone="warning">NOT SAVED</StatusBadge><StatusBadge tone="neutral">SYNTHETIC DATA</StatusBadge></div>
       <strong>Preview only — changes are not saved.</strong><span>Refresh or leave this page to discard drafts. No production candidates are loaded.</span></aside>
