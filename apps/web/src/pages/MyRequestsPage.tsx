@@ -1,5 +1,6 @@
 import type { PortalAccessRequest, PortalCatalogRole, PortalRequestType } from "@access-portal/contracts";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { DataTable, type DataTableColumn } from "../components/DataTable.js";
 import { PageHeader } from "../components/PageHeader.js";
 import { StatusBadge } from "../components/StatusBadge.js";
@@ -8,7 +9,7 @@ import { emptyRequestDraft, toSubmission, validateDraft, type RequestDraft } fro
 
 type Api = Pick<PortalRequestApiClient, "catalog" | "list" | "submit">;
 const columns: readonly DataTableColumn<PortalAccessRequest>[] = [
-  { key: "number", header: "Request", render: (row) => <strong className="table-primary">{row.requestNumber}</strong> },
+  { key: "number", header: "Request", render: (row) => <Link className="legacy-list__detail-link" to={`/requests/${encodeURIComponent(row.id)}`}><strong className="table-primary">{row.requestNumber}</strong></Link> },
   { key: "type", header: "Type", render: (row) => <StatusBadge tone="info">{row.requestType}</StatusBadge> },
   { key: "current", header: "Current role", render: (row) => row.item.currentRole ? `${row.item.currentRole.systemName} · ${row.item.currentRole.name}` : "—" },
   { key: "requested", header: "Requested role", render: (row) => row.item.requestedRole ? `${row.item.requestedRole.systemName} · ${row.item.requestedRole.name}` : "—" },

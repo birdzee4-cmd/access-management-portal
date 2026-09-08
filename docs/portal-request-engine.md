@@ -79,7 +79,13 @@ schema and constraint verification. See [DEV acceptance](m1-db-acceptance.md).
 
 `My Requests` now loads the Portal catalog and the authenticated user's request
 history, submits all three action types and shows current/requested roles and
-`SUBMITTED` status. Failed retries retain the idempotency key. The page states the
+`SUBMITTED` status. Request numbers navigate to `/requests/{id}`, which uses the
+authenticated Portal detail API and renders only the Portal-owned request DTO:
+request/item status, action, immutable role snapshots, reason, dates and version.
+The API independently scopes detail reads to the authenticated requester; the Web
+page does not make an ownership decision. Detail accepts only UUID route IDs,
+handles 401/403/404/503 and generic errors with sanitized states, and exposes only
+Back and Refresh. Failed retries retain the idempotency key. The UI states the
 self-service and no-execution boundary. It does not display an approval control or
 contact any legacy endpoint.
 
@@ -96,6 +102,9 @@ database-backed API acceptance passed on the explicitly approved Azure SQL DEV
 database, including baseline, synthetic seed, submission/read, atomic audit and
 idempotency. Browser Entra sign-in, catalog, ADD, owned history, audit and
 idempotency also passed after the synthetic user's cross-tenant Entra mapping was
-corrected. Browser Detail remains incomplete because the Web UI has no Portal
-Request Detail route/page. See [DEV acceptance](m1-db-acceptance.md) and
-[browser evidence](m1-browser-acceptance.md). M2 has not started.
+corrected. The Detail route/page and Web regression coverage are now implemented.
+Live browser Detail verification remains outstanding because the available browser
+automation approval timed out before it could inspect Chrome; no browser input or
+Portal/Legacy write occurred in this implementation run. See
+[DEV acceptance](m1-db-acceptance.md) and [browser evidence](m1-browser-acceptance.md).
+M2 has not started.

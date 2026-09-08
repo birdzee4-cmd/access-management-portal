@@ -102,8 +102,11 @@ M1 database-backed API operational acceptance passed on the approved Azure SQL D
 target on 2026-09-07: baseline applied, synthetic user/catalog seeded, and
 submission/read/audit/idempotency verified. Browser Entra sign-in, catalog, ADD,
 owned history, audit and idempotency subsequently passed after correcting the one
-synthetic user's cross-tenant Entra mapping. Browser Detail remains incomplete
-because the Web UI has no Portal Request Detail route/page. See
+synthetic user's cross-tenant Entra mapping. The Portal Request Detail route/page
+and Web regression coverage were added on 2026-09-08; it uses the authenticated,
+API-authoritative owned-detail endpoint and exposes only Back/Refresh. Browser
+Detail acceptance remains incomplete because browser automation approval timed out
+before any Chrome input. No browser read or write occurred in that run. See
 [DEV acceptance](m1-db-acceptance.md) and [browser evidence](m1-browser-acceptance.md).
 Future prompts may name a milestone and bounded deliverables. Use M1–M4 planning,
 retain 07A–07Q traceability, and never start the next milestone automatically.

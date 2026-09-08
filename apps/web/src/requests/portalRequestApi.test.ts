@@ -9,12 +9,14 @@ test("Portal request client sends authenticated GET and POST only to Portal rout
   try {
     const client = new PortalRequestApiClient(async () => "synthetic-token", "http://localhost:7071/api");
     await client.catalog();
+    await client.detail("00000000-0000-4000-8000-000000000101");
     await client.submit({ requestType: "ADD", requestedRoleId: "00000000-0000-4000-8000-000000000101", reason: "Required for duties", idempotencyKey: "00000000-0000-4000-8000-000000000201" });
     assert.deepEqual(calls.map(({ url, init }) => [url, init?.method]), [
       ["http://localhost:7071/api/portal/catalog", "GET"],
+      ["http://localhost:7071/api/portal/requests/00000000-0000-4000-8000-000000000101", "GET"],
       ["http://localhost:7071/api/portal/requests", "POST"],
     ]);
-    assert.equal((calls[1]?.init?.headers as Record<string, string>).authorization, "Bearer synthetic-token");
+    assert.equal((calls[2]?.init?.headers as Record<string, string>).authorization, "Bearer synthetic-token");
   } finally { globalThis.fetch = original; }
 });
 

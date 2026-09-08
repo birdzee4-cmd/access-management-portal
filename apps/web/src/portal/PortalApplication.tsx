@@ -16,6 +16,7 @@ import { DashboardPage } from "../pages/DashboardPage.js";
 import { LegacyRequestsPage } from "../pages/LegacyRequestsPage.js";
 import { LegacyUserRequestDetailPage } from "../pages/LegacyUserRequestDetailPage.js";
 import { MyRequestsPage } from "../pages/MyRequestsPage.js";
+import { PortalRequestDetailPage } from "../pages/PortalRequestDetailPage.js";
 import { SettingsPage } from "../pages/SettingsPage.js";
 import { UsersPage } from "../pages/UsersPage.js";
 import { ResolutionWorkspacePage } from "../pages/ResolutionWorkspacePage.js";
@@ -50,7 +51,7 @@ export interface PortalViewProps {
     | "getLegacyUserRequests"
     | "getLegacyUserRequestDetail"
   >;
-  readonly requestApi: Pick<PortalRequestApiClient, "catalog" | "list" | "submit">;
+  readonly requestApi: Pick<PortalRequestApiClient, "catalog" | "list" | "detail" | "submit">;
 }
 
 export function PortalView({ identity, onSignOut, api, requestApi }: PortalViewProps) {
@@ -59,6 +60,7 @@ export function PortalView({ identity, onSignOut, api, requestApi }: PortalViewP
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/requests" element={<MyRequestsPage api={requestApi} />} />
+        <Route path="/requests/:id" element={<PortalRequestDetailPage api={requestApi} />} />
         <Route path="/admin/resolution" element={
           <RoleRoute userRoles={identity.roles} requiredRoles={["Admin"]}>
             <ResolutionWorkspacePage />

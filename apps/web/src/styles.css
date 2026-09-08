@@ -1339,6 +1339,16 @@ p {
   line-height: 1.55;
 }
 
+.portal-request-detail__reason {
+  margin: 0;
+  padding: 1rem 1.2rem;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
 .legacy-detail__spinner {
   border: 3px solid #d8e7f2;
   border-top-color: var(--azure);

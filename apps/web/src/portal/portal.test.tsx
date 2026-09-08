@@ -25,6 +25,7 @@ const portalApi = {
 const requestApi = {
   catalog: async () => ({ roles: [] }),
   list: async () => ({ requests: [] }),
+  detail: async () => { throw new Error("Not called during server rendering."); },
   submit: async () => { throw new Error("Not called during server rendering."); },
 };
 
@@ -117,6 +118,7 @@ test("every Task 06 page route renders for Admin", () => {
   const routes = [
     ["/", "Dashboard"],
     ["/requests", "My Requests"],
+    ["/requests/00000000-0000-4000-8000-000000000101", "Request Detail"],
     ["/catalog", "Access Catalog"],
     ["/approvals", "Approvals"],
     ["/users", "Users"],
