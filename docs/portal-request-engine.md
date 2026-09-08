@@ -103,8 +103,9 @@ database, including baseline, synthetic seed, submission/read, atomic audit and
 idempotency. Browser Entra sign-in, catalog, ADD, owned history, audit and
 idempotency also passed after the synthetic user's cross-tenant Entra mapping was
 corrected. The Detail route/page and Web regression coverage are now implemented.
-Live browser Detail verification remains outstanding because the available browser
-automation approval timed out before it could inspect Chrome; no browser input or
-Portal/Legacy write occurred in this implementation run. See
+Live browser verification passed for synthetic ADD, REMOVE and CHANGE Detail,
+SUBMITTED/PENDING status, appropriate role shapes, Back and Refresh. Viewing kept
+the owned request count unchanged and invoked no write. M1 operational acceptance
+is COMPLETE. See
 [DEV acceptance](m1-db-acceptance.md) and [browser evidence](m1-browser-acceptance.md).
 M2 has not started.

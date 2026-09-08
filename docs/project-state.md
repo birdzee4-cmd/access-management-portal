@@ -98,15 +98,19 @@ or child-process restrictions may block tooling; report limitations. Stop on
 CreateProcessWithLogonW failed: 1907. At OPT-01 entry the two authApi files had
 unrelated unstaged edits; preserve if present and inspect current status each time.
 
-M1 database-backed API operational acceptance passed on the approved Azure SQL DEV
-target on 2026-09-07: baseline applied, synthetic user/catalog seeded, and
+M1 operational acceptance is COMPLETE. Database-backed API acceptance passed on
+the approved Azure SQL DEV target on 2026-09-07: baseline applied, synthetic
+user/catalog seeded, and
 submission/read/audit/idempotency verified. Browser Entra sign-in, catalog, ADD,
 owned history, audit and idempotency subsequently passed after correcting the one
 synthetic user's cross-tenant Entra mapping. The Portal Request Detail route/page
 and Web regression coverage were added on 2026-09-08; it uses the authenticated,
 API-authoritative owned-detail endpoint and exposes only Back/Refresh. Browser
-Detail acceptance remains incomplete because browser automation approval timed out
-before any Chrome input. No browser read or write occurred in that run. See
+acceptance verified ADD, REMOVE and CHANGE Detail as SUBMITTED/PENDING with the
+appropriate current/requested role shapes; Refresh and Back passed and viewing did
+not change the five-request count. A transient catalog/list HTTP 500 recovered
+without code, config, database or process change after read-only Prisma, Azure SQL
+and Portal user checks passed. See
 [DEV acceptance](m1-db-acceptance.md) and [browser evidence](m1-browser-acceptance.md).
 Future prompts may name a milestone and bounded deliverables. Use M1–M4 planning,
 retain 07A–07Q traceability, and never start the next milestone automatically.

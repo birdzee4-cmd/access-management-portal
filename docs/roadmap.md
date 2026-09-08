@@ -8,14 +8,15 @@ requested scope and STOP when complete; do not automatically continue.
 
 ## M1 — Portal-native Request Engine
 
-**Status (2026-09-08): IMPLEMENTED; database-backed API acceptance PASS; browser
-acceptance INCOMPLETE.** Code, schema, API and synthetic validation are complete.
+**Status (2026-09-08): COMPLETE.** Code, schema, API, synthetic validation,
+database-backed API acceptance and browser operational acceptance are complete.
 The baseline and synthetic user/catalog were applied to the explicitly approved
 Azure SQL DEV database. Browser Entra sign-in, catalog, ADD, owned history, audit
 and idempotency passed after correcting the synthetic user's cross-tenant Entra
-mapping. The Portal Request Detail route/page is now implemented; its live browser
-acceptance is pending because browser automation approval timed out before any
-input. See [DEV acceptance](m1-db-acceptance.md) and [browser evidence](m1-browser-acceptance.md).
+mapping. Browser acceptance verified Portal Request Detail for synthetic ADD,
+REMOVE and CHANGE, SUBMITTED/PENDING status, appropriate current/requested roles,
+Back and Refresh. Viewing did not create a request or invoke a write. See
+[DEV acceptance](m1-db-acceptance.md) and [browser evidence](m1-browser-acceptance.md).
 See [M1 implementation](portal-request-engine.md). Do not begin M2 automatically.
 
 - **Objective:** submit and track portal-owned access requests without granting access.

@@ -1,14 +1,11 @@
-# M1 browser acceptance — 2026-09-07
+# M1 browser acceptance — completed 2026-09-08
 
-**INCOMPLETE pending live browser Detail verification.** The Portal Request Detail
-route/page and Web regression coverage are implemented, but this run could not
-operate Chrome: the Computer Use app approval timed out before any browser input.
-Consequently it did not perform Entra sign-in, read a request, refresh, navigate
-Back, or make any Portal/Legacy write. The earlier browser evidence below remains
-valid for its stated scope only.
-Entra sign-in, catalog loading, browser ADD submission, owned history, audit and
-idempotent replay otherwise passed against Azure SQL DEV. This record does not
-supersede the separate [database-backed API acceptance](m1-db-acceptance.md).
+**PASS. M1 operational acceptance is COMPLETE.** Entra sign-in, catalog loading,
+browser ADD submission, owned history, audit, idempotent replay, Portal Request
+Detail, Back and Refresh passed against the approved Azure SQL DEV target. Existing
+synthetic ADD, REMOVE and CHANGE requests each loaded through the authenticated
+owned-detail endpoint with the expected request and role shape. This record does
+not supersede the separate [database-backed API acceptance](m1-db-acceptance.md).
 M2 has not started.
 
 ## Configuration and connectivity
@@ -65,33 +62,40 @@ was changed.
 - REMOVE and CHANGE were not repeated in the browser; database-backed API
   acceptance already covers those actions with synthetic DEV data.
 
-The Detail UI now registers `/requests/:id`; My Requests links the selected
+The Detail UI registers `/requests/:id`; My Requests links the selected
 request number to it. The route validates a UUID locally, calls only the existing
 authenticated `GET /api/portal/requests/{id}` client method, and leaves ownership
 enforcement to the API's authenticated requester scope. It displays Portal-owned
 action/status/item status, immutable role snapshots, reason and request metadata,
 with Back and Refresh as its only actions. Unit/regression coverage verifies the
 route, authenticated GET path, safe 401/403/404/503/generic states, and the absence
-of M2+ actions. It does not replace the required live browser proof.
+of M2+ actions.
 
 ## Detail browser acceptance status — 2026-09-08
 
-- Local Azure Functions started and registered `portal-request-detail` at the
-  expected local route. This did not write Portal data.
-- The browser automation bridge reported `Computer Use app approval timed out`
-  while obtaining the existing Chrome window. No browser navigation, sign-in,
-  request read, refresh or write was attempted after that result.
-- ADD Detail: NOT TESTED in this run.
-- REMOVE Detail: NOT TESTED in this run.
-- CHANGE Detail: NOT TESTED in this run.
-- Back/Refresh: NOT TESTED in this run.
-- The remaining operational acceptance blocker is a user-available authenticated
-  browser session or a functioning browser automation approval, not an identified
-  code/API failure.
+- Entra-authenticated My Requests loaded two catalog roles and five owned requests;
+  catalog and list returned HTTP 200.
+- My Requests navigation opened the synthetic ADD Detail. It showed ADD,
+  SUBMITTED/PENDING, no current role and the expected requested Reader role.
+- The synthetic REMOVE Detail showed REMOVE, SUBMITTED/PENDING, the expected
+  current Editor role and no requested role.
+- The synthetic CHANGE Detail showed CHANGE, SUBMITTED/PENDING, current Editor and
+  requested Reader roles.
+- Refresh repeated the authenticated Detail GET and returned the same successful
+  CHANGE detail. Back returned to My Requests, which again loaded five requests.
+- Viewing Detail did not change the request count. The Web exposes only GET-based
+  Back/Refresh behavior, and no database, Legacy, approval or execution write was
+  performed during this acceptance.
+- An earlier catalog/list attempt returned the sanitized HTTP 500 code
+  `portal_request_unavailable`. Read-only diagnosis verified ownership/config,
+  Prisma initialization, Azure SQL `SELECT 1`, the active Portal user mapping, two
+  catalog roles and five owned requests. Without code, config, database or process
+  change, retry returned HTTP 200 for both endpoints; this was a transient Portal
+  database access failure and did not remain an acceptance blocker.
 
 ## Validation and boundaries
 
-- npm test: PASS, 285 tests.
+- npm test: PASS, 288 tests in the final working-tree validation.
 - npm run typecheck: PASS.
 - npm run build: PASS.
 - npm run prisma:validate: PASS, local schema syntax only.
