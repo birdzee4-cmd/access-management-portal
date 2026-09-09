@@ -81,10 +81,34 @@ leaves eight policy-dependent contracts PARTIAL, and adds serialization,
 reused-field, all-Roles, and effective Matrix metadata. The result is
 `5 CONFIRMED / 8 PARTIAL`; both Web and API reject PARTIAL submission and an
 independent `submissionEnabled=false` gate disables all Product Management
-submission. See
+submission. PM-03B adds privacy-minimized aggregate evidence from 77 offline
+historical submissions across 19 Topics: 11 current Topics were observed, two had
+no sample, and eight were legacy/out-of-contract. It corroborates raw-text fields
+and schema drift but closes no OPEN owner decision and adds no legacy Topic to the
+Portal contract. See
 [Product Management form contract](product-management-form-contract.md). Real
-mode still fails closed; no production read, production adapter, workflow
-invocation or legacy write is active.
+mode still fails closed; no runtime production-read adapter, workflow invocation,
+or legacy write is active.
+
+PM-03C performed an explicitly authorized, parameterized, aggregate-only legacy
+SQL read for the ten OPEN Product Management decisions. It found 1,497 historical
+Product Management rows across 19 Topics and materially corroborated email
+multiplicity ambiguity, Role/App label-era drift, missing Create Account Add-On
+transport, and the Add App requiredness anomaly. No raw row or identifier was
+retained. Product Management database metadata inspection was unavailable with
+sanitized `ELOGIN`; no access bypass was attempted. PM-03C provides recommended
+decisions for successor owners but closes no PMD, changes no registry status, and
+does not authorize submission or adapter activation. See
+[PM-03C policy closure evidence](product-management-policy-closure.md).
+
+PM-03D converts those existing findings into a Thai-first, decision-ready
+[Owner Decision Pack](product-management-owner-decision-pack.md) for exactly the
+ten OPEN PMDs. It adds no discovery, approval, schema/runtime change, or
+integration. The workflow is PM-03A -> PM-03C Evidence -> PM-03D Owner Decision
+Pack -> Owner Approval -> PM-03B Apply Decisions. Current status remains
+`5 CONFIRMED / 8 PARTIAL`, zero newly resolved decisions, ten OPEN decisions,
+Product Management submission disabled, real adapter disabled, and Production
+integration not implemented.
 
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration

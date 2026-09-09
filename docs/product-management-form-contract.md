@@ -2,11 +2,18 @@
 
 ## Scope, evidence, and status language
 
-PM-03/PM-03A are offline contract-discovery results. They inspected the exported Power
-Apps and Power Automate packages under the ignored
+PM-03/PM-03A/PM-03B are offline contract-discovery results. PM-03 and PM-03A
+inspected the exported Power Apps and Power Automate packages under the ignored
 `reference/legacy-product-management/` boundary. It did not connect to a live
 environment, submit a form, trigger or edit a flow, query production, or perform
 any write.
+
+PM-03B additionally analyzed the supplied offline `qurey111.csv` historical
+submission extract. Only aggregate counts, field-label occurrence, and structural
+patterns are retained below. The source file is not committed, and no raw row,
+person, email address, Account name, Work ID, SharePoint ID, or other source value
+is reproduced. Historical submissions are OBSERVED evidence, not approval of a
+schema, Topic, mapping, or multiplicity policy.
 
 The Power Apps export contains 114 `Src/*.pa.yaml` files. `Home.Button1.OnSelect`
 contains 67 navigation branches, 66 effective Country/Topic routes, and 65
@@ -32,6 +39,58 @@ contracts open. Owner decisions are isolated in
 
 No export identifiers, connection identifiers, credentials, raw rows, real user
 identifiers, Manager values, or routing addresses are recorded here.
+
+## PM-03B historical submission evidence
+
+The offline extract contains 77 records across 19 distinct `TopicRequest` values.
+It contains 53 records for 11 of the 13 current Portal Topics and 24 records for
+eight legacy or out-of-contract Topics. No sample was present for `เปลี่ยน
+Provider สำหรับ Account(ลูกค้า)` or `ขอเปิด/ปิดแจ้งเตือนการเปลี่ยนสิทธิ์ถึง
+Owner Account`. Absence in this bounded historical sample does not prove that a
+Topic was unused or removed. The eight historical Topics are not added to the
+Portal contract by observation alone.
+
+Labels below are structural tokens recognized at line starts. `consistent` means
+all sampled rows for that Topic had the same recognized label sequence. A
+`variant` records only the differing labels/counts and does not reproduce values.
+“Comma evidence” counts rows whose parsed field value contained a comma followed
+by whitespace; it is evidence that multiple-looking text occurred, not a complete
+delimiter grammar. Conversely, a zero count never changes a source-confirmed
+`MULTIPLE` field to `SINGLE`. A value can contain a newline or a colon that looks
+like another field label, so `Detail` remains raw text and consumers must not use
+an unrestricted `label: value` line parser.
+
+| Topic | Samples | Label consistency | Multiplicity / raw-text evidence | Contract treatment |
+| --- | ---: | --- | --- | --- |
+| `Create New Account (ลูกค้าใหม่)` | 5 | consistent: Company Name, Email (ลูกค้า), Providers Type, Package, App Name | App Name comma evidence 0/5 | current PARTIAL; App remains `MULTIPLE` |
+| `เพิ่ม Email เข้า Account(ลูกค้า)` | 5 | variant: Role Name 4/5; Role 1/5 | Role Name comma evidence 1/4; Email comma evidence 0/5 | current PARTIAL; email multiplicity remains UNKNOWN |
+| `เพิ่ม Email(พนักงาน) เข้า Account(ลูกค้า)` | 5 | variant: Role Name 4/5 and absent 1/5 | Account comma evidence 1/5; Role Name 0/4; neither establishes field grammar | current CONFIRMED; Role remains `MULTIPLE` |
+| `เพิ่ม App เข้า Account(ลูกค้า)` | 5 | variant: Product Name 3/5; Role Name 2/5 | App Name comma evidence 3/5; derived Role/Product label comma evidence in all five rows | current CONFIRMED; corroborates Role-label drift |
+| `ขอสิทธิ์เข้า Role(พนักงาน)` | 5 | consistent: Role Internal | Role Internal comma evidence 2/5 | current PARTIAL; remains `MULTIPLE` |
+| `เพิ่ม App เข้า Role(พนักงาน)` | 5 | variant: Role 3/5; Role Internal 2/5 | Role/Role Internal comma evidence 1/5; App Name 2/5 | current PARTIAL; both fields remain `MULTIPLE` |
+| `เพิ่ม Permission เข้า Role(ลูกค้า)` | 5 | consistent: Account Name, Role Name, List Feature | List Feature has embedded newline evidence 1/5 and comma evidence 0/5 | current CONFIRMED; corroborates PMD-008 raw text |
+| `เพิ่ม Package Add On(ลูกค้า)` | 5 | consistent: Account Name, Role Name, Package Add On | Role Name comma evidence 3/5; Add-On 0/5 | current PARTIAL; both remain `MULTIPLE` |
+| `Create New Role สำหรับ Account(ลูกค้า)` | 5 | consistent: Account Name, Create Role Name, List Feature | List Feature has embedded newline evidence 1/5 and comma evidence 0/5 | current CONFIRMED; corroborates PMD-010 raw text |
+| `เปลี่ยน Provider สำหรับ Account(ลูกค้า)` | 0 | no historical sample | no historical multiplicity evidence | current PARTIAL; PMD-011 remains OPEN |
+| `Tranfer Owner Account(ลูกค้า)` | 5 | consistent: Account Name, Name Provider Type (New), Email | no comma/newline evidence in sampled fields | current PARTIAL; does not resolve email semantics |
+| `ลบ User ใน Account(ลูกค้า)` | 3 | consistent: Account Name, List Email | List Email comma/newline evidence 0/3 | current CONFIRMED; corroborates PMD-014 raw text; not `SINGLE` evidence |
+| `ขอเปิด/ปิดแจ้งเตือนการเปลี่ยนสิทธิ์ถึง Owner Account` | 0 | no historical sample | no historical multiplicity evidence | current PARTIAL; PMD-015 remains OPEN |
+| `Special Caseพนักงาน` | 5 | variant: base labels plus one Agency-like and one Email-like line | Role Name comma evidence 1/5; Detail newline evidence 3/5 | legacy/out-of-contract; colon-like value lines may mimic labels |
+| `Special Caseลูกค้า` | 5 | consistent base label sequence | Role Name and Product Name comma evidence 1/5 each; Detail newline evidence 3/5 | legacy/out-of-contract |
+| `ขอ Product เข้า Role พนักงาน` | 1 | one observed sequence | Role Internal and Product Name comma evidence 1/1 | legacy/out-of-contract |
+| `ขอสิทธิ์ใช้งาน` | 1 | one observed sequence | Role comma evidence 1/1 | legacy/out-of-contract |
+| `เพิ่ม Product เข้า Account(ลูกค้า)` | 5 | consistent: Account Name, Product Name | Product Name comma evidence 3/5 | legacy/out-of-contract; matches the non-selectable route candidate only as history |
+| `สร้าง Account(ลูกค้า)` | 5 | variant: App Name + Providers Type 4/5; App ID 1/5 | App Name comma evidence 1/4; Product Name 3/5 | legacy/out-of-contract; corroborates App Name/App ID drift |
+| `สร้าง Account(ลูกค้า)_Standard` | 1 | one observed sequence | App Name comma evidence 1/1 | legacy/out-of-contract |
+| `สร้างAccountลูกค้า_Standard` | 1 | one observed sequence | App Name comma evidence 0/1 | legacy/out-of-contract |
+
+Across the current Topics, historical labels corroborate three important drift
+families: `Role` / `Role Name` / `Role Internal`; `เพิ่ม App เข้า Account(ลูกค้า)`
+uses either `Role Name` or `Product Name` for its derived role fragment; and older
+account-creation history uses either `App Name` or `App ID`. These observations
+must not be normalized into a new mapping without an owner decision. In particular,
+the latest-five sampling pattern is too small and too value-dependent to override
+the multiplicity established by Canvas controls and formulas.
 
 ## Route inventory
 

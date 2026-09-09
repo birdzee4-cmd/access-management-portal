@@ -22,4 +22,30 @@ Power Apps and Power Automate exports; no production read or write was performed
 | PMD-014 | ลบ User | What delimiter does `emailList` use? | One required text value is appended unchanged after `List Email : `; no split, trim, validation, or normalization occurs. | Model as raw text with no enforced delimiter. | None. | None for legacy-compatible contract mapping. | RESOLVED_FROM_SOURCE |
 | PMD-015 | เปิด/ปิดแจ้งเตือน | Is `Detail`-only transport acceptable, or is an approved typed destination required? | `เปิด`/`ปิด` is copied through hidden text only into `Detail`; SQL and VSTS consume `Detail`; no dedicated field was found. | Keep schema PARTIAL; do not invent a typed field. | Accept Detail-only compatibility or name the authoritative typed destination/consumer. | The setting could remain human-readable but not machine-actionable. | OPEN |
 
+## PM-03B historical-evidence effect
+
+The offline 77-record historical extract corroborates PMD-008, PMD-010, and
+PMD-014: sampled `List Feature`/`List Email` content behaves as raw text, including
+embedded newline evidence for `List Feature`. This is corroboration, not a new
+list grammar. Historical label drift (`Role` / `Role Name` / `Role Internal`,
+`Role Name` / `Product Name`, and older `App Name` / `App ID`) does not select an
+authoritative compatibility mapping. The bounded latest-five samples also do not
+justify changing any source-confirmed `MULTIPLE` field to `SINGLE`.
+
+No historical observation closes an owner decision. The OPEN set remains exactly:
+`PMD-001`, `PMD-002`, `PMD-005`, `PMD-006`, `PMD-007`, `PMD-009`, `PMD-011`,
+`PMD-012`, `PMD-013`, and `PMD-015`. PMD-003, PMD-004, PMD-008, PMD-010, and
+PMD-014 remain `RESOLVED_FROM_SOURCE`; historical evidence is not owner approval.
+
 Open owner questions: **10**. Source-resolved decisions: **5**.
+
+PM-03C adds authorized privacy-minimized legacy SQL aggregate evidence and safe
+recommended decisions without changing any status. See
+[Product Management policy closure evidence](product-management-policy-closure.md).
+
+PM-03D packages the ten OPEN questions, evidence, recommendation, alternatives,
+compatibility boundary, owner response, and possible post-approval effect in the
+[Product Management Owner Decision Pack](product-management-owner-decision-pack.md).
+The controlled workflow is PM-03A -> PM-03C Evidence -> PM-03D Owner Decision
+Pack -> Owner Approval -> PM-03B Apply Decisions. PM-03D resolves nothing; only a
+recorded owner approval can authorize a later, separately scoped PM-03B change.
