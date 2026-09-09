@@ -479,6 +479,15 @@ transformation was found in the available source evidence.
 
 ## Registry result and safety gate
 
+PM-05 implements the confirmed mapping as a typed internal compatibility
+serializer and fail-closed payload validator. Synthetic fixtures cover every
+Topic and assert the exact typed destination, `Detail` text, delimiter, raw-text
+passthrough, and omission behavior described above. The sanitized preview remains
+service/test-only and reports `submissionAllowed=false` and
+`adapterEnabled=false`; no API, UI, real adapter, or Production connection is
+registered. See
+[Product Management runtime readiness](product-management-runtime-readiness.md).
+
 The API schema registry now records observed requiredness, multiplicity, legacy
 field/label/control/binding/default/visibility, lookup source, Portal handling,
 submit destination, transformation, serialization, reused-field evidence, Matrix

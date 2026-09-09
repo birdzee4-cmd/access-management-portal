@@ -144,6 +144,13 @@ reused-field compatibility semantics, but does not implement their adapter.
 Backend SharePoint access, allowlisted projections, limits, credentials/scopes,
 sanitized errors, and approved read acceptance also remain unimplemented.
 
+PM-05 adds an internal typed compatibility serializer, fail-closed validator,
+sanitized dry-run preview service, synthetic fixtures for all 13 Topics, and a
+disabled future adapter boundary. It is not registered as an API endpoint and
+adds no UI. Exact legacy delimiters, `Detail` formatting, reused fields, and
+intentional omissions are verified in synthetic tests. See
+[Product Management runtime readiness](product-management-runtime-readiness.md).
+
 ## Preserved safety boundary
 
 No Product Management request submission, production request write, persistence,

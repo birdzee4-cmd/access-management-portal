@@ -138,6 +138,15 @@ approval/VSTS, never as identity authority. This makes the registry
 remains set for all 13 schemas, the real adapter is disabled, Production
 integration is not implemented, and no runtime Flow integration is active.
 
+PM-05 adds a service/test-only runtime compatibility boundary after validated
+Portal input: typed Topic contracts -> deterministic legacy serializer -> typed
+legacy payload allowlist -> exact validation -> sanitized dry-run preview. All 13
+Topics are covered. The preview has no connector dependency, API route, Web UI,
+database repository, or network call. The only future adapter implementation is
+disabled and always rejects; runtime configuration rejects real source mode or
+any submission/adapter enabling value. See
+[Product Management runtime readiness](product-management-runtime-readiness.md).
+
 ## Task 07D data-model boundaries
 
 Task 07D refines the portal-owned schema around three independent concerns:

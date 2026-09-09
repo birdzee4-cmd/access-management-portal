@@ -71,6 +71,17 @@ committed. The service has no runtime/API/UI registration or persistence port.
 All safety flags and existing guards remain unchanged. See
 [Legacy catalog mapping](access-catalog-legacy-mapping.md).
 
+PM-05 Product Management runtime readiness is internal and preview-only. Its
+typed allowlist rejects unknown/destination-incompatible payload fields, accepts
+identity only with an authenticated-server-context marker, requires stable lookup
+keys, and fails closed for inactive/unknown-active Matrix candidates, unresolved
+Manager context, duplicates, invalid canonical Email arrays, and unsafe runtime
+configuration. Preview output redacts server identity/routing fields and Email
+addresses. The service has no API/UI registration or connector dependency; its
+side-effect contract declares network, DB/legacy write, approval/audit, and
+provisioning false. The only adapter is disabled and always throws. See
+[Product Management runtime readiness](product-management-runtime-readiness.md).
+
 Future logs must avoid access tokens, secrets, connection strings, full request payloads, and unnecessary employee data. Audit events should capture actor, action, target, decision, correlation ID, and timestamp, with an approved retention period.
 
 ## Threats to address before pilot

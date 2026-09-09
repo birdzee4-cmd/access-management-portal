@@ -1,6 +1,6 @@
 # Project state
 
-M1 and PM-04 implementation snapshot, 2026-09-09; based on repository docs and source
+M1 and PM-05 implementation snapshot, 2026-09-09; based on repository docs and source
 without production refresh. Read [safety](production-safety-boundary.md)
 and [roadmap](roadmap.md). Historical findings are scoped to their dates/samples.
 
@@ -118,6 +118,17 @@ decisions remain unchanged and OPEN remains zero. All 13 schemas retain
 `submissionEnabled=false`; the real adapter and Production integration remain
 disabled/not implemented. Phase 1 retains Legacy Power Automate / Microsoft Teams
 approval and introduces no Portal Product Management double approval.
+
+PM-05 makes the confirmed contract **DRY-RUN READY** without activating it. An
+internal typed serializer now covers all 13 Topics, reproduces exact legacy
+multi-value delimiters and `Detail` text, enforces reused-field and omission
+rules, and validates the result against a fixed legacy field allowlist. A
+sanitized preview reports mapped/omitted fields, warnings, notes, and false
+side-effect flags. Synthetic fixtures cover every Topic plus fail-closed Email,
+App, Matrix Active/Manager/duplicate, destination, delimiter, approval, adapter,
+and runtime-mode cases. There is no API/UI registration. The real adapter and
+submission remain disabled, and Production remains unconnected. See
+[runtime readiness](product-management-runtime-readiness.md).
 
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration
