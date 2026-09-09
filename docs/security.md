@@ -82,6 +82,17 @@ side-effect contract declares network, DB/legacy write, approval/audit, and
 provisioning false. The only adapter is disabled and always throws. See
 [Product Management runtime readiness](product-management-runtime-readiness.md).
 
+PM-06 keeps the same runtime disablement while adding synthetic-only adapter
+acceptance. Envelope hashing uses a documented canonical representation; the
+in-memory idempotency store atomically shares concurrent duplicates and rejects a
+key bound to a different fingerprint. Unknown acceptance outcomes are terminal
+and are never automatically retried. Audit events contain correlation, Topic,
+synthetic target, fingerprint, attempt, result and time only—never payloads,
+emails, identities, Manager values, claims, tokens, or credentials. No Production
+adapter, credential, persistence, route, monitoring connection, or network call is
+added. See
+[Product Management controlled adapter readiness](product-management-adapter-readiness.md).
+
 Future logs must avoid access tokens, secrets, connection strings, full request payloads, and unnecessary employee data. Audit events should capture actor, action, target, decision, correlation ID, and timestamp, with an approved retention period.
 
 ## Threats to address before pilot

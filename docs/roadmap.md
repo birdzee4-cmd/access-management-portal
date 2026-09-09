@@ -101,3 +101,19 @@ See [M1 implementation](portal-request-engine.md). Do not begin M2 automatically
 - **Dependencies / POLICY REQUIRED:** M1–M3; authoritative HR/identity events,
   ownership, review frequency, lifecycle timing, revocation authority/exceptions,
   legal/privacy retention, reconciliation truth and recovery policy.
+
+## Product Management controlled integration track
+
+**PM-06 status (2026-09-09): COMPLETE — NON-PRODUCTION SYNTHETIC ACCEPTANCE.**
+The versioned envelope, synthetic-only adapter, idempotency/concurrency guard,
+bounded retry, safe audit/metrics, independent verification, failure recovery
+model, and 13/13 synthetic acceptance are implemented without Production access,
+external I/O, durable/external persistence, approval creation, or activation. See
+[adapter readiness](product-management-adapter-readiness.md).
+
+**PM-07 status: NOT STARTED / AUTHORIZATION REQUIRED.** PM-07 may not begin from
+this roadmap entry. It requires the explicit checklist in adapter readiness,
+including exact target/action authorization, credential and least-privilege
+approval, durable idempotency/audit, real non-Production adapter acceptance,
+security/operations review, rollback/cutover, double-approval prevention,
+deployment authorization, and separate safety-flag activation authorization.

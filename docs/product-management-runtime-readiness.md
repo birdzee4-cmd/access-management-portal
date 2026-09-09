@@ -1,22 +1,26 @@
 # Product Management runtime integration readiness
 
-PM-05 status on 2026-09-09: **DRY-RUN READY**. This status is based on repository
-source, committed offline Power Apps/Flow exports, and synthetic tests only. No
-Production system was accessed.
+PM-06 status on 2026-09-09: **NON-PRODUCTION SYNTHETIC ACCEPTANCE**. PM-05 remains
+**DRY-RUN READY**. These statuses are based on repository source, committed
+offline Power Apps/Flow exports, and synthetic tests only. No Production system
+was accessed. See [controlled adapter readiness](product-management-adapter-readiness.md).
 
 ## Status vocabulary
 
-| Status | PM-05 result | Meaning |
+| Status | Current result | Meaning |
 | --- | --- | --- |
 | CONTRACT CONFIRMED | 13/13 Topics | PM-03/PM-04 field, destination, serialization, omission, and owner decisions remain confirmed. |
 | SERIALIZER VERIFIED | 13/13 Topics | A typed, deterministic compatibility serializer has exact synthetic assertions for every Topic. |
 | DRY-RUN READY | yes | An internal preview can validate and return a sanitized compatibility payload without side effects. |
-| REAL ADAPTER DISABLED | yes | Only `DisabledProductManagementSubmissionAdapter` exists; it always rejects. |
-| SUBMISSION DISABLED | yes | Schema flags remain false and PM-05 runtime guards reject every enabling value. |
+| ADAPTER CONTRACT READY | yes | PM-06 adds a typed envelope, adapter/result/verification contracts, and synthetic-only executor. |
+| NON-PRODUCTION SYNTHETIC ACCEPTANCE | 13/13 Topics | Serializer through verification passes with synthetic fixtures and zero network I/O. |
+| REAL ADAPTER DISABLED | yes | No Production implementation or registration exists; the disabled adapter always rejects. |
+| SUBMISSION DISABLED | yes | Schema flags remain false and runtime guards reject every enabling or selectable adapter value. |
 | PRODUCTION NOT CONNECTED | yes | No SharePoint, SQL, VSTS, Power Automate, Entra, network, or Portal DB integration was added. |
 
-These statuses do not mean APPROVED, ACTIVE, or PROVISIONED. PM-05 prepares a
-compatibility boundary; it grants no integration or activation authority.
+These statuses do not mean APPROVED, ACTIVE, or PROVISIONED. PM-06 makes the
+boundary testable only against an in-memory synthetic adapter; it grants no
+integration or activation authority.
 
 ## Runtime architecture
 
@@ -96,9 +100,12 @@ Email, or legacy field labels.
 
 ## Adapter and runtime guards
 
-The future `ProductManagementSubmissionAdapter` boundary is design-only. PM-05
-provides only a disabled implementation whose `submit` method always throws. The
-preview service does not receive an adapter and cannot call it.
+PM-06 implements the typed `ProductManagementSubmissionAdapter` contract and an
+explicit `SYNTHETIC_NON_PRODUCTION / PM06_ACCEPTANCE` adapter with independent
+verification. It also provides in-memory audit/idempotency and bounded retry for
+acceptance tests. None is registered in the API or Web application. No Production
+adapter exists; the disabled implementation always throws. The preview service
+still receives no adapter and cannot call one.
 
 `readProductManagementRuntimeSafety` accepts only this state:
 
@@ -106,12 +113,15 @@ preview service does not receive an adapter and cannot call it.
 PRODUCT_MANAGEMENT_DATA_SOURCE=mock
 PRODUCT_MANAGEMENT_SUBMISSION_ENABLED=false
 PRODUCT_MANAGEMENT_REAL_ADAPTER_ENABLED=false
+PRODUCT_MANAGEMENT_ADAPTER_TARGET=disabled
 ```
 
-Missing submission/adapter variables default to false. `real`, an unknown data
-source, or any non-false enabling value fails service construction. Existing
-write/automation flags cannot turn this preview into a submission path. The 13
-schema registry entries independently retain `submissionEnabled=false`.
+Missing submission/adapter-enable variables default to false and a missing target
+defaults to the non-executable `disabled` state. `real`, an unknown data source,
+any non-false enabling value, or any selectable runtime adapter target fails
+service construction. Existing write/automation flags cannot turn this preview
+into a submission path. The 13 schema registry entries independently retain
+`submissionEnabled=false`.
 
 ## Approval boundary
 
@@ -145,5 +155,5 @@ separate explicit authorization and review:
   Production acceptance scope, and explicit authorization for every safety-flag or
   deployment change.
 
-Changing an environment variable alone never authorizes activation. PM-05 adds no
+Changing an environment variable alone never authorizes activation. PM-06 adds no
 real adapter, Production connection, deployment, provision, revoke, or migration.

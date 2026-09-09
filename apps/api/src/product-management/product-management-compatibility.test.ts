@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  DisabledProductManagementSubmissionAdapter,
   ProductManagementCompatibilityError,
   ProductManagementCompatibilityPreviewService,
   ProductManagementRuntimeSafetyError,
@@ -12,6 +11,7 @@ import {
   type LegacyProductManagementPayload,
   type ProductManagementCompatibilityInput,
 } from "./product-management-compatibility.js";
+import { DisabledProductManagementSubmissionAdapter, createProductManagementSubmissionEnvelope } from "./product-management-submission.js";
 import { productManagementCompatibilityFixtures } from "./product-management-compatibility.fixtures.js";
 import { productManagementSchemaRegistry, productManagementTopics } from "./product-management-model.js";
 
@@ -200,10 +200,16 @@ test("runtime safety fails closed for real mode or any attempt to enable submiss
 });
 
 test("disabled adapter has no success path and preview performs no network or write action", async () => {
-  const payload = serializeProductManagementCompatibilityPayload(productManagementCompatibilityFixtures[0].input);
+  const envelope = createProductManagementSubmissionEnvelope({
+    compatibilityInput: productManagementCompatibilityFixtures[0].input,
+    correlationId: "synthetic-disabled-correlation",
+    idempotencyKey: "synthetic-disabled-idempotency",
+    createdAt: "2026-09-09T00:00:00.000Z",
+    target: { classification: "SYNTHETIC_NON_PRODUCTION", name: "PM06_ACCEPTANCE" },
+  });
   const adapter = new DisabledProductManagementSubmissionAdapter();
   assert.equal(adapter.mode, "DISABLED");
-  await assert.rejects(adapter.submit(payload), ProductManagementRuntimeSafetyError);
+  await assert.rejects(adapter.submit(envelope), ProductManagementRuntimeSafetyError);
 
   let fetchCalls = 0;
   const originalFetch = globalThis.fetch;

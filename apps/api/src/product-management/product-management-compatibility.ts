@@ -152,18 +152,6 @@ export interface ProductManagementRuntimeSafetyConfiguration {
   readonly adapterEnabled: false;
 }
 
-export interface ProductManagementSubmissionAdapter {
-  readonly mode: "DISABLED";
-  submit(payload: LegacyProductManagementPayload): Promise<never>;
-}
-
-export class DisabledProductManagementSubmissionAdapter implements ProductManagementSubmissionAdapter {
-  readonly mode = "DISABLED" as const;
-  async submit(_payload: LegacyProductManagementPayload): Promise<never> {
-    throw new ProductManagementRuntimeSafetyError("Product Management submission adapter is disabled.");
-  }
-}
-
 type Environment = Readonly<Record<string, string | undefined>>;
 
 export function readProductManagementRuntimeSafety(environment: Environment): ProductManagementRuntimeSafetyConfiguration {
@@ -172,7 +160,9 @@ export function readProductManagementRuntimeSafety(environment: Environment): Pr
   const realAdapter = environment.PRODUCT_MANAGEMENT_REAL_ADAPTER_ENABLED?.trim().toLowerCase() || "false";
   if (source !== "mock") throw new ProductManagementRuntimeSafetyError("Real Product Management data source is not allowed for compatibility preview.");
   if (submission !== "false") throw new ProductManagementRuntimeSafetyError("Product Management submission must remain disabled.");
-  if (realAdapter !== "false") throw new ProductManagementRuntimeSafetyError("A real Product Management adapter cannot be enabled in PM-05.");
+  const adapterTarget = environment.PRODUCT_MANAGEMENT_ADAPTER_TARGET?.trim().toLowerCase() || "disabled";
+  if (realAdapter !== "false") throw new ProductManagementRuntimeSafetyError("A real Product Management adapter cannot be enabled in PM-06.");
+  if (adapterTarget !== "disabled") throw new ProductManagementRuntimeSafetyError("A Product Management runtime adapter target cannot be selected in PM-06.");
   return { dataSource: "MOCK", submissionEnabled: false, adapterEnabled: false };
 }
 

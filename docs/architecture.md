@@ -147,6 +147,16 @@ disabled and always rejects; runtime configuration rejects real source mode or
 any submission/adapter enabling value. See
 [Product Management runtime readiness](product-management-runtime-readiness.md).
 
+PM-06 extends that internal boundary with
+`product-management-submission-envelope/v1`, deterministic payload hashing,
+atomic process-local idempotency, bounded classified retry, privacy-minimized
+in-memory audit/metrics, a typed adapter result and a separate verification result.
+Only the explicit `SYNTHETIC_NON_PRODUCTION / PM06_ACCEPTANCE` adapter can execute,
+and it declares `network=false`. The boundary is not registered in the API/Web
+composition root and has no repository or connector. Missing/real/Production
+targets fail closed; no real adapter is implemented. See
+[Product Management controlled adapter readiness](product-management-adapter-readiness.md).
+
 ## Task 07D data-model boundaries
 
 Task 07D refines the portal-owned schema around three independent concerns:

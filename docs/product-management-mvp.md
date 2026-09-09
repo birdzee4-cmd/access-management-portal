@@ -151,6 +151,12 @@ adds no UI. Exact legacy delimiters, `Detail` formatting, reused fields, and
 intentional omissions are verified in synthetic tests. See
 [Product Management runtime readiness](product-management-runtime-readiness.md).
 
+PM-06 adds an internal versioned submission envelope, synthetic-only typed adapter,
+atomic in-memory idempotency, bounded retry, safe audit/metrics, and independent
+verification acceptance. It remains unregistered and performs no network or
+database operation. See
+[Product Management controlled adapter readiness](product-management-adapter-readiness.md).
+
 ## Preserved safety boundary
 
 No Product Management request submission, production request write, persistence,

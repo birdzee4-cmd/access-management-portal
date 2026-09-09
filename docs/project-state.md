@@ -1,6 +1,6 @@
 # Project state
 
-M1 and PM-05 implementation snapshot, 2026-09-09; based on repository docs and source
+M1 and PM-06 implementation snapshot, 2026-09-09; based on repository docs and source
 without production refresh. Read [safety](production-safety-boundary.md)
 and [roadmap](roadmap.md). Historical findings are scoped to their dates/samples.
 
@@ -129,6 +129,18 @@ App, Matrix Active/Manager/duplicate, destination, delimiter, approval, adapter,
 and runtime-mode cases. There is no API/UI registration. The real adapter and
 submission remain disabled, and Production remains unconnected. See
 [runtime readiness](product-management-runtime-readiness.md).
+
+PM-06 makes the post-serializer boundary **ADAPTER CONTRACT READY** and records
+**NON-PRODUCTION SYNTHETIC ACCEPTANCE** for 13/13 Topics. It adds a versioned
+envelope with canonical SHA-256 payload identity, a synthetic-only adapter and
+separate verifier, atomic in-memory idempotency/concurrency behavior, bounded
+classified retry, fail-safe unknown outcomes, and privacy-minimized in-memory
+audit/metrics. The service is internal and unregistered; tests perform no network
+or database I/O. Durable idempotency/audit and every real target, credential,
+permission, acceptance, deployment and flag change remain PM-07 prerequisites.
+Submission remains disabled, no Production adapter exists, and Legacy Power
+Automate / Microsoft Teams remains the sole Phase 1 Product Management approval.
+See [adapter readiness](product-management-adapter-readiness.md).
 
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration
