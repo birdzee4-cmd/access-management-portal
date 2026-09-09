@@ -7,15 +7,21 @@ import type {
 } from "@access-portal/contracts";
 import {
   isSupportedProductManagementContext,
+  normalizeProductManagementCustomerEmails,
   productManagementCountries,
   productManagementForm,
+  productManagementOwnerDecisions,
+  productManagementPhase1ApprovalArchitecture,
   productManagementSchemaRegistry,
   productManagementTopics,
 } from "./product-management-model.js";
 
 export {
   isSupportedProductManagementContext,
+  normalizeProductManagementCustomerEmails,
   productManagementCountries,
+  productManagementOwnerDecisions,
+  productManagementPhase1ApprovalArchitecture,
   productManagementSchemaRegistry,
   productManagementTopics,
 };

@@ -1,6 +1,6 @@
 # Project state
 
-M1 and PM-03A implementation snapshot, 2026-09-09; based on repository docs and source
+M1 and PM-03B implementation snapshot, 2026-09-09; based on repository docs and source
 without production refresh. Read [safety](production-safety-boundary.md)
 and [roadmap](roadmap.md). Historical findings are scoped to their dates/samples.
 
@@ -76,12 +76,10 @@ dynamic schema registry to that evidence. PM-03 inspected all 65 effective
 supported forms and the exported flows, documented the complete observed field
 and submission contract, added missing List Feature/List Email schema fields, and
 records requiredness, multiplicity, legacy bindings, transformations, destination
-and machine-readable gap reasons. PM-03A confirms five source-closed contracts,
-leaves eight policy-dependent contracts PARTIAL, and adds serialization,
-reused-field, all-Roles, and effective Matrix metadata. The result is
-`5 CONFIRMED / 8 PARTIAL`; both Web and API reject PARTIAL submission and an
-independent `submissionEnabled=false` gate disables all Product Management
-submission. PM-03B adds privacy-minimized aggregate evidence from 77 offline
+and machine-readable gap reasons. PM-03A initially confirmed five source-closed
+contracts and left eight policy-dependent contracts PARTIAL while adding
+serialization, reused-field, all-Roles, and effective Matrix metadata. The earlier
+PM-03B evidence pass added privacy-minimized aggregate evidence from 77 offline
 historical submissions across 19 Topics: 11 current Topics were observed, two had
 no sample, and eight were legacy/out-of-contract. It corroborates raw-text fields
 and schema drift but closes no OPEN owner decision and adds no legacy Topic to the
@@ -105,10 +103,17 @@ PM-03D converts those existing findings into a Thai-first, decision-ready
 [Owner Decision Pack](product-management-owner-decision-pack.md) for exactly the
 ten OPEN PMDs. It adds no discovery, approval, schema/runtime change, or
 integration. The workflow is PM-03A -> PM-03C Evidence -> PM-03D Owner Decision
-Pack -> Owner Approval -> PM-03B Apply Decisions. Current status remains
-`5 CONFIRMED / 8 PARTIAL`, zero newly resolved decisions, ten OPEN decisions,
-Product Management submission disabled, real adapter disabled, and Production
-integration not implemented.
+Pack -> Owner Approval -> PM-03B Apply Decisions.
+
+The final PM-03B owner-decision application records all ten supplied decisions as
+`RESOLVED_BY_OWNER`: five `APPROVE RECOMMENDATION` and five `APPROVE WITH CHANGE —
+LEGACY COMPATIBILITY FIRST`. The current registry is `10 CONFIRMED / 3 PARTIAL`;
+Create Account, Change Provider, and Transfer Owner remain PARTIAL solely because
+their approved representation/mapping still lacks technical downstream adapter
+verification. Owner decisions OPEN are zero. All 13 schemas retain
+`submissionEnabled=false`; the real adapter and Production integration remain
+disabled/not implemented. Phase 1 retains Legacy Power Automate / Microsoft Teams
+approval and introduces no Portal Product Management double approval.
 
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration

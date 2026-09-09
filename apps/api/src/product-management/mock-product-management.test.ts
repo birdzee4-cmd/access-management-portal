@@ -4,7 +4,10 @@ import {
   isSupportedProductManagementContext,
   listMockProductManagementRequests,
   mockProductManagementForm,
+  normalizeProductManagementCustomerEmails,
   productManagementCountries,
+  productManagementOwnerDecisions,
+  productManagementPhase1ApprovalArchitecture,
   productManagementSchemaRegistry,
   productManagementTopics,
   submitMockProductManagementRequest,
@@ -26,12 +29,17 @@ const confirmedTopics = [
   "ลบ User ใน Account(ลูกค้า)",
   "ขอเปิด/ปิดแจ้งเตือนการเปลี่ยนสิทธิ์ถึง Owner Account",
 ];
-const sourceClosedTopics = new Set([
+const confirmedContractTopics = new Set([
+  confirmedTopics[1],
   confirmedTopics[2],
   confirmedTopics[3],
+  confirmedTopics[4],
+  confirmedTopics[5],
   confirmedTopics[6],
+  confirmedTopics[7],
   confirmedTopics[8],
   confirmedTopics[11],
+  confirmedTopics[12],
 ]);
 
 test("mock uses exactly the five confirmed Countries and thirteen Topics in source order", () => {
@@ -48,7 +56,7 @@ test("every Country and Topic resolves through the evidence-based schema registr
       const form = mockProductManagementForm(country, topic);
       assert.equal(form.country, country);
       assert.equal(form.topic, topic);
-      const expectedStatus = sourceClosedTopics.has(topic) ? "CONFIRMED" : "PARTIAL";
+      const expectedStatus = confirmedContractTopics.has(topic) ? "CONFIRMED" : "PARTIAL";
       assert.equal(form.schema.implementationStatus, expectedStatus);
       assert.equal(form.schema.partialReasons.length === 0, expectedStatus === "CONFIRMED");
       assert.equal(form.schema.submissionEnabled, false);
@@ -68,11 +76,16 @@ test("registry records discovered multiplicity, missing legacy fields, and reuse
   const createAccount = byTopic.get(productManagementTopics[0])!;
   assert.equal(createAccount.fields.find((field) => field.key === "appName")?.multiplicity, "MULTIPLE");
   assert.equal(createAccount.fields.find((field) => field.key === "packageAddOn")?.requiredness, "CONFIRMED_OPTIONAL");
-  assert.ok(createAccount.partialReasons.includes("UNKNOWN_SUBMISSION_MAPPING"));
+  assert.deepEqual(createAccount.partialReasons, ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"]);
+  assert.equal(createAccount.fields.find((field) => field.key === "packageAddOn")?.ownerDecision?.status, "RESOLVED_BY_OWNER");
+
+  const addCustomerEmail = byTopic.get(productManagementTopics[1])!;
+  assert.equal(addCustomerEmail.fields.find((field) => field.key === "customerEmail")?.multiplicity, "MULTIPLE");
+  assert.match(addCustomerEmail.fields.find((field) => field.key === "customerEmail")?.ownerDecision?.portalCanonicalRepresentation ?? "", /email array/i);
 
   const addAppToInternalRole = byTopic.get(productManagementTopics[5])!;
-  assert.equal(addAppToInternalRole.fields.find((field) => field.key === "appName")?.requiredness, "CONFIRMED_OPTIONAL");
-  assert.ok(addAppToInternalRole.partialReasons.includes("LEGACY_REQUIREDNESS_ANOMALY"));
+  assert.equal(addAppToInternalRole.fields.find((field) => field.key === "appName")?.requiredness, "CONFIRMED_REQUIRED");
+  assert.deepEqual(addAppToInternalRole.partialReasons, []);
 
   const createRole = byTopic.get(productManagementTopics[8])!;
   assert.equal(createRole.fields.find((field) => field.key === "featureList")?.requiredness, "CONFIRMED_REQUIRED");
@@ -82,13 +95,17 @@ test("registry records discovered multiplicity, missing legacy fields, and reuse
 
   const changeProvider = byTopic.get(productManagementTopics[9])!;
   assert.equal(changeProvider.fields.find((field) => field.key === "emailList")?.requiredness, "CONFIRMED_REQUIRED");
-  assert.match(changeProvider.fields.find((field) => field.key === "providerType")?.transformation ?? "", /Reuses RoleName/);
+  assert.match(changeProvider.fields.find((field) => field.key === "providerType")?.transformation ?? "", /reuses RoleName/i);
+  assert.equal(changeProvider.fields.find((field) => field.key === "providerType")?.legacyFieldReuse?.decisionId, "PMD-011");
+  assert.deepEqual(changeProvider.partialReasons, ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"]);
 
   const addOn = byTopic.get(productManagementTopics[7])!;
   assert.match(addOn.fields.find((field) => field.key === "customerRole")?.submitDestination ?? "", /ProductName/);
   assert.match(addOn.fields.find((field) => field.key === "packageAddOn")?.submitDestination ?? "", /AppName/);
   assert.equal(addOn.fields.find((field) => field.key === "customerRole")?.legacyFieldReuse?.storageStatus, "LEGACY_STORAGE_CONFIRMED");
   assert.equal(addOn.fields.find((field) => field.key === "packageAddOn")?.legacyFieldReuse?.downstreamUsageStatus, "DOWNSTREAM_USAGE_CONFIRMED");
+  assert.equal(addOn.fields.find((field) => field.key === "customerRole")?.legacyFieldReuse?.decisionId, "PMD-009");
+  assert.equal(addOn.fields.find((field) => field.key === "packageAddOn")?.legacyFieldReuse?.compatibilityDecision, "OWNER_APPROVED_LEGACY_COMPATIBILITY");
 
   const addAppToAccount = byTopic.get(productManagementTopics[3])!;
   assert.equal(addAppToAccount.derivedValues?.[0]?.serialization.mode, "DERIVED_ACCOUNT_ROLES");
@@ -99,6 +116,60 @@ test("registry records discovered multiplicity, missing legacy fields, and reuse
   assert.equal(internalRole.matrix?.activeApplied, false);
   assert.equal(internalRole.matrix?.departmentApplied, false);
   assert.equal(internalRole.matrix?.duplicateRoleNameBehavior, "PRESERVED");
+  assert.equal(internalRole.matrix?.portalPolicy?.eligibleActiveValue, true);
+  assert.equal(internalRole.matrix?.portalPolicy?.unknownActiveBehavior, "FAIL_CLOSED");
+  assert.equal(internalRole.matrix?.portalPolicy?.managerUnusableBehavior, "UNRESOLVED");
+  assert.equal(internalRole.matrix?.portalPolicy?.duplicateRoleNameBehavior, "REQUIRE_STABLE_KEY_ELSE_FAIL_CLOSED");
+  assert.equal(internalRole.matrix?.portalPolicy?.displayOrdering, "DETERMINISTIC_NO_APPROVAL_PRIORITY");
+  assert.equal(internalRole.matrix?.portalPolicy?.serverAuthoritative, true);
+
+  const transferOwner = byTopic.get(productManagementTopics[10])!;
+  const transferProvider = transferOwner.fields.find((field) => field.key === "providerType")!;
+  const transferEmail = transferOwner.fields.find((field) => field.key === "customerEmail")!;
+  assert.equal(transferProvider.legacyFieldReuse?.legacyField, "RoleName(Product)");
+  assert.equal(transferProvider.legacyFieldReuse?.decisionId, "PMD-012");
+  assert.equal(transferEmail.legacyLabel, "Email ลูกค้า");
+  assert.match(transferEmail.ownerDecision?.compatibilityRule ?? "", /never infer Account ownership or identity authority/i);
+  assert.doesNotMatch(transferEmail.ownerDecision?.portalCanonicalRepresentation ?? "", /newOwnerEmail/i);
+
+  const notification = byTopic.get(productManagementTopics[12])!.fields.find((field) => field.key === "notificationSetting")!;
+  assert.equal(notification.legacyDataField, "Detail");
+  assert.match(notification.ownerDecision?.compatibilityRule ?? "", /Detail-only/);
+  assert.match(notification.transformation ?? "", /no typed destination is introduced/i);
+});
+
+test("owner decisions are complete and Phase 1 retains one Legacy approval authority", () => {
+  assert.equal(productManagementOwnerDecisions.length, 10);
+  assert.ok(productManagementOwnerDecisions.every((decision) => decision.status === "RESOLVED_BY_OWNER"));
+  assert.deepEqual(productManagementOwnerDecisions.map(({ id, category }) => [id, category]), [
+    ["PMD-001", "APPROVE_RECOMMENDATION"],
+    ["PMD-002", "APPROVE_RECOMMENDATION"],
+    ["PMD-005", "APPROVE_RECOMMENDATION"],
+    ["PMD-006", "APPROVE_RECOMMENDATION"],
+    ["PMD-007", "APPROVE_RECOMMENDATION"],
+    ["PMD-009", "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST"],
+    ["PMD-011", "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST"],
+    ["PMD-012", "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST"],
+    ["PMD-013", "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST"],
+    ["PMD-015", "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST"],
+  ]);
+  assert.deepEqual(productManagementPhase1ApprovalArchitecture, {
+    phase: "PHASE_1",
+    authority: "LEGACY_POWER_AUTOMATE_MICROSOFT_TEAMS",
+    portalApprovalEnabled: false,
+    doubleApprovalAllowed: false,
+    migrationStatus: "OUT_OF_SCOPE",
+    runtimeIntegrationActive: false,
+  });
+  assert.ok(productManagementSchemaRegistry.every((entry) => entry.approvalArchitecture === productManagementPhase1ApprovalArchitecture));
+});
+
+test("canonical customer email arrays trim and validate each value", () => {
+  assert.deepEqual(normalizeProductManagementCustomerEmails([" first@example.invalid ", "second@example.invalid"]), ["first@example.invalid", "second@example.invalid"]);
+  for (const invalid of [[], "first@example.invalid", ["invalid"], ["first@example.invalid", 42]]) {
+    assert.throws(() => normalizeProductManagementCustomerEmails(invalid), /CUSTOMER_EMAILS_INVALID/);
+  }
+  assert.throws(() => normalizeProductManagementCustomerEmails(["First@example.invalid", " first@example.invalid "]), /CUSTOMER_EMAILS_DUPLICATE/);
 });
 
 test("schema dependencies contain Account to Customer Role and no obsolete synthetic chains", () => {
@@ -140,25 +211,25 @@ test("mock request history uses supported contexts and submission remains disabl
   }, "Synthetic"), /PRODUCT_MANAGEMENT_SUBMISSION_DISABLED/);
 });
 
-test("schema registry closes five source contracts and keeps eight explicit PARTIAL contracts", () => {
-  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "CONFIRMED").length, 5);
-  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "PARTIAL").length, 8);
+test("schema registry applies owner decisions and retains three technical PARTIAL contracts", () => {
+  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "CONFIRMED").length, 10);
+  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "PARTIAL").length, 3);
   assert.ok(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "PARTIAL").every((entry) => entry.partialReasons.length > 0));
   assert.ok(productManagementSchemaRegistry.every((entry) => entry.submissionEnabled === false));
   assert.deepEqual(productManagementSchemaRegistry.map((entry) => entry.partialReasons), [
-    ["UNKNOWN_SUBMISSION_MAPPING"],
-    ["UNKNOWN_MULTIPLICITY"],
+    ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"],
     [],
     [],
-    ["UNKNOWN_LOOKUP_AUTHORITY"],
-    ["UNKNOWN_LOOKUP_AUTHORITY", "LEGACY_REQUIREDNESS_ANOMALY"],
     [],
-    ["UNAPPROVED_LEGACY_FIELD_REUSE"],
     [],
-    ["UNAPPROVED_LEGACY_FIELD_REUSE"],
-    ["UNAPPROVED_LEGACY_FIELD_REUSE", "UNKNOWN_TARGET_EMAIL_SEMANTICS"],
     [],
-    ["UNKNOWN_SUBMISSION_MAPPING"],
+    [],
+    [],
+    [],
+    ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"],
+    ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"],
+    [],
+    [],
   ]);
 });
 

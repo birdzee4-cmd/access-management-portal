@@ -3,7 +3,8 @@
 ## Scope and safety
 
 PM-03C is an evidence-led decision pack for the ten Product Management owner
-decisions that remain OPEN after PM-03A/PM-03B. On 2026-09-09 the current owner
+decisions that were OPEN after the earlier PM-03A/PM-03B evidence work. On
+2026-09-09 the current owner
 explicitly authorized legacy SQL `SELECT` access for this work. The read was
 limited to parameterized aggregate queries over Product Management request
 history and metadata-only inspection. It performed no insert, update, delete,
@@ -46,10 +47,13 @@ recognized separator is a delimiter. The 28 PMD-007 cases are parser-level
 missing/blank observations and include legacy App ID shapes; they are not 28
 proven empty requests.
 
-## Recommended decisions for accountable-owner review
+## Historical recommendations supplied for accountable-owner review
 
-These are safe proposals, not approvals. Each remains `POLICY REQUIRED` until the
-named accountable roles approve the exact contract version.
+These were safe proposals, not approvals, when PM-03C was produced. The owner later
+approved the ten decisions recorded in
+[Product Management owner decisions](product-management-owner-decisions.md).
+This table remains source/evidence history and must not be read as the current
+decision status.
 
 | PMD | Recommended future-Portal decision | Compatibility boundary | Required approver roles |
 | --- | --- | --- | --- |
@@ -80,9 +84,12 @@ named accountable roles approve the exact contract version.
    Topic-specific decision and acceptance gate is complete. Activation is a
    separate authorization after implementation review.
 
-## Current outcome
+## Current outcome after PM-03B owner-decision application
 
-PM-03C adds decision-quality evidence and recommendations but closes no PMD. The
-registry remains `5 CONFIRMED / 8 PARTIAL`. OPEN remains exactly `PMD-001`,
-`PMD-002`, `PMD-005`, `PMD-006`, `PMD-007`, `PMD-009`, `PMD-011`, `PMD-012`,
-`PMD-013`, and `PMD-015`.
+PM-03C itself closed no PMD; that historical result was `5 CONFIRMED / 8 PARTIAL`.
+The subsequent explicit owner record resolves all ten formerly OPEN decisions as
+`RESOLVED_BY_OWNER`. The implemented registry is now `10 CONFIRMED / 3 PARTIAL`
+and has zero OPEN owner decisions. Create Account, Change Provider, and Transfer
+Owner remain PARTIAL only for `UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING`; owner
+approval did not manufacture downstream evidence. Submission remains disabled
+for every Product Management Topic and the real adapter remains disabled.

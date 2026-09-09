@@ -271,6 +271,7 @@ export interface ProductManagementSerializationMetadata {
   readonly downstreamConsumer: string;
 }
 export interface ProductManagementLegacyFieldReuseMetadata {
+  readonly decisionId?: "PMD-009" | "PMD-011" | "PMD-012";
   readonly businessMeaning: string;
   readonly legacyField: string;
   readonly flowUsage: string;
@@ -280,6 +281,18 @@ export interface ProductManagementLegacyFieldReuseMetadata {
   readonly businessMeaningStatus: "BUSINESS_MEANING_CONFIRMED";
   readonly downstreamUsageStatus: "DOWNSTREAM_USAGE_CONFIRMED";
   readonly ownerDecisionRequired: boolean;
+  readonly compatibilityDecision?: "OWNER_APPROVED_LEGACY_COMPATIBILITY";
+}
+export interface ProductManagementMatrixPortalPolicy {
+  readonly decisionIds: readonly ["PMD-005", "PMD-006"];
+  readonly decisionStatus: "RESOLVED_BY_OWNER";
+  readonly authorityScope: "CANDIDATE_LOOKUP_ONLY";
+  readonly eligibleActiveValue: true;
+  readonly unknownActiveBehavior: "FAIL_CLOSED";
+  readonly managerUnusableBehavior: "UNRESOLVED";
+  readonly duplicateRoleNameBehavior: "REQUIRE_STABLE_KEY_ELSE_FAIL_CLOSED";
+  readonly displayOrdering: "DETERMINISTIC_NO_APPROVAL_PRIORITY";
+  readonly serverAuthoritative: true;
 }
 export interface ProductManagementMatrixMetadata {
   readonly status: ProductManagementContractEvidenceStatus;
@@ -292,7 +305,8 @@ export interface ProductManagementMatrixMetadata {
   readonly duplicateRoleNameBehavior: "PRESERVED";
   readonly ordering: "UNSORTED_FILTER_RESULT";
   readonly authorityScope: "DROPDOWN_CANDIDATE_VISIBILITY_ONLY";
-  readonly ownerDecisionRequired: true;
+  readonly ownerDecisionRequired: boolean;
+  readonly portalPolicy?: ProductManagementMatrixPortalPolicy;
 }
 export interface ProductManagementDerivedValueMetadata {
   readonly key: string;
@@ -310,7 +324,24 @@ export type ProductManagementSchemaPartialReason =
   | "UNKNOWN_TARGET_EMAIL_SEMANTICS"
   | "UNAPPROVED_LEGACY_FIELD_REUSE"
   | "LEGACY_REQUIREDNESS_ANOMALY"
-  | "DUPLICATE_LEGACY_ROUTE";
+  | "DUPLICATE_LEGACY_ROUTE"
+  | "UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING";
+export interface ProductManagementOwnerDecisionMetadata {
+  readonly decisionIds: readonly string[];
+  readonly status: "RESOLVED_BY_OWNER";
+  readonly category: "APPROVE_RECOMMENDATION" | "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST";
+  readonly portalCanonicalRepresentation: string;
+  readonly compatibilityRule: string;
+  readonly validationRules: readonly string[];
+}
+export interface ProductManagementApprovalArchitectureMetadata {
+  readonly phase: "PHASE_1";
+  readonly authority: "LEGACY_POWER_AUTOMATE_MICROSOFT_TEAMS";
+  readonly portalApprovalEnabled: false;
+  readonly doubleApprovalAllowed: false;
+  readonly migrationStatus: "OUT_OF_SCOPE";
+  readonly runtimeIntegrationActive: false;
+}
 export interface ProductManagementFormField {
   readonly key: string;
   readonly label: string;
@@ -335,6 +366,7 @@ export interface ProductManagementFormField {
   readonly serialization?: ProductManagementSerializationMetadata;
   readonly legacyFieldReuse?: ProductManagementLegacyFieldReuseMetadata;
   readonly matrix?: ProductManagementMatrixMetadata;
+  readonly ownerDecision?: ProductManagementOwnerDecisionMetadata;
 }
 export interface ProductManagementFormSchemaMetadata {
   readonly legacyScreenPattern: string;
@@ -343,6 +375,7 @@ export interface ProductManagementFormSchemaMetadata {
   readonly implementationStatus: ProductManagementSchemaImplementationStatus;
   readonly partialReasons: readonly ProductManagementSchemaPartialReason[];
   readonly submissionEnabled: boolean;
+  readonly approvalArchitecture?: ProductManagementApprovalArchitectureMetadata;
   readonly derivedValues?: readonly ProductManagementDerivedValueMetadata[];
 }
 export interface ProductManagementFormDefinition { readonly source?: ProductManagementDataSource; readonly country: string; readonly topic: string; readonly schema: ProductManagementFormSchemaMetadata; readonly fields: readonly ProductManagementFormField[]; }

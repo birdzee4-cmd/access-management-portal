@@ -78,8 +78,8 @@ test("all 65 Country and Topic pairs return compatible schema registry contracts
       assert.ok(body.fields.length > 0);
     }
   }
-  assert.equal(confirmed, 25);
-  assert.equal(partial, 40);
+  assert.equal(confirmed, 50);
+  assert.equal(partial, 15);
 });
 
 test("lookup endpoints implement Country partitions, shared Product and Account to Customer Role", async () => {

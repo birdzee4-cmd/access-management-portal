@@ -57,8 +57,11 @@ machine-readable `partialReasons`. See the complete
 PM-03 inspected all 65 effective supported Country/Topic forms. It added the
 previously omitted List Feature field for Create New Role and List Email field
 for Change Provider, and recorded the observed multi-value and reused-field
-behavior. PM-03A closes five contracts from source and retains eight explicit
-owner-policy gaps; the registry result is `5 CONFIRMED / 8 PARTIAL`.
+behavior. PM-03A initially closed five contracts from source and retained eight
+explicit owner-policy gaps. PM-03B subsequently applies all ten explicit owner
+decisions; the current registry result is `10 CONFIRMED / 3 PARTIAL`. The three
+remaining PARTIAL contracts expose technical downstream-verification gaps rather
+than OPEN owner decisions.
 
 The registry now also records exact serialization metadata, overloaded legacy
 field evidence, derived all-Account-Roles behavior, and effective Matrix behavior.
@@ -68,7 +71,18 @@ Contract status is independent of activation: `submissionEnabled=false` for all
 The Web renders only fields supported by the discovery evidence. A `PARTIAL`
 schema displays a mapping-in-progress message and disables mock submission so it
 cannot appear production-ready. The API mock submission boundary now rejects a
-`PARTIAL` schema as well. No topic is currently marked `CONFIRMED`.
+`PARTIAL` schema as well. All 13 schemas independently retain
+`submissionEnabled=false`, including the ten currently `CONFIRMED` schemas.
+
+## Phase 1 approval architecture
+
+Product Management approval authority remains the existing Legacy Power Automate
+workflow and Microsoft Teams Approval for Phase 1. Matrix data is candidate lookup
+metadata only and grants no approval authority. The Portal introduces no Product
+Management approval step, so Portal approval and Legacy Teams approval cannot both
+be required. Migration to Portal-native Product Management approval is out of
+scope and requires separate authorization. This is contract/policy metadata only;
+no flow call or runtime integration is active.
 
 ## Read-only master-data boundary
 
@@ -123,10 +137,11 @@ future Portal policy. Mock data is synthetic and demonstrates shape/dependency
 only. It is not a copy of SharePoint or SQL rows and establishes no authoritative
 ownership, entitlement, approval, or lifecycle meaning.
 
-Before PM-02C can enable a real read adapter, Product Management owners must
-confirm source ownership, stable keys, per-topic Provider variants, active-row
-rules, the shared `Product_TH` intent, reused submission-field translations,
-and privacy/authorization rules for Manager-fallback Internal Role.
+Before a real read adapter can be enabled, source ownership, stable keys,
+per-topic Provider variants, the shared `Product_TH` intent, allowlisted
+projections, and privacy/authorization controls still require technical and
+governance verification. PM-03B resolves Matrix candidate policy and the approved
+reused-field compatibility semantics, but does not implement their adapter.
 Backend SharePoint access, allowlisted projections, limits, credentials/scopes,
 sanitized errors, and approved read acceptance also remain unimplemented.
 

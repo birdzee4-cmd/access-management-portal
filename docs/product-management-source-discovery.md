@@ -280,9 +280,10 @@ Internal employee role:
   No effective `Items` formula applies `Active`, `Sort`, or `Distinct`.
 - Persistence field: `USR_PowerApp.RoleInternal(Product)`
 
-Both Role sources are operationally CONFIRMED. Whether matrix `RoleName` is an
-authoritative entitlement, approval-routing label, or mixed-purpose value remains
-UNKNOWN and still requires owner confirmation.
+Both Role sources are operationally CONFIRMED. The export alone does not prove
+that matrix `RoleName` is an authoritative entitlement or approval-routing label.
+PM-03B resolves the Portal policy separately: it is candidate lookup metadata
+only and grants neither entitlement nor approval authority.
 
 ## Confirmed dependency graph
 
@@ -413,8 +414,9 @@ master-data source for Country or Topic.
 
 ## Remaining UNKNOWN items and anomalies
 
-- Business owners have not confirmed which SharePoint aliases are authoritative,
-  how they are maintained, their stable keys, or their lifecycle/SLA.
+- SharePoint source ownership, maintenance, stable keys, and lifecycle/SLA remain
+  technically and operationally unverified; PM-03B owner decisions do not make a
+  source authoritative.
 - Physical site/list IDs and credentials are intentionally not documented. Portal
   backend access to these SharePoint sources is not established.
 - Names beginning `DB -` are SharePoint connections; whether they are synchronized
@@ -422,12 +424,14 @@ master-data source for Country or Topic.
 - `DB - Product_TH` is reused for non-TH screens; intended country scope is UNKNOWN.
 - Provider options differ between screen generations; the canonical set per topic
   requires business confirmation.
-- Effective Matrix Role formulas never apply `Active`; the intended active-row,
-  blank/error Manager, duplicate, and ordering policies are UNKNOWN.
+- Effective legacy Matrix Role formulas never apply `Active`. PM-03B separately
+  approves the Portal policy: only `Active=true`, unknown Active fails closed,
+  unusable Manager stays UNRESOLVED, duplicate ambiguity requires a stable key or
+  fails closed, and deterministic display order conveys no approval priority.
 - Several copied screens reuse semantically different `USR_PowerApp` fields, such
   as Add-On in `AppName(Product)`, customer Role in `ProductName(Product)`, and new
-  Provider in `RoleName(Product)`. A future adapter must preserve or deliberately
-  translate this only after contract review.
+  Provider in `RoleName(Product)`. PM-03B approves preserving these specified
+  compatibility mappings; downstream verification still precedes runtime use.
 - Unreachable/stale Product screens and the Thailand-only navigation branch need
   owner confirmation before being considered supported Topics.
 - Exact observed validation, multiplicity, requiredness, field reuse, and
@@ -437,12 +441,13 @@ master-data source for Country or Topic.
 
 ## Historical PM-02B recommendation and remaining follow-up
 
-PM-02B implemented the mock/schema alignment described below. The ownership,
-stable-key, policy, and real-adapter gates remain open after PM-03.
+PM-02B implemented the mock/schema alignment described below. The source-ownership,
+stable-key implementation, and real-adapter gates remain open. The ten PM-03B
+owner-policy decisions are resolved, but runtime activation is not authorized.
 
-1. Obtain Product Management owner confirmation for the 5-country/13-topic
+1. Obtain technical/source-owner verification for the 5-country/13-topic
    inventory, stale screens, Provider variants, cross-country Product source, and
-   reused submission fields.
+   approved reused submission-field compatibility mappings before integration.
 2. Decide whether PM-02B should read SharePoint aliases directly or a separately
    approved authoritative upstream source. Display names beginning `DB -` are not
    proof that SQL is the correct integration boundary.

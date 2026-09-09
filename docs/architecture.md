@@ -118,6 +118,16 @@ object ID, snapshots active Portal catalog roles, and creates the request, singl
 item and audit event atomically. It stops at SUBMITTED and does not enter the
 Approval or AutomationJob paths. See [M1 Request Engine](portal-request-engine.md).
 
+### Product Management Phase 1 approval boundary
+
+The approved Product Management Phase 1 contract retains the existing Legacy
+Power Automate / Microsoft Teams approval authority. Matrix rows are
+server-authoritative candidate lookup metadata only; they are not entitlement or
+approval records. The Portal has no Product Management approval step, preventing
+Portal-plus-Legacy double approval. Portal-native approval migration is out of
+scope. `submissionEnabled=false` remains set for all 13 Product Management
+schemas, the real adapter is disabled, and no runtime Flow integration is active.
+
 ## Task 07D data-model boundaries
 
 Task 07D refines the portal-owned schema around three independent concerns:

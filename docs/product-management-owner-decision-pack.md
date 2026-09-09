@@ -8,6 +8,20 @@ Owner, IT Support, System Owner และ Project Manager สามารถต�
 อ่าน source code เอกสารนี้ไม่อนุมัติหรือเปลี่ยนสถานะ PMD ใด ไม่เปลี่ยน schema
 registry และไม่เปิด `submissionEnabled` หรือ real adapter
 
+> **PM-03B application note (2026-09-09):** Owner ได้ตอบครบทั้งสิบข้อหลังจาก
+> จัดทำ decision pack นี้แล้ว ตารางผลอนุมัติด้านล่างเป็น authoritative decision
+> record สำหรับการนำไปใช้ใน contract; checkbox/template เดิมในแต่ละข้อเก็บไว้เป็น
+> historical decision-pack artifact และไม่ใช่สถานะปัจจุบัน
+
+| Decision IDs | Approved category | Current status |
+| --- | --- | --- |
+| PMD-001, PMD-002, PMD-005, PMD-006, PMD-007 | `APPROVE RECOMMENDATION` | `RESOLVED_BY_OWNER` |
+| PMD-009, PMD-011, PMD-012, PMD-013, PMD-015 | `APPROVE WITH CHANGE — LEGACY COMPATIBILITY FIRST` | `RESOLVED_BY_OWNER` |
+
+ผลหลัง apply คือ `10 CONFIRMED / 3 PARTIAL`, owner decision OPEN เท่ากับ 0
+โดยสาม PARTIAL ที่เหลือเป็น technical downstream verification เท่านั้น การอนุมัติ
+นี้ไม่เปิด submission, real adapter หรือ Production integration
+
 คำศัพท์สถานะต้องตีความแยกกัน: `CONFIRMED` คือข้อเท็จจริงจาก source contract,
 `OBSERVED` คือหลักฐานจากตัวอย่าง/ประวัติ, `RESOLVED` คือมีการระบุ mapping แล้ว,
 `APPROVED` คือผู้มีอำนาจอนุมัติ scope/version ที่แน่นอน, `ACTIVE` คือเปิดใช้งาน
@@ -729,6 +743,8 @@ PM-03A
   -> PM-03B Apply Decisions
 ```
 
-หลัง PM-03D สถานะยังคงเป็น `5 CONFIRMED / 8 PARTIAL`, PMD ที่ resolve ใหม่เท่ากับ
-0, OPEN เท่ากับ 10, Product Management submission เป็น `DISABLED`, real adapter
-เป็น `DISABLED` และ Production integration เป็น `NOT IMPLEMENTED`
+ณ ตอนส่งมอบ PM-03D สถานะคือ `5 CONFIRMED / 8 PARTIAL`, resolve ใหม่ 0 และ OPEN
+10 ข้อ ต่อมา PM-03B ใช้คำตอบ owner ครบสิบข้อ ทำให้สถานะปัจจุบันเป็น
+`10 CONFIRMED / 3 PARTIAL`, `RESOLVED_BY_OWNER` 10 และ OPEN 0 Product Management
+submission และ real adapter ยังคง `DISABLED`; Production integration ยังคง
+`NOT IMPLEMENTED`

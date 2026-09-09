@@ -36,6 +36,32 @@ export const productManagementTopics = [
 export type ProductManagementCountry = (typeof productManagementCountries)[number];
 export type ProductManagementTopic = (typeof productManagementTopics)[number];
 
+export const productManagementOwnerDecisions = [
+  { id: "PMD-001", status: "RESOLVED_BY_OWNER", category: "APPROVE_RECOMMENDATION" },
+  { id: "PMD-002", status: "RESOLVED_BY_OWNER", category: "APPROVE_RECOMMENDATION" },
+  { id: "PMD-005", status: "RESOLVED_BY_OWNER", category: "APPROVE_RECOMMENDATION" },
+  { id: "PMD-006", status: "RESOLVED_BY_OWNER", category: "APPROVE_RECOMMENDATION" },
+  { id: "PMD-007", status: "RESOLVED_BY_OWNER", category: "APPROVE_RECOMMENDATION" },
+  { id: "PMD-009", status: "RESOLVED_BY_OWNER", category: "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST" },
+  { id: "PMD-011", status: "RESOLVED_BY_OWNER", category: "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST" },
+  { id: "PMD-012", status: "RESOLVED_BY_OWNER", category: "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST" },
+  { id: "PMD-013", status: "RESOLVED_BY_OWNER", category: "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST" },
+  { id: "PMD-015", status: "RESOLVED_BY_OWNER", category: "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST" },
+] as const satisfies readonly {
+  readonly id: string;
+  readonly status: "RESOLVED_BY_OWNER";
+  readonly category: "APPROVE_RECOMMENDATION" | "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST";
+}[];
+
+export const productManagementPhase1ApprovalArchitecture = {
+  phase: "PHASE_1",
+  authority: "LEGACY_POWER_AUTOMATE_MICROSOFT_TEAMS",
+  portalApprovalEnabled: false,
+  doubleApprovalAllowed: false,
+  migrationStatus: "OUT_OF_SCOPE",
+  runtimeIntegrationActive: false,
+} as const;
+
 export interface ProductManagementSchemaRegistryEntry extends ProductManagementFormSchemaMetadata {
   readonly topic: ProductManagementTopic;
   readonly fields: readonly ProductManagementFormField[];
@@ -96,6 +122,21 @@ const fixedChoice = (
   options,
 });
 
+const ownerDecision = (
+  decisionIds: readonly string[],
+  category: "APPROVE_RECOMMENDATION" | "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST",
+  portalCanonicalRepresentation: string,
+  compatibilityRule: string,
+  validationRules: readonly string[],
+): NonNullable<ProductManagementFormField["ownerDecision"]> => ({
+  decisionIds,
+  status: "RESOLVED_BY_OWNER",
+  category,
+  portalCanonicalRepresentation,
+  compatibilityRule,
+  validationRules,
+});
+
 function schema(
   topic: ProductManagementTopic,
   legacyScreenPattern: string,
@@ -111,6 +152,7 @@ function schema(
     implementationStatus: partialReasons.length ? "PARTIAL" : "CONFIRMED",
     partialReasons,
     submissionEnabled: false,
+    approvalArchitecture: productManagementPhase1ApprovalArchitecture,
     ...(derivedValues ? { derivedValues } : {}),
     fields,
   };
@@ -171,14 +213,27 @@ const matrixEvidence: NonNullable<ProductManagementFormField["matrix"]> = {
   duplicateRoleNameBehavior: "PRESERVED",
   ordering: "UNSORTED_FILTER_RESULT",
   authorityScope: "DROPDOWN_CANDIDATE_VISIBILITY_ONLY",
-  ownerDecisionRequired: true,
+  ownerDecisionRequired: false,
+  portalPolicy: {
+    decisionIds: ["PMD-005", "PMD-006"],
+    decisionStatus: "RESOLVED_BY_OWNER",
+    authorityScope: "CANDIDATE_LOOKUP_ONLY",
+    eligibleActiveValue: true,
+    unknownActiveBehavior: "FAIL_CLOSED",
+    managerUnusableBehavior: "UNRESOLVED",
+    duplicateRoleNameBehavior: "REQUIRE_STABLE_KEY_ELSE_FAIL_CLOSED",
+    displayOrdering: "DETERMINISTIC_NO_APPROVAL_PRIORITY",
+    serverAuthoritative: true,
+  },
 };
 
 const reuse = (
   businessMeaning: string,
   legacyField: string,
   sqlDestination: string,
+  decisionId: "PMD-009" | "PMD-011" | "PMD-012",
 ): NonNullable<ProductManagementFormField["legacyFieldReuse"]> => ({
+  decisionId,
   businessMeaning,
   legacyField,
   flowUsage: `Get_item ${legacyField} is copied directly by Insert_row_(V2)_3`,
@@ -187,7 +242,8 @@ const reuse = (
   storageStatus: "LEGACY_STORAGE_CONFIRMED",
   businessMeaningStatus: "BUSINESS_MEANING_CONFIRMED",
   downstreamUsageStatus: "DOWNSTREAM_USAGE_CONFIRMED",
-  ownerDecisionRequired: true,
+  ownerDecisionRequired: false,
+  compatibilityDecision: "OWNER_APPROVED_LEGACY_COMPATIBILITY",
 });
 
 const allAccountRoles: ProductManagementDerivedValueMetadata = {
@@ -222,14 +278,14 @@ export const productManagementSchemaRegistry: readonly ProductManagementSchemaRe
     lookup("providerType", "Provider Type", "providerType", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "ProviderType(Product)", legacyLabel: "Name Provider Type", legacyControl: "Classic/DropDown", legacyBinding: "Selected.Value", legacyDefault: "Select Providers Type sentinel", legacyVisibility: "VISIBLE", legacyLookupSource: "hard-coded Provider Type choices", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.ProviderType(Product) -> SQL.EmailProviderType; also encoded in Detail" }),
     lookup("package", "Package", "package", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "Package(Product)", legacyLabel: "Package", legacyControl: "Classic/ComboBox", legacyBinding: "Selected.DisplayName", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - vw_ListPackageStandard aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.Package(Product); encoded in Detail -> SQL.Detail -> VSTS description" }),
     lookup("appName", "App Name", "appName", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "AppName(Product)", legacyLabel: "App Name", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned Sponsor App aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AppName(Product) -> SQL.AppName; also encoded in Detail", transformation: "Concat each selected '[ AppID ] display' value with the exact ' , ' delimiter", serialization: selectedItems("Concat(App.SelectedItems, \"[ \" & AppID & \" ] \" & DisplayName, \" , \")", " , ", "USR_PowerApp.AppName(Product) -> SQL.AppName; also Detail", "SQL typed AppName and VSTS description through Detail") }),
-    lookup("packageAddOn", "Package Add On", "packageAddOn", "CONFIRMED_OPTIONAL", "MULTIPLE", { legacyDataField: "PackageHid(Product)", legacyLabel: "Package Add On", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - vw_ListPackagHidden aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.PackageHid(Product) only; no Product Management SQL/VSTS mapping found", transformation: "Concat DisplayName values with the exact ' , ' delimiter", serialization: selectedItems("Concat(PackageAddOn.SelectedItems, DisplayName, \" , \")", " , ", "USR_PowerApp.PackageHid(Product) only", "No Product Management SQL parameter, Detail fragment, or VSTS field found") }),
-  ], ["UNKNOWN_SUBMISSION_MAPPING"]),
+    lookup("packageAddOn", "Package Add On", "packageAddOn", "CONFIRMED_OPTIONAL", "MULTIPLE", { legacyDataField: "PackageHid(Product)", legacyLabel: "Package Add On", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - vw_ListPackagHidden aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.PackageHid(Product) only; no Product Management SQL/VSTS mapping found", transformation: "Concat DisplayName values with the exact ' , ' delimiter", serialization: selectedItems("Concat(PackageAddOn.SelectedItems, DisplayName, \" , \")", " , ", "USR_PowerApp.PackageHid(Product) only", "No Product Management SQL parameter, Detail fragment, or VSTS field found"), ownerDecision: ownerDecision(["PMD-001"], "APPROVE_RECOMMENDATION", "Typed multi-value Package Add-On concept", "Do not invent a downstream destination; fail closed until the legacy boundary is verified", ["Preserve multiple values", "Require verified destination before integration activation"]) }),
+  ], ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"]),
   schema(productManagementTopics[1], "TH base; other {CC}_เพิ่ม Email เข้า Account(ลูกค้า)_{CC}", [
-    text("customerEmail", "Customer Email", "CONFIRMED_REQUIRED", "UNKNOWN", { legacyDataField: "Emailลูกค้า(Product)", legacyLabel: "Email ลูกค้า", legacyControl: "Classic/TextInput", legacyBinding: "Text", legacyDefault: "blank", legacyVisibility: "VISIBLE", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.Emailลูกค้า(Product) -> SQL.Email_Customer; also encoded in Detail", transformation: "Raw text passthrough; no Split, Concat, Trim, validation, normalization, or escaping", serialization: rawText("DataCardValue18.Text is written directly and concatenated into Detail", "USR_PowerApp.Emailลูกค้า(Product) -> SQL.Email_Customer; also USR_PowerApp.Detail -> SQL.Detail", "Manager approval and VSTS description through Detail", "PARTIAL") }),
+    text("customerEmail", "Customer Email", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "Emailลูกค้า(Product)", legacyLabel: "Email ลูกค้า", legacyControl: "Classic/TextInput", legacyBinding: "Text", legacyDefault: "blank", legacyVisibility: "VISIBLE", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.Emailลูกค้า(Product) -> SQL.Email_Customer; also encoded in Detail", transformation: "Portal canonical value is a trimmed, independently validated email array; legacy raw-text serialization is adapter-only", serialization: rawText("Legacy DataCardValue18.Text is written directly and concatenated into Detail; this is not the Portal canonical grammar", "USR_PowerApp.Emailลูกค้า(Product) -> SQL.Email_Customer; also USR_PowerApp.Detail -> SQL.Detail", "Manager approval and VSTS description through Detail"), ownerDecision: ownerDecision(["PMD-002"], "APPROVE_RECOMMENDATION", "Validated email array", "Serialize only at the legacy adapter boundary using an explicitly verified compatibility grammar", ["At least one email", "Trim each item", "Validate each item independently", "Reject duplicate normalized addresses"]) }, "textarea"),
     lookup("providerType", "Provider Type", "providerType", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "ProviderType(Product)", legacyLabel: "Name Provider Type", legacyControl: "Classic/DropDown", legacyBinding: "Selected.Value", legacyDefault: "Select Providers Type sentinel", legacyVisibility: "VISIBLE", legacyLookupSource: "hard-coded Provider Type choices", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.ProviderType(Product) -> SQL.EmailProviderType; also encoded in Detail" }),
     lookup("account", "Account", "account", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "AccountName(Product)", legacyLabel: "Account Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected country account display column", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - AccountName_EX aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AccountName(Product) -> SQL.AccountName; also encoded in Detail" }),
     lookup("customerRole", "Customer Role", "customerRole", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "RoleName(Product)", legacyLabel: "Role Name", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - Account&Role_EX aliases filtered by Account", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also encoded in Detail", transformation: "Concat AccountRoleName values with the exact ', ' delimiter", serialization: selectedItems("Concat(CustomerRole.SelectedItems, AccountRoleName, \", \")", ", ", "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also Detail", "SQL typed RoleName and VSTS description through Detail") }, ["account"]),
-  ], ["UNKNOWN_MULTIPLICITY"]),
+  ], []),
   schema(productManagementTopics[2], "{CC}_เพิ่ม Email(พนักงาน) เข้า Account(ลูกค้า)_{CC}", [
     lookup("account", "Account", "account", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "AccountName(Product)", legacyLabel: "Account Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected country account display column", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - AccountName_EX aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AccountName(Product) -> SQL.AccountName; also encoded in Detail" }),
     lookup("customerRole", "Customer Role", "customerRole", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "RoleName(Product)", legacyLabel: "Role Name", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - Account&Role_EX aliases filtered by Account", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also encoded in Detail", transformation: "Concat AccountRoleName values with the exact ', ' delimiter", serialization: selectedItems("Concat(CustomerRole.SelectedItems, AccountRoleName, \", \")", ", ", "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also Detail", "SQL typed RoleName and VSTS description through Detail") }, ["account"]),
@@ -240,11 +296,11 @@ export const productManagementSchemaRegistry: readonly ProductManagementSchemaRe
   ], [], [allAccountRoles]),
   schema(productManagementTopics[4], "TH base; other {CC}_ขอสิทธิ์เข้า Role(พนักงาน)_{CC}", [
     lookup("internalRole", "Internal Role", "internalRole", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "RoleInternal(Product)", legacyLabel: "Role Internal", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "TH, PH, or shared VN/MY/ID Matrix; effective routes use authenticated Manager fallback logic, not Department", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleInternal(Product) -> SQL.RoleInternal; also encoded in Detail", transformation: "Concat RoleName values with the exact ', ' delimiter", serialization: selectedItems("Concat(InternalRole.SelectedItems, RoleName, \", \")", ", ", "USR_PowerApp.RoleInternal(Product) -> SQL.RoleInternal; also Detail", "SQL typed RoleInternal and VSTS description through Detail"), matrix: matrixEvidence }, undefined, "AUTHENTICATED_USER_MANAGER_FALLBACK"),
-  ], ["UNKNOWN_LOOKUP_AUTHORITY"]),
+  ], []),
   schema(productManagementTopics[5], "TH base; other {CC}_เพิ่ม App เข้า Role(พนักงาน)_{CC}", [
     lookup("internalRole", "Internal Role", "internalRole", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "RoleInternal(Product)", legacyLabel: "Role Internal", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "TH, PH, or shared VN/MY/ID Matrix; effective routes use authenticated Manager fallback logic, not Department", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleInternal(Product) -> SQL.RoleInternal; also encoded in Detail", transformation: "Concat RoleName values with the exact ', ' delimiter", serialization: selectedItems("Concat(InternalRole.SelectedItems, RoleName, \", \")", ", ", "USR_PowerApp.RoleInternal(Product) -> SQL.RoleInternal; also Detail", "SQL typed RoleInternal and VSTS description through Detail"), matrix: matrixEvidence }, undefined, "AUTHENTICATED_USER_MANAGER_FALLBACK"),
-    lookup("appName", "App Name", "appName", "CONFIRMED_OPTIONAL", "MULTIPLE", { legacyDataField: "AppName(Product)", legacyLabel: "App Name", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned Sponsor App aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AppName(Product) -> SQL.AppName; also encoded in Detail", transformation: "Concat each selected '[ AppID ] display' value with the exact ' , ' delimiter; legacy submit guard does not require App", serialization: selectedItems("Concat(App.SelectedItems, \"[ \" & AppID & \" ] \" & DisplayName, \" , \")", " , ", "USR_PowerApp.AppName(Product) -> SQL.AppName; also Detail", "SQL typed AppName and VSTS description through Detail") }),
-  ], ["UNKNOWN_LOOKUP_AUTHORITY", "LEGACY_REQUIREDNESS_ANOMALY"]),
+    lookup("appName", "App Name", "appName", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "AppName(Product)", legacyLabel: "App Name", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned Sponsor App aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AppName(Product) -> SQL.AppName; also encoded in Detail", transformation: "New Portal requests require at least one valid stable App identity; legacy App ID/App Name drift is compatibility-only", serialization: selectedItems("Concat(App.SelectedItems, \"[ \" & AppID & \" ] \" & DisplayName, \" , \")", " , ", "USR_PowerApp.AppName(Product) -> SQL.AppName; also Detail", "SQL typed AppName and VSTS description through Detail"), ownerDecision: ownerDecision(["PMD-007"], "APPROVE_RECOMMENDATION", "Non-empty stable App identity array", "Preserve verified App ID/App Name legacy serialization only at the adapter boundary", ["At least one App", "Every App must resolve to a valid candidate", "Do not infer App from unrelated fields"]) }),
+  ], []),
   schema(productManagementTopics[6], "TH base; other {CC}_เพิ่ม Permission เข้า Role(ลูกค้า)_{CC}", [
     lookup("account", "Account", "account", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "AccountName(Product)", legacyLabel: "Account Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected country account display column", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - AccountName_EX aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AccountName(Product) -> SQL.AccountName; also encoded in Detail" }),
     lookup("customerRole", "Customer Role", "customerRole", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "RoleName(Product)", legacyLabel: "Role Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected.AccountRoleName", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - Account&Role_EX aliases filtered by Account", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also encoded in Detail" }, ["account"]),
@@ -252,9 +308,9 @@ export const productManagementSchemaRegistry: readonly ProductManagementSchemaRe
   ], []),
   schema(productManagementTopics[7], "TH base; other {CC}_เพิ่ม Package Add On(ลูกค้า)_{CC}", [
     lookup("account", "Account", "account", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "AccountName(Product)", legacyLabel: "Account Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected country account display column", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - AccountName_EX aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AccountName(Product) -> SQL.AccountName; also encoded in Detail" }),
-    lookup("customerRole", "Customer Role", "customerRole", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "ProductName(Product)", legacyLabel: "Role Name", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - Account&Role_EX aliases filtered by Account", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.ProductName(Product) -> SQL.ProductName; also encoded in Detail", transformation: "Reuses ProductName(Product); Concat AccountRoleName values with the exact ', ' delimiter", serialization: selectedItems("Concat(CustomerRole.SelectedItems, AccountRoleName, \", \")", ", ", "USR_PowerApp.ProductName(Product) -> SQL.ProductName; also Detail", "SQL typed ProductName and VSTS description through Detail"), legacyFieldReuse: reuse("Customer Role for the selected Account", "ProductName(Product)", "dbo.UserRequest_ProductManagement.ProductName") }, ["account"]),
-    lookup("packageAddOn", "Package Add On", "packageAddOn", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "AppName(Product)", legacyLabel: "Package Add On", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - vw_ListPackagHidden aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AppName(Product) -> SQL.AppName; also encoded in Detail", transformation: "Reuses AppName(Product); Concat Add-On DisplayName values with the exact ' , ' delimiter", serialization: selectedItems("Concat(PackageAddOn.SelectedItems, DisplayName, \" , \")", " , ", "USR_PowerApp.AppName(Product) -> SQL.AppName; also Detail", "SQL typed AppName and VSTS description through Detail"), legacyFieldReuse: reuse("Package Add On", "AppName(Product)", "dbo.UserRequest_ProductManagement.AppName") }),
-  ], ["UNAPPROVED_LEGACY_FIELD_REUSE"]),
+    lookup("customerRole", "Customer Role", "customerRole", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "ProductName(Product)", legacyLabel: "Role Name", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - Account&Role_EX aliases filtered by Account", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.ProductName(Product) -> SQL.ProductName; also encoded in Detail", transformation: "Owner-approved Legacy compatibility: Customer Role reuses ProductName(Product); Concat AccountRoleName values with the exact ', ' delimiter", serialization: selectedItems("Concat(CustomerRole.SelectedItems, AccountRoleName, \", \")", ", ", "USR_PowerApp.ProductName(Product) -> SQL.ProductName; also Detail", "SQL typed ProductName and VSTS description through Detail"), legacyFieldReuse: reuse("Customer Role for the selected Account", "ProductName(Product)", "dbo.UserRequest_ProductManagement.ProductName", "PMD-009") }, ["account"]),
+    lookup("packageAddOn", "Package Add On", "packageAddOn", "CONFIRMED_REQUIRED", "MULTIPLE", { legacyDataField: "AppName(Product)", legacyLabel: "Package Add On", legacyControl: "Classic/ComboBox", legacyBinding: "SelectedItems", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - vw_ListPackagHidden aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AppName(Product) -> SQL.AppName; also encoded in Detail", transformation: "Owner-approved Legacy compatibility: Package Add-On reuses AppName(Product); Concat Add-On DisplayName values with the exact ' , ' delimiter", serialization: selectedItems("Concat(PackageAddOn.SelectedItems, DisplayName, \" , \")", " , ", "USR_PowerApp.AppName(Product) -> SQL.AppName; also Detail", "SQL typed AppName and VSTS description through Detail"), legacyFieldReuse: reuse("Package Add On", "AppName(Product)", "dbo.UserRequest_ProductManagement.AppName", "PMD-009") }),
+  ], []),
   schema(productManagementTopics[8], "{CC}_Create New Role สำหรับ Account(ลูกค้า)", [
     lookup("account", "Account", "account", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "AccountName(Product)", legacyLabel: "Account Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected country account display column", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - AccountName_EX aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AccountName(Product) -> SQL.AccountName; also encoded in Detail" }),
     text("newRole", "Create Role Name", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "RoleName(Product)", legacyLabel: "Create Role Name", legacyControl: "Classic/TextInput", legacyBinding: "Text", legacyDefault: "blank", legacyVisibility: "VISIBLE", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also encoded in Detail" }),
@@ -262,23 +318,40 @@ export const productManagementSchemaRegistry: readonly ProductManagementSchemaRe
   ], []),
   schema(productManagementTopics[9], "{CC}_เปลี่ยน Provider สำหรับ Account(ลูกค้า)", [
     lookup("account", "Account", "account", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "AccountName(Product)", legacyLabel: "Account Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected country account display column", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - AccountName_EX aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AccountName(Product) -> SQL.AccountName; also encoded in Detail" }),
-    lookup("providerType", "New Provider Type", "providerType", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "RoleName(Product)", legacyLabel: "Name Provider Type (New)", legacyControl: "Classic/DropDown", legacyBinding: "Selected.Value", legacyDefault: "Select Providers Type sentinel", legacyVisibility: "VISIBLE", legacyLookupSource: "hard-coded Provider Type choices", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also encoded in Detail", transformation: "Reuses RoleName(Product) for the new Provider Type", legacyFieldReuse: reuse("New Provider Type", "RoleName(Product)", "dbo.UserRequest_ProductManagement.RoleName") }),
+    lookup("providerType", "New Provider Type", "providerType", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "RoleName(Product)", legacyLabel: "Name Provider Type (New)", legacyControl: "Classic/DropDown", legacyBinding: "Selected.Value", legacyDefault: "Select Providers Type sentinel", legacyVisibility: "VISIBLE", legacyLookupSource: "hard-coded Provider Type choices", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also encoded in Detail", transformation: "Owner-approved Phase 1 Legacy compatibility: New Provider reuses RoleName(Product); downstream adapter verification remains required", legacyFieldReuse: reuse("New Provider Type", "RoleName(Product)", "dbo.UserRequest_ProductManagement.RoleName", "PMD-011") }),
     text("emailList", "List Email", "CONFIRMED_REQUIRED", "DELIMITED_TEXT", { legacyDataField: "Detail", legacyLabel: "List Email", legacyControl: "Classic/TextInput", legacyBinding: "Text", legacyDefault: "blank", legacyVisibility: "VISIBLE", portalHandling: "ALLOW_EDIT", submitDestination: "encoded in USR_PowerApp.Detail -> SQL.Detail -> VSTS description", transformation: "Raw text is appended after the List Email label; no list delimiter is interpreted", serialization: rawText("Detail = Topic + Account + NewProvider + \"List Email : \" + TextInput.Text", "USR_PowerApp.Detail -> SQL.Detail", "Manager approval and VSTS description through Detail") }, "textarea"),
-  ], ["UNAPPROVED_LEGACY_FIELD_REUSE"]),
+  ], ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"]),
   schema(productManagementTopics[10], "{CC}_Tranfer Owner Account(ลูกค้า)", [
     lookup("account", "Account", "account", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "AccountName(Product)", legacyLabel: "Account Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected country account display column", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - AccountName_EX aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AccountName(Product) -> SQL.AccountName; also encoded in Detail" }),
-    lookup("providerType", "New Provider Type", "providerType", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "RoleName(Product)", legacyLabel: "Name Provider Type (New)", legacyControl: "Classic/DropDown", legacyBinding: "Selected.Value", legacyDefault: "Select Providers Type sentinel", legacyVisibility: "VISIBLE", legacyLookupSource: "hard-coded Provider Type choices", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also encoded in Detail", transformation: "Reuses RoleName(Product) for the new Provider Type", legacyFieldReuse: reuse("New Provider Type selected during Transfer Owner", "RoleName(Product)", "dbo.UserRequest_ProductManagement.RoleName") }),
-    text("customerEmail", "Customer Email", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "Detail", legacyLabel: "Email ลูกค้า", legacyControl: "Classic/TextInput", legacyBinding: "Text", legacyDefault: "blank", legacyVisibility: "VISIBLE", portalHandling: "ALLOW_EDIT", submitDestination: "encoded in USR_PowerApp.Detail -> SQL.Detail -> VSTS description", transformation: "Raw text is appended after the Email label; no exported email-format validation", serialization: rawText("Detail = Topic + Account + NewProvider + \"Email : \" + TextInput.Text", "USR_PowerApp.Detail -> SQL.Detail", "Manager approval and VSTS description through Detail") }),
-  ], ["UNAPPROVED_LEGACY_FIELD_REUSE", "UNKNOWN_TARGET_EMAIL_SEMANTICS"]),
+    lookup("providerType", "New Provider Type", "providerType", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "RoleName(Product)", legacyLabel: "Name Provider Type (New)", legacyControl: "Classic/DropDown", legacyBinding: "Selected.Value", legacyDefault: "Select Providers Type sentinel", legacyVisibility: "VISIBLE", legacyLookupSource: "hard-coded Provider Type choices", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.RoleName(Product) -> SQL.RoleName; also encoded in Detail", transformation: "Owner-approved Phase 1 Legacy compatibility: Transfer Owner Provider reuses RoleName(Product); downstream adapter verification remains required", legacyFieldReuse: reuse("New Provider Type selected during Transfer Owner", "RoleName(Product)", "dbo.UserRequest_ProductManagement.RoleName", "PMD-012") }),
+    text("customerEmail", "Customer Email", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "Detail", legacyLabel: "Email ลูกค้า", legacyControl: "Classic/TextInput", legacyBinding: "Text", legacyDefault: "blank", legacyVisibility: "VISIBLE", portalHandling: "ALLOW_EDIT", submitDestination: "encoded in USR_PowerApp.Detail -> SQL.Detail -> VSTS description", transformation: "Retains the owner-approved Legacy Customer Email semantics; the value establishes no identity or ownership authority", serialization: rawText("Detail = Topic + Account + NewProvider + \"Email : \" + TextInput.Text", "USR_PowerApp.Detail -> SQL.Detail", "Manager approval and VSTS description through Detail"), ownerDecision: ownerDecision(["PMD-013"], "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST", "Customer Email compatibility value", "Retain Email ลูกค้า / Customer Email and never infer Account ownership or identity authority", ["Required value", "No authority derived from the address", "Do not rename to newOwnerEmail"]) }),
+  ], ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"]),
   schema(productManagementTopics[11], "{CC}_ลบ User ใน Account(ลูกค้า)", [
     lookup("account", "Account", "account", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "AccountName(Product)", legacyLabel: "Account Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected country account display column", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - AccountName_EX aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AccountName(Product) -> SQL.AccountName; also encoded in Detail" }),
     text("emailList", "List Email", "CONFIRMED_REQUIRED", "DELIMITED_TEXT", { legacyDataField: "Detail", legacyLabel: "List Email", legacyControl: "Classic/TextInput", legacyBinding: "Text", legacyDefault: "blank", legacyVisibility: "VISIBLE", portalHandling: "ALLOW_EDIT", submitDestination: "encoded in USR_PowerApp.Detail -> SQL.Detail -> VSTS description", transformation: "Raw text is appended after the List Email label; no list delimiter is interpreted", serialization: rawText("Detail = Topic + Account + \"List Email : \" + TextInput.Text", "USR_PowerApp.Detail -> SQL.Detail", "Manager approval and VSTS description through Detail") }, "textarea"),
   ], []),
   schema(productManagementTopics[12], "{CC}_ขอเปิด_ปิดแจ้งเตือนการเปลี่ยนสิทธิ์ถึง Owner Account", [
     lookup("account", "Account", "account", "CONFIRMED_REQUIRED", "SINGLE", { legacyDataField: "AccountName(Product)", legacyLabel: "Account Name", legacyControl: "Classic/ComboBox", legacyBinding: "Selected country account display column", legacyDefault: "blank", legacyVisibility: "VISIBLE", legacyLookupSource: "country-partitioned DB - AccountName_EX aliases", portalHandling: "ALLOW_EDIT", submitDestination: "USR_PowerApp.AccountName(Product) -> SQL.AccountName; also encoded in Detail" }),
-    fixedChoice("notificationSetting", "Notification Setting", ["เปิด", "ปิด"], "CONFIRMED_REQUIRED", { legacyDataField: "Detail", legacyLabel: "Send Email BCC to Owner Account", legacyControl: "Classic/DropDown", legacyBinding: "Selected.Value through hidden TextInput", legacyDefault: "selection sentinel", legacyVisibility: "VISIBLE", legacyLookupSource: "hard-coded เปิด/ปิด choices", portalHandling: "ALLOW_EDIT", submitDestination: "encoded in USR_PowerApp.Detail -> SQL.Detail -> VSTS description", transformation: "Selected value is appended after the notification label; no dedicated typed SharePoint, SQL, or VSTS destination", serialization: rawText("Detail = Topic + Account + \"Send Email BCC to Owner Account : \" + Dropdown.Selected.Value", "USR_PowerApp.Detail -> SQL.Detail", "Manager approval and VSTS description through Detail") }),
-  ], ["UNKNOWN_SUBMISSION_MAPPING"]),
+    fixedChoice("notificationSetting", "Notification Setting", ["เปิด", "ปิด"], "CONFIRMED_REQUIRED", { legacyDataField: "Detail", legacyLabel: "Send Email BCC to Owner Account", legacyControl: "Classic/DropDown", legacyBinding: "Selected.Value through hidden TextInput", legacyDefault: "selection sentinel", legacyVisibility: "VISIBLE", legacyLookupSource: "hard-coded เปิด/ปิด choices", portalHandling: "ALLOW_EDIT", submitDestination: "encoded in USR_PowerApp.Detail -> SQL.Detail -> VSTS description", transformation: "Owner-approved Phase 1 Detail-only Legacy representation; no typed destination is introduced", serialization: rawText("Detail = Topic + Account + \"Send Email BCC to Owner Account : \" + Dropdown.Selected.Value", "USR_PowerApp.Detail -> SQL.Detail", "Manager approval and VSTS description through Detail"), ownerDecision: ownerDecision(["PMD-015"], "APPROVE_WITH_CHANGE_LEGACY_COMPATIBILITY_FIRST", "Legacy-compatible notification selection", "Retain Detail-only serialization for Phase 1", ["Only the observed เปิด/ปิด choices", "No typed destination or automatic execution"]) }),
+  ], []),
 ] as const;
+
+const portalEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function normalizeProductManagementCustomerEmails(input: unknown): readonly string[] {
+  if (!Array.isArray(input) || input.length === 0) {
+    throw new Error("PRODUCT_MANAGEMENT_CUSTOMER_EMAILS_INVALID");
+  }
+  const normalized = input.map((value) => {
+    if (typeof value !== "string") throw new Error("PRODUCT_MANAGEMENT_CUSTOMER_EMAILS_INVALID");
+    const trimmed = value.trim();
+    if (!portalEmailPattern.test(trimmed)) throw new Error("PRODUCT_MANAGEMENT_CUSTOMER_EMAILS_INVALID");
+    return trimmed;
+  });
+  const unique = new Set(normalized.map((value) => value.toLocaleLowerCase("en-US")));
+  if (unique.size !== normalized.length) throw new Error("PRODUCT_MANAGEMENT_CUSTOMER_EMAILS_DUPLICATE");
+  return normalized;
+}
 
 export function isProductManagementCountry(country: string): country is ProductManagementCountry {
   return (productManagementCountries as readonly string[]).includes(country);
@@ -308,6 +381,7 @@ export function productManagementForm(country: string, topic: string): ProductMa
       implementationStatus: entry.implementationStatus,
       partialReasons: entry.partialReasons,
       submissionEnabled: entry.submissionEnabled,
+      approvalArchitecture: entry.approvalArchitecture,
       ...(entry.derivedValues ? { derivedValues: entry.derivedValues } : {}),
     },
     fields: entry.fields,
