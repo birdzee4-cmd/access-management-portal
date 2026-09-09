@@ -125,8 +125,18 @@ Power Automate / Microsoft Teams approval authority. Matrix rows are
 server-authoritative candidate lookup metadata only; they are not entitlement or
 approval records. The Portal has no Product Management approval step, preventing
 Portal-plus-Legacy double approval. Portal-native approval migration is out of
-scope. `submissionEnabled=false` remains set for all 13 Product Management
-schemas, the real adapter is disabled, and no runtime Flow integration is active.
+scope.
+
+PM-04 technically verifies the last three downstream compatibility paths from
+offline exports. Create Account Add-On terminates at the SharePoint
+`PackageHid(Product)` field and is intentionally absent from `Detail`, SQL, and
+VSTS. Change Provider and Transfer Owner preserve Provider through the overloaded
+`RoleName(Product)` -> SQL `RoleName` path and the human-readable `Detail` path.
+Transfer Owner Customer Email is carried only through `Detail` -> SQL `Detail` ->
+approval/VSTS, never as identity authority. This makes the registry
+`13 CONFIRMED / 0 PARTIAL` but activates nothing: `submissionEnabled=false`
+remains set for all 13 schemas, the real adapter is disabled, Production
+integration is not implemented, and no runtime Flow integration is active.
 
 ## Task 07D data-model boundaries
 

@@ -340,9 +340,11 @@ request routing/detail text. This confirms dynamic, topic-specific schemas rathe
 than one generic form containing every lookup.
 
 The `Tranfer Owner` form's actual controls collect Account, a Provider Type value,
-and email text while reusing `RoleName(Product)` for the provider value. The label,
-storage field, and data captured do not align cleanly; business intent is UNKNOWN
-and must not be normalized without owner review.
+and email text while reusing `RoleName(Product)` for the provider value. PMD-012
+and PMD-013 preserve that Legacy compatibility shape: Provider retains the reused
+Role field, while the email retains Customer Email semantics without identity or
+ownership authority. PM-04 verifies the technical destinations; this does not
+normalize or redesign the Portal domain.
 
 ## Confirmed submission and status workflow
 
@@ -370,6 +372,15 @@ The User Request flow then confirms this Product Management branch:
 
 These are writes performed by the existing production flow definition. PM-02A-R2
 only inspected the offline package and did not execute or alter any action.
+
+PM-04 rechecked the three formerly PARTIAL mappings across all five effective
+country forms and this Flow branch. Create Account Add-On is written only to
+`PackageHid(Product)` with the exact `" , "` delimiter and is absent from
+`Detail`, the SQL insert, approval content, and VSTS. Change Provider and Transfer
+Owner copy `RoleName(Product)` directly to SQL `RoleName` and also carry the same
+Provider meaning in `Detail`. Transfer Owner Customer Email is an unbound input
+serialized only in `Detail`, which flows unchanged to SQL `Detail` and the
+approval/VSTS description; it is not the dedicated SQL `Email_Customer` value.
 
 The VSTS update flow confirms:
 
@@ -431,7 +442,8 @@ master-data source for Country or Topic.
 - Several copied screens reuse semantically different `USR_PowerApp` fields, such
   as Add-On in `AppName(Product)`, customer Role in `ProductName(Product)`, and new
   Provider in `RoleName(Product)`. PM-03B approves preserving these specified
-  compatibility mappings; downstream verification still precedes runtime use.
+  compatibility mappings, and PM-04 verifies their technical downstream paths.
+  Runtime integration remains separately disabled and unimplemented.
 - Unreachable/stale Product screens and the Thailand-only navigation branch need
   owner confirmation before being considered supported Topics.
 - Exact observed validation, multiplicity, requiredness, field reuse, and
@@ -445,9 +457,10 @@ PM-02B implemented the mock/schema alignment described below. The source-ownersh
 stable-key implementation, and real-adapter gates remain open. The ten PM-03B
 owner-policy decisions are resolved, but runtime activation is not authorized.
 
-1. Obtain technical/source-owner verification for the 5-country/13-topic
-   inventory, stale screens, Provider variants, cross-country Product source, and
-   approved reused submission-field compatibility mappings before integration.
+1. Obtain technical/source-owner verification for remaining source-governance
+   questions: stale screens, Provider option variants, cross-country Product
+   source, source ownership, and stable keys before integration. PM-04 has closed
+   the three requested downstream compatibility mappings only.
 2. Decide whether PM-02B should read SharePoint aliases directly or a separately
    approved authoritative upstream source. Display names beginning `DB -` are not
    proof that SQL is the correct integration boundary.

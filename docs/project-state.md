@@ -1,6 +1,6 @@
 # Project state
 
-M1 and PM-03B implementation snapshot, 2026-09-09; based on repository docs and source
+M1 and PM-04 implementation snapshot, 2026-09-09; based on repository docs and source
 without production refresh. Read [safety](production-safety-boundary.md)
 and [roadmap](roadmap.md). Historical findings are scoped to their dates/samples.
 
@@ -107,10 +107,14 @@ Pack -> Owner Approval -> PM-03B Apply Decisions.
 
 The final PM-03B owner-decision application records all ten supplied decisions as
 `RESOLVED_BY_OWNER`: five `APPROVE RECOMMENDATION` and five `APPROVE WITH CHANGE —
-LEGACY COMPATIBILITY FIRST`. The current registry is `10 CONFIRMED / 3 PARTIAL`;
-Create Account, Change Provider, and Transfer Owner remain PARTIAL solely because
-their approved representation/mapping still lacks technical downstream adapter
-verification. Owner decisions OPEN are zero. All 13 schemas retain
+LEGACY COMPATIBILITY FIRST`. Its registry result was `10 CONFIRMED / 3 PARTIAL`.
+PM-04 then verifies the remaining mappings from the committed offline exports:
+Create Account Add-On is intentionally `PackageHid(Product)`/SharePoint-only;
+Change Provider preserves `RoleName(Product)` -> SQL `RoleName` plus `Detail`;
+Transfer Owner preserves the same Provider mapping and carries Customer Email only
+through `Detail` -> SQL `Detail` -> approval/VSTS. No contradictory transform or
+override was found. The current registry is `13 CONFIRMED / 0 PARTIAL`; owner
+decisions remain unchanged and OPEN remains zero. All 13 schemas retain
 `submissionEnabled=false`; the real adapter and Production integration remain
 disabled/not implemented. Phase 1 retains Legacy Power Automate / Microsoft Teams
 approval and introduces no Portal Product Management double approval.

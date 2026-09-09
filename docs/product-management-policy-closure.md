@@ -84,12 +84,24 @@ decision status.
    Topic-specific decision and acceptance gate is complete. Activation is a
    separate authorization after implementation review.
 
-## Current outcome after PM-03B owner-decision application
+## Current outcome after PM-04 technical verification
 
 PM-03C itself closed no PMD; that historical result was `5 CONFIRMED / 8 PARTIAL`.
-The subsequent explicit owner record resolves all ten formerly OPEN decisions as
-`RESOLVED_BY_OWNER`. The implemented registry is now `10 CONFIRMED / 3 PARTIAL`
-and has zero OPEN owner decisions. Create Account, Change Provider, and Transfer
-Owner remain PARTIAL only for `UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING`; owner
-approval did not manufacture downstream evidence. Submission remains disabled
-for every Product Management Topic and the real adapter remains disabled.
+The subsequent explicit owner record resolved all ten formerly OPEN decisions as
+`RESOLVED_BY_OWNER`, producing the PM-03B state of
+`10 CONFIRMED / 3 PARTIAL`.
+
+PM-04 changes no owner decision. It re-inspects the committed offline Canvas and
+Flow exports and technically verifies the final three mappings:
+
+- Create Account Add-On is serialized to `USR_PowerApp.PackageHid(Product)` only;
+  the verified legacy path omits it from `Detail`, SQL, approvals, and VSTS.
+- Change Provider carries the selected value through `RoleName(Product)` to SQL
+  `RoleName` unchanged and repeats the provider meaning in `Detail`/VSTS.
+- Transfer Owner uses the same Provider mapping; Customer Email is raw
+  `Detail`-only content copied to SQL `Detail` and the approval/VSTS description,
+  not SQL `Email_Customer`, and grants no identity authority.
+
+The implemented registry is therefore `13 CONFIRMED / 0 PARTIAL` with zero OPEN
+owner decisions. Submission remains disabled for every Product Management Topic,
+the real adapter remains disabled, and Production integration is not implemented.

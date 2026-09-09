@@ -42,8 +42,8 @@ test("all Country and Topic pairs resolve schema registry metadata", async () =>
       assert.ok(form.fields.length > 0);
     }
   }
-  assert.equal(confirmed, 50);
-  assert.equal(partial, 15);
+  assert.equal(confirmed, 65);
+  assert.equal(partial, 0);
 });
 
 test("Package, Add On, App and Account mock values are partitioned by Country", async () => {

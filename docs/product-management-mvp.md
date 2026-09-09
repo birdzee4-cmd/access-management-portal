@@ -58,21 +58,20 @@ PM-03 inspected all 65 effective supported Country/Topic forms. It added the
 previously omitted List Feature field for Create New Role and List Email field
 for Change Provider, and recorded the observed multi-value and reused-field
 behavior. PM-03A initially closed five contracts from source and retained eight
-explicit owner-policy gaps. PM-03B subsequently applies all ten explicit owner
-decisions; the current registry result is `10 CONFIRMED / 3 PARTIAL`. The three
-remaining PARTIAL contracts expose technical downstream-verification gaps rather
-than OPEN owner decisions.
+explicit owner-policy gaps. PM-03B subsequently applied all ten explicit owner
+decisions and produced `10 CONFIRMED / 3 PARTIAL`. PM-04 verifies the three
+remaining downstream mappings from the offline exports, so the current registry
+is `13 CONFIRMED / 0 PARTIAL` with no owner-decision change.
 
 The registry now also records exact serialization metadata, overloaded legacy
 field evidence, derived all-Account-Roles behavior, and effective Matrix behavior.
 Contract status is independent of activation: `submissionEnabled=false` for all
-13 schemas, so even a source-closed `CONFIRMED` schema remains non-submittable.
+13 schemas, so every technically `CONFIRMED` schema remains non-submittable.
 
-The Web renders only fields supported by the discovery evidence. A `PARTIAL`
-schema displays a mapping-in-progress message and disables mock submission so it
-cannot appear production-ready. The API mock submission boundary now rejects a
-`PARTIAL` schema as well. All 13 schemas independently retain
-`submissionEnabled=false`, including the ten currently `CONFIRMED` schemas.
+The Web renders only fields supported by the discovery evidence. Its generic
+`PARTIAL` fail-closed behavior remains available for future incomplete schemas.
+All 13 current schemas independently retain `submissionEnabled=false`; the API
+mock submission boundary therefore rejects submission for every Topic.
 
 ## Phase 1 approval architecture
 

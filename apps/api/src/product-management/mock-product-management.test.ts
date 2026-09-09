@@ -29,18 +29,7 @@ const confirmedTopics = [
   "ลบ User ใน Account(ลูกค้า)",
   "ขอเปิด/ปิดแจ้งเตือนการเปลี่ยนสิทธิ์ถึง Owner Account",
 ];
-const confirmedContractTopics = new Set([
-  confirmedTopics[1],
-  confirmedTopics[2],
-  confirmedTopics[3],
-  confirmedTopics[4],
-  confirmedTopics[5],
-  confirmedTopics[6],
-  confirmedTopics[7],
-  confirmedTopics[8],
-  confirmedTopics[11],
-  confirmedTopics[12],
-]);
+const confirmedContractTopics = new Set(confirmedTopics);
 
 test("mock uses exactly the five confirmed Countries and thirteen Topics in source order", () => {
   assert.deepEqual(productManagementCountries, confirmedCountries);
@@ -74,10 +63,16 @@ test("every Country and Topic resolves through the evidence-based schema registr
 test("registry records discovered multiplicity, missing legacy fields, and reused destinations", () => {
   const byTopic = new Map(productManagementSchemaRegistry.map((entry) => [entry.topic, entry]));
   const createAccount = byTopic.get(productManagementTopics[0])!;
+  const createAccountAddOn = createAccount.fields.find((field) => field.key === "packageAddOn")!;
   assert.equal(createAccount.fields.find((field) => field.key === "appName")?.multiplicity, "MULTIPLE");
-  assert.equal(createAccount.fields.find((field) => field.key === "packageAddOn")?.requiredness, "CONFIRMED_OPTIONAL");
-  assert.deepEqual(createAccount.partialReasons, ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"]);
-  assert.equal(createAccount.fields.find((field) => field.key === "packageAddOn")?.ownerDecision?.status, "RESOLVED_BY_OWNER");
+  assert.equal(createAccountAddOn.requiredness, "CONFIRMED_OPTIONAL");
+  assert.equal(createAccountAddOn.legacyDataField, "PackageHid(Product)");
+  assert.equal(createAccountAddOn.serialization?.formula, "Concat(PackageAddOn.SelectedItems, DisplayName, \" , \")");
+  assert.equal(createAccountAddOn.serialization?.destination, "USR_PowerApp.PackageHid(Product) only");
+  assert.match(createAccountAddOn.submitDestination ?? "", /omitted from Detail, Product Management SQL, and VSTS/i);
+  assert.match(createAccountAddOn.serialization?.downstreamConsumer ?? "", /no Product Management SQL parameter, Detail fragment, approval payload, or VSTS field/i);
+  assert.deepEqual(createAccount.partialReasons, []);
+  assert.equal(createAccountAddOn.ownerDecision?.status, "RESOLVED_BY_OWNER");
 
   const addCustomerEmail = byTopic.get(productManagementTopics[1])!;
   assert.equal(addCustomerEmail.fields.find((field) => field.key === "customerEmail")?.multiplicity, "MULTIPLE");
@@ -96,8 +91,12 @@ test("registry records discovered multiplicity, missing legacy fields, and reuse
   const changeProvider = byTopic.get(productManagementTopics[9])!;
   assert.equal(changeProvider.fields.find((field) => field.key === "emailList")?.requiredness, "CONFIRMED_REQUIRED");
   assert.match(changeProvider.fields.find((field) => field.key === "providerType")?.transformation ?? "", /reuses RoleName/i);
-  assert.equal(changeProvider.fields.find((field) => field.key === "providerType")?.legacyFieldReuse?.decisionId, "PMD-011");
-  assert.deepEqual(changeProvider.partialReasons, ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"]);
+  const changeProviderValue = changeProvider.fields.find((field) => field.key === "providerType")!;
+  assert.equal(changeProviderValue.legacyDataField, "RoleName(Product)");
+  assert.match(changeProviderValue.submitDestination ?? "", /SQL\.RoleName.*Detail.*VSTS description/i);
+  assert.equal(changeProviderValue.legacyFieldReuse?.decisionId, "PMD-011");
+  assert.equal(changeProviderValue.legacyFieldReuse?.downstreamUsageStatus, "DOWNSTREAM_USAGE_CONFIRMED");
+  assert.deepEqual(changeProvider.partialReasons, []);
 
   const addOn = byTopic.get(productManagementTopics[7])!;
   assert.match(addOn.fields.find((field) => field.key === "customerRole")?.submitDestination ?? "", /ProductName/);
@@ -128,9 +127,15 @@ test("registry records discovered multiplicity, missing legacy fields, and reuse
   const transferEmail = transferOwner.fields.find((field) => field.key === "customerEmail")!;
   assert.equal(transferProvider.legacyFieldReuse?.legacyField, "RoleName(Product)");
   assert.equal(transferProvider.legacyFieldReuse?.decisionId, "PMD-012");
+  assert.match(transferProvider.submitDestination ?? "", /SQL\.RoleName.*Detail.*VSTS description/i);
   assert.equal(transferEmail.legacyLabel, "Email ลูกค้า");
+  assert.equal(transferEmail.legacyDataField, "Detail");
+  assert.match(transferEmail.submitDestination ?? "", /not mapped to SQL\.Email_Customer/i);
+  assert.equal(transferEmail.serialization?.formula, "Detail = Topic + Account + NewProvider + \"Email : \" + TextInput.Text");
+  assert.match(transferEmail.serialization?.downstreamConsumer ?? "", /no dedicated Transfer Owner email field/i);
   assert.match(transferEmail.ownerDecision?.compatibilityRule ?? "", /never infer Account ownership or identity authority/i);
   assert.doesNotMatch(transferEmail.ownerDecision?.portalCanonicalRepresentation ?? "", /newOwnerEmail/i);
+  assert.deepEqual(transferOwner.partialReasons, []);
 
   const notification = byTopic.get(productManagementTopics[12])!.fields.find((field) => field.key === "notificationSetting")!;
   assert.equal(notification.legacyDataField, "Detail");
@@ -188,7 +193,7 @@ test("schema dependencies contain Account to Customer Role and no obsolete synth
   assert.ok(internalRoles.every((field) => field.serverResolvedBy === "AUTHENTICATED_USER_MANAGER_FALLBACK"));
 });
 
-test("mock request history uses supported contexts and submission remains disabled for PARTIAL and source-closed schemas", () => {
+test("mock request history uses supported contexts and submission remains disabled for every confirmed schema", () => {
   const result = listMockProductManagementRequests();
   assert.equal(result.source, "MOCK");
   assert.equal(result.requests.length, 2);
@@ -197,40 +202,21 @@ test("mock request history uses supported contexts and submission remains disabl
     assert.ok(confirmedTopics.includes(row.topic));
     assert.equal(row.system, "Product Management");
   }
-  assert.throws(() => submitMockProductManagementRequest({
-    country: "Thailand",
-    topic: productManagementTopics[0],
-    fields: { companyName: "Synthetic Company" },
-    idempotencyKey: "synthetic",
-  }, "Synthetic"), /PRODUCT_MANAGEMENT_SCHEMA_NOT_CONFIRMED/);
-  assert.throws(() => submitMockProductManagementRequest({
-    country: "Thailand",
-    topic: productManagementTopics[6],
-    fields: { account: "Synthetic account", customerRole: "Synthetic role", featureList: "Synthetic feature" },
-    idempotencyKey: "synthetic-confirmed",
-  }, "Synthetic"), /PRODUCT_MANAGEMENT_SUBMISSION_DISABLED/);
+  for (const [index, topic] of productManagementTopics.entries()) {
+    assert.throws(() => submitMockProductManagementRequest({
+      country: "Thailand",
+      topic,
+      fields: { synthetic: "Synthetic value" },
+      idempotencyKey: `synthetic-disabled-${index}`,
+    }, "Synthetic"), /PRODUCT_MANAGEMENT_SUBMISSION_DISABLED/);
+  }
 });
 
-test("schema registry applies owner decisions and retains three technical PARTIAL contracts", () => {
-  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "CONFIRMED").length, 10);
-  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "PARTIAL").length, 3);
-  assert.ok(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "PARTIAL").every((entry) => entry.partialReasons.length > 0));
+test("schema registry applies owner decisions and PM-04 verifies all thirteen technical mappings", () => {
+  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "CONFIRMED").length, 13);
+  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "PARTIAL").length, 0);
   assert.ok(productManagementSchemaRegistry.every((entry) => entry.submissionEnabled === false));
-  assert.deepEqual(productManagementSchemaRegistry.map((entry) => entry.partialReasons), [
-    ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"],
-    ["UNVERIFIED_LEGACY_DOWNSTREAM_MAPPING"],
-    [],
-    [],
-  ]);
+  assert.ok(productManagementSchemaRegistry.every((entry) => entry.partialReasons.length === 0));
 });
 
 test("invalid Country and Topic contexts fail closed", () => {
