@@ -26,18 +26,24 @@ test("mock adapter returns the exact Countries and the same thirteen Topics for 
 
 test("all Country and Topic pairs resolve schema registry metadata", async () => {
   const masterData = service();
+  let confirmed = 0;
+  let partial = 0;
   for (const country of productManagementCountries) {
     for (const currentTopic of productManagementTopics) {
       const form = await masterData.form(country, currentTopic);
       assert.equal(form.source, "MOCK");
       assert.equal(form.country, country);
       assert.equal(form.topic, currentTopic);
-      assert.equal(form.schema.implementationStatus, "PARTIAL");
-      assert.ok(form.schema.partialReasons.length > 0);
+      if (form.schema.implementationStatus === "CONFIRMED") confirmed += 1;
+      if (form.schema.implementationStatus === "PARTIAL") partial += 1;
+      assert.equal(form.schema.partialReasons.length === 0, form.schema.implementationStatus === "CONFIRMED");
+      assert.equal(form.schema.submissionEnabled, false);
       assert.ok(form.schema.legacyScreenPattern);
       assert.ok(form.fields.length > 0);
     }
   }
+  assert.equal(confirmed, 25);
+  assert.equal(partial, 40);
 });
 
 test("Package, Add On, App and Account mock values are partitioned by Country", async () => {

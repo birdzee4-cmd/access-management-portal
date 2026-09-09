@@ -78,7 +78,7 @@ export function NewProductManagementRequestPage({ api }: { readonly api: Api }) 
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!form || form.schema.implementationStatus !== "CONFIRMED" || form.fields.some((field) => field.required && !fields[field.key]?.trim())) return;
+    if (!form || form.schema.implementationStatus !== "CONFIRMED" || !form.schema.submissionEnabled || form.fields.some((field) => field.required && !fields[field.key]?.trim())) return;
     setState("saving");
     try { await api.submit({ country, topic, fields, idempotencyKey: crypto.randomUUID() }); navigate("/requests"); }
     catch { setState("error"); }
@@ -98,8 +98,9 @@ export function NewProductManagementRequestPage({ api }: { readonly api: Api }) 
       {form ? <>
         <div className="panel-heading request-form__step"><div><p className="panel-kicker">Step 2</p><h2>{country} · {topic}</h2></div><StatusBadge tone="neutral">{form.schema.implementationStatus} schema · {form.source ?? "MOCK"} data</StatusBadge></div>
         {form.schema.implementationStatus !== "CONFIRMED" ? <p role="status" className="request-form__message">This request type is being mapped from the existing Product Management system. Schema evidence or owner policy is not complete.</p> : null}
+        {form.schema.implementationStatus === "CONFIRMED" && !form.schema.submissionEnabled ? <p role="status" className="request-form__message">The legacy form contract is mapped, but Product Management submission remains disabled.</p> : null}
         <div className="request-form__grid">{form.fields.map((field) => <label key={field.key} className="field request-form__reason"><span>{field.label}{field.required ? " *" : ""}</span>{field.type === "textarea" ? <textarea required={field.required} value={fields[field.key] ?? ""} onChange={(event) => changeField(field.key, event.target.value)} /> : field.type === "select" ? <select required={field.required} disabled={Boolean(field.dependsOn?.some((dependency) => !fields[dependency]))} value={fields[field.key] ?? ""} onChange={(event) => changeField(field.key, event.target.value)}><option value="">Select</option>{(field.lookup ? lookups[field.key] : field.options?.map((value) => ({ value, label: value })))?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select> : <input required={field.required} value={fields[field.key] ?? ""} onChange={(event) => changeField(field.key, event.target.value)} />}</label>)}</div>
-        <button className="button button--primary" disabled={form.schema.implementationStatus !== "CONFIRMED" || state === "saving" || state === "loading"} type="submit">{state === "saving" ? "Submitting…" : form.schema.implementationStatus === "CONFIRMED" ? "Submit mock request" : "Schema mapping incomplete"}</button>
+        <button className="button button--primary" disabled={form.schema.implementationStatus !== "CONFIRMED" || !form.schema.submissionEnabled || state === "saving" || state === "loading"} type="submit">{state === "saving" ? "Submitting…" : form.schema.implementationStatus !== "CONFIRMED" ? "Schema mapping incomplete" : !form.schema.submissionEnabled ? "Submission disabled" : "Submit mock request"}</button>
       </> : null}
     </form>
   </div>;

@@ -256,6 +256,50 @@ export type ProductManagementSchemaImplementationStatus = "CONFIRMED" | "PARTIAL
 export type ProductManagementFieldRequiredness = "CONFIRMED_REQUIRED" | "CONFIRMED_OPTIONAL" | "CONDITIONAL" | "UNKNOWN";
 export type ProductManagementFieldMultiplicity = "SINGLE" | "MULTIPLE" | "DELIMITED_TEXT" | "UNKNOWN";
 export type ProductManagementPortalHandling = "DISPLAY" | "HIDE" | "AUTO_FILL" | "LOCK" | "ALLOW_EDIT";
+export type ProductManagementContractEvidenceStatus = "CONFIRMED" | "PARTIAL" | "UNKNOWN";
+export interface ProductManagementSerializationMetadata {
+  readonly status: ProductManagementContractEvidenceStatus;
+  readonly sourceCardinality: "SINGLE_CONTROL" | "MULTI_SELECT" | "DERIVED_LOOKUP";
+  readonly mode: "RAW_TEXT_PASSTHROUGH" | "CONCAT_SELECTED_ITEMS" | "DERIVED_ACCOUNT_ROLES";
+  readonly formula: string;
+  readonly delimiter: string | null;
+  readonly ordering: "AS_ENTERED" | "SELECTED_ITEMS_ORDER" | "FILTER_RESULT_ORDER";
+  readonly whitespace: "PRESERVED" | "FORMULA_LITERAL";
+  readonly emptyValue: "REJECTED_BY_SUBMIT_GUARD" | "EMPTY_STRING" | "ALLOWED";
+  readonly escaping: "NONE";
+  readonly destination: string;
+  readonly downstreamConsumer: string;
+}
+export interface ProductManagementLegacyFieldReuseMetadata {
+  readonly businessMeaning: string;
+  readonly legacyField: string;
+  readonly flowUsage: string;
+  readonly sqlDestination: string;
+  readonly vstsUsage: string;
+  readonly storageStatus: "LEGACY_STORAGE_CONFIRMED";
+  readonly businessMeaningStatus: "BUSINESS_MEANING_CONFIRMED";
+  readonly downstreamUsageStatus: "DOWNSTREAM_USAGE_CONFIRMED";
+  readonly ownerDecisionRequired: boolean;
+}
+export interface ProductManagementMatrixMetadata {
+  readonly status: ProductManagementContractEvidenceStatus;
+  readonly countrySources: Readonly<Record<"Thailand" | "Philippines" | "Vietnam" | "Malaysia" | "Indonesia", string>>;
+  readonly effectiveMatch: "REQUESTER_AS_MANAGER_ELSE_REQUESTER_MANAGER";
+  readonly activeApplied: false;
+  readonly departmentApplied: false;
+  readonly fallbackBehavior: string;
+  readonly blankBehavior: string;
+  readonly duplicateRoleNameBehavior: "PRESERVED";
+  readonly ordering: "UNSORTED_FILTER_RESULT";
+  readonly authorityScope: "DROPDOWN_CANDIDATE_VISIBILITY_ONLY";
+  readonly ownerDecisionRequired: true;
+}
+export interface ProductManagementDerivedValueMetadata {
+  readonly key: string;
+  readonly status: ProductManagementContractEvidenceStatus;
+  readonly serialization: ProductManagementSerializationMetadata;
+  readonly ownerDecisionRequired: boolean;
+}
 export type ProductManagementSchemaPartialReason =
   | "UNKNOWN_REQUIREDNESS"
   | "UNKNOWN_MULTIPLICITY"
@@ -263,6 +307,7 @@ export type ProductManagementSchemaPartialReason =
   | "UNKNOWN_VISIBILITY"
   | "UNKNOWN_LOOKUP_AUTHORITY"
   | "UNKNOWN_TEXT_LIST_FORMAT"
+  | "UNKNOWN_TARGET_EMAIL_SEMANTICS"
   | "UNAPPROVED_LEGACY_FIELD_REUSE"
   | "LEGACY_REQUIREDNESS_ANOMALY"
   | "DUPLICATE_LEGACY_ROUTE";
@@ -274,7 +319,7 @@ export interface ProductManagementFormField {
   readonly options?: readonly string[];
   readonly lookup?: ProductManagementLookupName;
   readonly dependsOn?: readonly string[];
-  readonly serverResolvedBy?: "AUTHENTICATED_USER_DEPARTMENT_OR_MANAGER";
+  readonly serverResolvedBy?: "AUTHENTICATED_USER_MANAGER_FALLBACK";
   readonly legacyDataField?: string;
   readonly legacyLabel?: string;
   readonly legacyControl?: string;
@@ -287,6 +332,9 @@ export interface ProductManagementFormField {
   readonly portalHandling?: ProductManagementPortalHandling;
   readonly submitDestination?: string;
   readonly transformation?: string;
+  readonly serialization?: ProductManagementSerializationMetadata;
+  readonly legacyFieldReuse?: ProductManagementLegacyFieldReuseMetadata;
+  readonly matrix?: ProductManagementMatrixMetadata;
 }
 export interface ProductManagementFormSchemaMetadata {
   readonly legacyScreenPattern: string;
@@ -294,6 +342,8 @@ export interface ProductManagementFormSchemaMetadata {
   readonly lookupRequirements: readonly ProductManagementLookupName[];
   readonly implementationStatus: ProductManagementSchemaImplementationStatus;
   readonly partialReasons: readonly ProductManagementSchemaPartialReason[];
+  readonly submissionEnabled: boolean;
+  readonly derivedValues?: readonly ProductManagementDerivedValueMetadata[];
 }
 export interface ProductManagementFormDefinition { readonly source?: ProductManagementDataSource; readonly country: string; readonly topic: string; readonly schema: ProductManagementFormSchemaMetadata; readonly fields: readonly ProductManagementFormField[]; }
 export interface ProductManagementRequestSubmission { readonly country: string; readonly topic: string; readonly fields: Readonly<Record<string, string>>; readonly idempotencyKey: string; }

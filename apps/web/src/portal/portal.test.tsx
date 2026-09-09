@@ -32,7 +32,7 @@ const productManagementApi = {
   list: async () => ({ source: "MOCK" as const, requests: [] }),
   countries: async () => ({ source: "MOCK" as const, countries: [] }),
   topics: async (country: string) => ({ source: "MOCK" as const, country, topics: [] }),
-  form: async () => ({ country: "Thailand", topic: "Create New Account (ลูกค้าใหม่)", schema: { legacyScreenPattern: "{CC}_สร้างAccountลูกค้า", legacyFormPattern: "Form* (DataSource: USR_PowerApp)", lookupRequirements: [], implementationStatus: "PARTIAL" as const, partialReasons: ["UNKNOWN_SUBMISSION_MAPPING" as const] }, fields: [] }),
+  form: async () => ({ country: "Thailand", topic: "Create New Account (ลูกค้าใหม่)", schema: { legacyScreenPattern: "{CC}_สร้างAccountลูกค้า", legacyFormPattern: "Form* (DataSource: USR_PowerApp)", lookupRequirements: [], implementationStatus: "PARTIAL" as const, partialReasons: ["UNKNOWN_SUBMISSION_MAPPING" as const], submissionEnabled: false }, fields: [] }),
   lookup: async (lookup: string) => ({ source: "MOCK" as const, lookup, options: [] }),
   submit: async () => { throw new Error("Not called during server rendering."); },
 };

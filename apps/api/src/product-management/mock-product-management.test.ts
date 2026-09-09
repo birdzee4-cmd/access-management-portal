@@ -26,6 +26,13 @@ const confirmedTopics = [
   "ลบ User ใน Account(ลูกค้า)",
   "ขอเปิด/ปิดแจ้งเตือนการเปลี่ยนสิทธิ์ถึง Owner Account",
 ];
+const sourceClosedTopics = new Set([
+  confirmedTopics[2],
+  confirmedTopics[3],
+  confirmedTopics[6],
+  confirmedTopics[8],
+  confirmedTopics[11],
+]);
 
 test("mock uses exactly the five confirmed Countries and thirteen Topics in source order", () => {
   assert.deepEqual(productManagementCountries, confirmedCountries);
@@ -41,8 +48,10 @@ test("every Country and Topic resolves through the evidence-based schema registr
       const form = mockProductManagementForm(country, topic);
       assert.equal(form.country, country);
       assert.equal(form.topic, topic);
-      assert.equal(form.schema.implementationStatus, "PARTIAL");
-      assert.ok(form.schema.partialReasons.length > 0);
+      const expectedStatus = sourceClosedTopics.has(topic) ? "CONFIRMED" : "PARTIAL";
+      assert.equal(form.schema.implementationStatus, expectedStatus);
+      assert.equal(form.schema.partialReasons.length === 0, expectedStatus === "CONFIRMED");
+      assert.equal(form.schema.submissionEnabled, false);
       assert.ok(form.schema.legacyScreenPattern);
       assert.match(form.schema.legacyFormPattern, /USR_PowerApp/);
       assert.deepEqual(form.schema.lookupRequirements, form.fields.flatMap((field) => field.lookup ? [field.lookup] : []));
@@ -68,6 +77,8 @@ test("registry records discovered multiplicity, missing legacy fields, and reuse
   const createRole = byTopic.get(productManagementTopics[8])!;
   assert.equal(createRole.fields.find((field) => field.key === "featureList")?.requiredness, "CONFIRMED_REQUIRED");
   assert.equal(createRole.fields.find((field) => field.key === "featureList")?.multiplicity, "DELIMITED_TEXT");
+  assert.equal(createRole.fields.find((field) => field.key === "featureList")?.serialization?.mode, "RAW_TEXT_PASSTHROUGH");
+  assert.equal(createRole.fields.find((field) => field.key === "featureList")?.serialization?.delimiter, null);
 
   const changeProvider = byTopic.get(productManagementTopics[9])!;
   assert.equal(changeProvider.fields.find((field) => field.key === "emailList")?.requiredness, "CONFIRMED_REQUIRED");
@@ -76,6 +87,18 @@ test("registry records discovered multiplicity, missing legacy fields, and reuse
   const addOn = byTopic.get(productManagementTopics[7])!;
   assert.match(addOn.fields.find((field) => field.key === "customerRole")?.submitDestination ?? "", /ProductName/);
   assert.match(addOn.fields.find((field) => field.key === "packageAddOn")?.submitDestination ?? "", /AppName/);
+  assert.equal(addOn.fields.find((field) => field.key === "customerRole")?.legacyFieldReuse?.storageStatus, "LEGACY_STORAGE_CONFIRMED");
+  assert.equal(addOn.fields.find((field) => field.key === "packageAddOn")?.legacyFieldReuse?.downstreamUsageStatus, "DOWNSTREAM_USAGE_CONFIRMED");
+
+  const addAppToAccount = byTopic.get(productManagementTopics[3])!;
+  assert.equal(addAppToAccount.derivedValues?.[0]?.serialization.mode, "DERIVED_ACCOUNT_ROLES");
+  assert.equal(addAppToAccount.derivedValues?.[0]?.serialization.delimiter, ", ");
+
+  const internalRole = byTopic.get(productManagementTopics[4])!.fields.find((field) => field.key === "internalRole")!;
+  assert.equal(internalRole.matrix?.effectiveMatch, "REQUESTER_AS_MANAGER_ELSE_REQUESTER_MANAGER");
+  assert.equal(internalRole.matrix?.activeApplied, false);
+  assert.equal(internalRole.matrix?.departmentApplied, false);
+  assert.equal(internalRole.matrix?.duplicateRoleNameBehavior, "PRESERVED");
 });
 
 test("schema dependencies contain Account to Customer Role and no obsolete synthetic chains", () => {
@@ -91,10 +114,10 @@ test("schema dependencies contain Account to Customer Role and no obsolete synth
   assert.ok(!fields.some((field) => field.dependsOn?.includes("appName")));
   const internalRoles = fields.filter((field) => field.lookup === "internalRole");
   assert.ok(internalRoles.length > 0);
-  assert.ok(internalRoles.every((field) => field.serverResolvedBy === "AUTHENTICATED_USER_DEPARTMENT_OR_MANAGER"));
+  assert.ok(internalRoles.every((field) => field.serverResolvedBy === "AUTHENTICATED_USER_MANAGER_FALLBACK"));
 });
 
-test("mock request history uses only confirmed contexts and PARTIAL schemas cannot submit", () => {
+test("mock request history uses supported contexts and submission remains disabled for PARTIAL and source-closed schemas", () => {
   const result = listMockProductManagementRequests();
   assert.equal(result.source, "MOCK");
   assert.equal(result.requests.length, 2);
@@ -109,6 +132,34 @@ test("mock request history uses only confirmed contexts and PARTIAL schemas cann
     fields: { companyName: "Synthetic Company" },
     idempotencyKey: "synthetic",
   }, "Synthetic"), /PRODUCT_MANAGEMENT_SCHEMA_NOT_CONFIRMED/);
+  assert.throws(() => submitMockProductManagementRequest({
+    country: "Thailand",
+    topic: productManagementTopics[6],
+    fields: { account: "Synthetic account", customerRole: "Synthetic role", featureList: "Synthetic feature" },
+    idempotencyKey: "synthetic-confirmed",
+  }, "Synthetic"), /PRODUCT_MANAGEMENT_SUBMISSION_DISABLED/);
+});
+
+test("schema registry closes five source contracts and keeps eight explicit PARTIAL contracts", () => {
+  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "CONFIRMED").length, 5);
+  assert.equal(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "PARTIAL").length, 8);
+  assert.ok(productManagementSchemaRegistry.filter((entry) => entry.implementationStatus === "PARTIAL").every((entry) => entry.partialReasons.length > 0));
+  assert.ok(productManagementSchemaRegistry.every((entry) => entry.submissionEnabled === false));
+  assert.deepEqual(productManagementSchemaRegistry.map((entry) => entry.partialReasons), [
+    ["UNKNOWN_SUBMISSION_MAPPING"],
+    ["UNKNOWN_MULTIPLICITY"],
+    [],
+    [],
+    ["UNKNOWN_LOOKUP_AUTHORITY"],
+    ["UNKNOWN_LOOKUP_AUTHORITY", "LEGACY_REQUIREDNESS_ANOMALY"],
+    [],
+    ["UNAPPROVED_LEGACY_FIELD_REUSE"],
+    [],
+    ["UNAPPROVED_LEGACY_FIELD_REUSE"],
+    ["UNAPPROVED_LEGACY_FIELD_REUSE", "UNKNOWN_TARGET_EMAIL_SEMANTICS"],
+    [],
+    ["UNKNOWN_SUBMISSION_MAPPING"],
+  ]);
 });
 
 test("invalid Country and Topic contexts fail closed", () => {

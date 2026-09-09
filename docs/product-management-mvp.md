@@ -57,8 +57,13 @@ machine-readable `partialReasons`. See the complete
 PM-03 inspected all 65 effective supported Country/Topic forms. It added the
 previously omitted List Feature field for Create New Role and List Email field
 for Change Provider, and recorded the observed multi-value and reused-field
-behavior. All 13 entries remain `PARTIAL` because each still has an explicit
-evidence or owner-policy gap; the registry result is `0 CONFIRMED / 13 PARTIAL`.
+behavior. PM-03A closes five contracts from source and retains eight explicit
+owner-policy gaps; the registry result is `5 CONFIRMED / 8 PARTIAL`.
+
+The registry now also records exact serialization metadata, overloaded legacy
+field evidence, derived all-Account-Roles behavior, and effective Matrix behavior.
+Contract status is independent of activation: `submissionEnabled=false` for all
+13 schemas, so even a source-closed `CONFIRMED` schema remains non-submittable.
 
 The Web renders only fields supported by the discovery evidence. A `PARTIAL`
 schema displays a mapping-in-progress message and disables mock submission so it
@@ -92,11 +97,11 @@ fails closed with HTTP 503 and never falls back to mock.
 | Product | `DB - Product_TH` is used for all Countries | One shared synthetic option set for all Countries |
 | Account | Country-specific `DB - AccountName_EX_*` / Account-and-Role source | Synthetic options differ by Country |
 | Customer Role | Country-specific `DB - Account&Role_EX_*`, filtered by selected Account | Requires `account`; unknown accounts return no options |
-| Internal Role | TH, PH, or combined VN/MY/ID Matrix; legacy uses Department/Manager logic | Country/Matrix partition is represented; no browser-supplied identity filter |
+| Internal Role | TH, PH, or combined VN/MY/ID Matrix; effective routes use requester-as-Manager then requester-manager fallback, without `Active` | Country/Matrix partition is represented; no browser-supplied identity filter |
 
 The only client-provided dependent lookup confirmed by the export is
 `Account -> Customer Role`. Internal Role filtering depends on authenticated-user
-Department/Manager evidence in the legacy application and must be designed as a
+Manager evidence in the effective legacy routes and must be designed as a
 server-authoritative concern before real integration.
 
 The obsolete mock dependencies below have been removed from form schemas,
@@ -121,13 +126,14 @@ ownership, entitlement, approval, or lifecycle meaning.
 Before PM-02C can enable a real read adapter, Product Management owners must
 confirm source ownership, stable keys, per-topic Provider variants, active-row
 rules, the shared `Product_TH` intent, reused submission-field translations,
-and privacy/authorization rules for Department/Manager-based Internal Role.
+and privacy/authorization rules for Manager-fallback Internal Role.
 Backend SharePoint access, allowlisted projections, limits, credentials/scopes,
 sanitized errors, and approved read acceptance also remain unimplemented.
 
 ## Preserved safety boundary
 
-No production request write, persistence, `USR_PowerApp` call, Power Automate
+No Product Management request submission, production request write, persistence,
+`USR_PowerApp` call, Power Automate
 change or invocation, SQL mutation, VSTS work-item creation, approval workflow,
 provisioning, revocation, or production adapter is implemented. Existing Portal
 access-request code remains recoverable behind `VITE_ACCESS_MANAGEMENT_UI=true`;

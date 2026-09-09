@@ -62,9 +62,11 @@ export function submitMockProductManagementRequest(
   if (!isSupportedProductManagementContext(input.country, input.topic)) {
     throw new Error("INVALID_PRODUCT_MANAGEMENT_CONTEXT");
   }
-  if (productManagementForm(input.country, input.topic).schema.implementationStatus !== "CONFIRMED") {
+  const form = productManagementForm(input.country, input.topic);
+  if (form.schema.implementationStatus !== "CONFIRMED") {
     throw new Error("PRODUCT_MANAGEMENT_SCHEMA_NOT_CONFIRMED");
   }
+  if (!form.schema.submissionEnabled) throw new Error("PRODUCT_MANAGEMENT_SUBMISSION_DISABLED");
   return {
     source: "MOCK",
     replayed: false,

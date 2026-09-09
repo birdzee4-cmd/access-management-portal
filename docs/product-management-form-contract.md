@@ -2,7 +2,7 @@
 
 ## Scope, evidence, and status language
 
-PM-03 is an offline contract-discovery result. It inspected the exported Power
+PM-03/PM-03A are offline contract-discovery results. They inspected the exported Power
 Apps and Power Automate packages under the ignored
 `reference/legacy-product-management/` boundary. It did not connect to a live
 environment, submit a form, trigger or edit a flow, query production, or perform
@@ -20,9 +20,15 @@ route resolved to a form and every form has `DataSource=USR_PowerApp`.
 - Requiredness is based on submit-button guards as well as DataCard metadata.
   Except for hidden `Title`, the observed DataCards say `Required=false`; those
   values alone do not represent the effective form validation.
-- `DELIMITED_TEXT` means the legacy control accepts one text value intended to
-  contain a list. The export does not establish a canonical delimiter or item
-  grammar.
+- `DELIMITED_TEXT` means the label describes a list but the runtime input is one
+  free-text control. PM-03A confirmed that `featureList` and `emailList` are
+  passed through verbatim: no `Split`, `Concat`, delimiter validation, trimming,
+  escaping, normalization, or reordering is applied. The exact legacy contract
+  is therefore raw text, not a structured list grammar.
+
+PM-03A closes five contracts from source and leaves eight policy-dependent
+contracts open. Owner decisions are isolated in
+[Product Management owner decisions](product-management-owner-decisions.md).
 
 No export identifiers, connection identifiers, credentials, raw rows, real user
 identifiers, Manager values, or routing addresses are recorded here.
@@ -49,7 +55,8 @@ Forms in each row are ordered TH, PH, VN, MY, ID.
 
 The first Thailand branch for Topic 3 is effective and targets `Form1_103`. A
 later duplicate branch targets `Form1_6` and is unreachable under the observed
-ordered `If` formula. The owner-approved canonical intent remains unknown. A
+ordered `If` formula. PM-03A treats the effective `Form1_103` behavior as the
+legacy contract and does not treat the stale branch as a supported alternative. A
 Thailand-only `เพิ่ม Product เข้า Account(ลูกค้า)` route also exists but is not
 selectable from the exported Topic dropdown, so it is not one of the 13 Portal
 Topics.
@@ -106,7 +113,7 @@ Remaining reason: `UNKNOWN_SUBMISSION_MAPPING` for `PackageHid(Product)`.
 
 Remaining reason: `UNKNOWN_MULTIPLICITY` for the free-text customer email value.
 
-### 3. เพิ่ม Email(พนักงาน) เข้า Account(ลูกค้า) — PARTIAL
+### 3. เพิ่ม Email(พนักงาน) เข้า Account(ลูกค้า) — CONFIRMED
 
 The employee is the authenticated requester from the common fields; no separate
 employee-email input exists on the effective forms.
@@ -116,49 +123,70 @@ employee-email input exists on the effective forms.
 | `account` | `AccountName(Product)` / Account Name | `ComboBox.Selected` | `CONFIRMED_REQUIRED` / `SINGLE` | country Account; change resets Role | SQL `AccountName` and `Detail` |
 | `customerRole` | `RoleName(Product)` / Role Name | `ComboBox.SelectedItems` | `CONFIRMED_REQUIRED` / `MULTIPLE` | Account-filtered Role | SQL `RoleName` and `Detail`; comma-separated |
 
-Remaining reason: `DUPLICATE_LEGACY_ROUTE` for the two Thailand branches.
+The earlier Thailand branch is the effective branch in the ordered `If` and
+targets `Form1_103`; the later `Form1_6` branch is unreachable. Preserving the
+effective route resolves the contract without treating the stale branch as an
+alternative.
 
-### 4. เพิ่ม App เข้า Account(ลูกค้า) — PARTIAL
+### 4. เพิ่ม App เข้า Account(ลูกค้า) — CONFIRMED
 
 | Portal field | Legacy field / label | Control and binding | Requiredness / multiplicity | Dependency/default | Submit destination and transform |
 | --- | --- | --- | --- | --- | --- |
 | `account` | `AccountName(Product)` / Account Name | `ComboBox.Selected` | `CONFIRMED_REQUIRED` / `SINGLE` | country Account | SQL `AccountName` and `Detail` |
 | `appName` | `AppName(Product)` / App Name | `ComboBox.SelectedItems` | `CONFIRMED_REQUIRED` / `MULTIPLE` | country App; not filtered by Account | SQL `AppName` and `Detail`; `[AppID] display`, comma-separated |
-| derived only | `Detail` Role Name fragment | hidden `TextInput` | `CONFIRMED_OPTIONAL` / `DELIMITED_TEXT` | automatically lists every observed Role for the selected Account | `Detail` only; future Portal behavior requires owner confirmation |
+| derived only | `Detail` Role Name fragment | hidden `TextInput` | `CONFIRMED_OPTIONAL` / derived lookup | automatically lists every source Role for the selected Account | `Detail` -> SQL `Detail` -> approval/VSTS description |
 
-Remaining reason: `UNKNOWN_SUBMISSION_MAPPING` for the automatically derived
-all-Roles fragment.
+The exact derived formula is:
+
+```powerfx
+With(
+  { roles: Filter(<country Account&Role source>, <account column> = <selected Account>) },
+  If(IsEmpty(roles), "", Left(
+    Concat(roles, AccountRoleName & ", "),
+    Len(Concat(roles, AccountRoleName & ", ")) - 2
+  ))
+)
+```
+
+It emits every filtered `AccountRoleName` with `", "`, removes only the final
+delimiter, returns `""` for no rows, and performs no sort, deduplication,
+escaping, or normalization. Filter result order is preserved. The fragment is
+appended after `Role Name : ` in `Detail`; the Flow copies `Detail` unchanged to
+SQL and the VSTS description.
 
 ### 5. ขอสิทธิ์เข้า Role(พนักงาน) — PARTIAL
 
 | Portal field | Legacy field / label | Control and binding | Requiredness / multiplicity | Dependency | Submit destination and transform |
 | --- | --- | --- | --- | --- | --- |
-| `internalRole` | `RoleInternal(Product)` / Role Internal | `ComboBox.SelectedItems` | `CONFIRMED_REQUIRED` / `MULTIPLE` | TH, PH, or shared VN/MY/ID Matrix filtered by current user/Manager logic | SQL `RoleInternal` and `Detail`; comma-separated |
+| `internalRole` | `RoleInternal(Product)` / Role Internal | `ComboBox.SelectedItems` | `CONFIRMED_REQUIRED` / `MULTIPLE` | TH, PH, or shared VN/MY/ID Matrix; effective routes use Manager fallback logic | SQL `RoleInternal` and `Detail`; exact delimiter `", "` |
 
 Expected Portal handling is `ALLOW EDIT`, but lookup resolution must be
 server-authoritative. Remaining reason: `UNKNOWN_LOOKUP_AUTHORITY`; owner-approved
-Matrix authority, `Active` filtering, and fallback semantics are not established.
+Matrix authority, `Active`, blank/error fallback, and duplicate policy are not
+established. The observed effective logic is detailed under Matrix policy below.
 
 ### 6. เพิ่ม App เข้า Role(พนักงาน) — PARTIAL
 
 | Portal field | Legacy field / label | Control and binding | Requiredness / multiplicity | Dependency | Submit destination and transform |
 | --- | --- | --- | --- | --- | --- |
-| `internalRole` | `RoleInternal(Product)` / Role Internal | `ComboBox.SelectedItems` | `CONFIRMED_REQUIRED` / `MULTIPLE` | Department/Manager Matrix | SQL `RoleInternal` and `Detail`; comma-separated |
+| `internalRole` | `RoleInternal(Product)` / Role Internal | `ComboBox.SelectedItems` | `CONFIRMED_REQUIRED` / `MULTIPLE` | effective Manager-fallback Matrix | SQL `RoleInternal` and `Detail`; exact delimiter `", "` |
 | `appName` | `AppName(Product)` / App Name | `ComboBox.SelectedItems` | `CONFIRMED_OPTIONAL` / `MULTIPLE` in observed guard | country App | SQL `AppName` and `Detail`; `[AppID] display`, comma-separated |
 
 The Topic is semantically “add App”, but every observed submit guard requires
 only Internal Role and permits no App. Remaining reasons:
 `UNKNOWN_LOOKUP_AUTHORITY` and `LEGACY_REQUIREDNESS_ANOMALY`.
 
-### 7. เพิ่ม Permission เข้า Role(ลูกค้า) — PARTIAL
+### 7. เพิ่ม Permission เข้า Role(ลูกค้า) — CONFIRMED
 
 | Portal field | Legacy field / label | Control and binding | Requiredness / multiplicity | Dependency | Submit destination and transform |
 | --- | --- | --- | --- | --- | --- |
 | `account` | `AccountName(Product)` / Account Name | `ComboBox.Selected` | `CONFIRMED_REQUIRED` / `SINGLE` | country Account; resets Role | SQL `AccountName` and `Detail` |
 | `customerRole` | `RoleName(Product)` / Role Name | `ComboBox.Selected.AccountRoleName` | `CONFIRMED_REQUIRED` / `SINGLE` | Account-filtered Role | SQL `RoleName` and `Detail` |
-| `featureList` | unbound List Feature control, persisted through `Detail` | `TextInput.Text` | `CONFIRMED_REQUIRED` / `DELIMITED_TEXT` | blank | prefixed with Topic, Account, and Role into SQL `Detail` and VSTS description |
+| `featureList` | unbound List Feature control, persisted through `Detail` | one `TextInput.Text` | `CONFIRMED_REQUIRED` / raw text | blank | appended unchanged after `List Feature : ` in `Detail` -> SQL/VSTS |
 
-Remaining reason: `UNKNOWN_TEXT_LIST_FORMAT`.
+The submit guard rejects `IsBlank(TextInput.Text)`. Otherwise the value is
+preserved exactly; there is no list delimiter or item grammar enforced by the
+Canvas app or Product Management Flow.
 
 ### 8. เพิ่ม Package Add On(ลูกค้า) — PARTIAL
 
@@ -170,16 +198,16 @@ Remaining reason: `UNKNOWN_TEXT_LIST_FORMAT`.
 
 Remaining reason: `UNAPPROVED_LEGACY_FIELD_REUSE`.
 
-### 9. Create New Role สำหรับ Account(ลูกค้า) — PARTIAL
+### 9. Create New Role สำหรับ Account(ลูกค้า) — CONFIRMED
 
 | Portal field | Legacy field / label | Control and binding | Requiredness / multiplicity | Default/dependency | Submit destination and transform |
 | --- | --- | --- | --- | --- | --- |
 | `account` | `AccountName(Product)` / Account Name | `ComboBox.Selected` | `CONFIRMED_REQUIRED` / `SINGLE` | country Account | SQL `AccountName` and `Detail` |
 | `newRole` | `RoleName(Product)` / Create Role Name | `TextInput.Text` | `CONFIRMED_REQUIRED` / `SINGLE` | blank | SQL `RoleName` and `Detail` |
-| `featureList` | unbound List Feature control, persisted through `Detail` | `TextInput.Text` | `CONFIRMED_REQUIRED` / `DELIMITED_TEXT` | blank | SQL `Detail`, VSTS description |
+| `featureList` | unbound List Feature control, persisted through `Detail` | one `TextInput.Text` | `CONFIRMED_REQUIRED` / raw text | blank | appended unchanged after `List Feature : ` in `Detail` -> SQL/VSTS |
 
 `featureList` was missing from the earlier Portal registry and is now included.
-Remaining reason: `UNKNOWN_TEXT_LIST_FORMAT`.
+The same raw-text passthrough rule as Topic 7 is confirmed.
 
 ### 10. เปลี่ยน Provider สำหรับ Account(ลูกค้า) — PARTIAL
 
@@ -187,11 +215,11 @@ Remaining reason: `UNKNOWN_TEXT_LIST_FORMAT`.
 | --- | --- | --- | --- | --- | --- |
 | `account` | `AccountName(Product)` / Account Name | `ComboBox.Selected` | `CONFIRMED_REQUIRED` / `SINGLE` | country Account; resets Provider | SQL `AccountName` and `Detail` |
 | `providerType` | `RoleName(Product)` / Name Provider Type (New) | `DropDown.Selected.Value` | `CONFIRMED_REQUIRED` / `SINGLE` | Provider sentinel | **reuses** `RoleName(Product)` -> SQL `RoleName`; also in `Detail` |
-| `emailList` | unbound List Email control, persisted through `Detail` | `TextInput.Text` | `CONFIRMED_REQUIRED` / `DELIMITED_TEXT` | blank | SQL `Detail`, VSTS description |
+| `emailList` | unbound List Email control, persisted through `Detail` | one `TextInput.Text` | `CONFIRMED_REQUIRED` / raw text | blank | appended unchanged after `List Email : ` in `Detail` -> SQL/VSTS |
 
 `emailList` was missing from the earlier Portal registry and is now included.
-Remaining reasons: `UNKNOWN_TEXT_LIST_FORMAT` and
-`UNAPPROVED_LEGACY_FIELD_REUSE`.
+Email serialization is `CONFIRMED` raw-text passthrough. Remaining reason:
+`UNAPPROVED_LEGACY_FIELD_REUSE` for Provider via `RoleName(Product)`.
 
 ### 11. Tranfer Owner Account(ลูกค้า) — PARTIAL
 
@@ -201,16 +229,20 @@ Remaining reasons: `UNKNOWN_TEXT_LIST_FORMAT` and
 | `providerType` | `RoleName(Product)` / Name Provider Type (New) | `DropDown.Selected.Value` | `CONFIRMED_REQUIRED` / `SINGLE` | Provider sentinel | **reuses** `RoleName(Product)` -> SQL `RoleName`; also in `Detail` |
 | `customerEmail` | unbound Email ลูกค้า control, persisted through `Detail` | `TextInput.Text` | `CONFIRMED_REQUIRED` / `SINGLE` | blank | SQL `Detail`, VSTS description; no exported email-format validation |
 
-Remaining reason: `UNAPPROVED_LEGACY_FIELD_REUSE`.
+Remaining reasons: `UNAPPROVED_LEGACY_FIELD_REUSE` and
+`UNKNOWN_TARGET_EMAIL_SEMANTICS`; the code does not establish whether the email
+means the future owner, an existing owner, a notification recipient, or another
+customer contact.
 
-### 12. ลบ User ใน Account(ลูกค้า) — PARTIAL
+### 12. ลบ User ใน Account(ลูกค้า) — CONFIRMED
 
 | Portal field | Legacy field / label | Control and binding | Requiredness / multiplicity | Default/dependency | Submit destination and transform |
 | --- | --- | --- | --- | --- | --- |
 | `account` | `AccountName(Product)` / Account Name | `ComboBox.Selected` | `CONFIRMED_REQUIRED` / `SINGLE` | country Account | SQL `AccountName` and `Detail` |
-| `emailList` | unbound List Email control, persisted through `Detail` | `TextInput.Text` | `CONFIRMED_REQUIRED` / `DELIMITED_TEXT` | blank | prefixed with Topic and Account into SQL `Detail` and VSTS description |
+| `emailList` | unbound List Email control, persisted through `Detail` | one `TextInput.Text` | `CONFIRMED_REQUIRED` / raw text | blank | appended unchanged after `List Email : ` in `Detail` -> SQL/VSTS |
 
-Remaining reason: `UNKNOWN_TEXT_LIST_FORMAT`.
+The submit guard rejects blank input; otherwise whitespace, ordering, punctuation,
+and any user-entered delimiter are preserved exactly.
 
 ### 13. ขอเปิด/ปิดแจ้งเตือนการเปลี่ยนสิทธิ์ถึง Owner Account — PARTIAL
 
@@ -221,6 +253,73 @@ Remaining reason: `UNKNOWN_TEXT_LIST_FORMAT`.
 
 Remaining reason: `UNKNOWN_SUBMISSION_MAPPING`; the setting has no dedicated
 SharePoint/SQL/VSTS status field in the inspected branch.
+
+## Serialization and Detail grammar
+
+| Value | Source/input | Exact runtime rule | Delimiter/order | Empty/whitespace/escaping | Destination and consumer | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| Create Account customer email | one `TextInput` | raw `.Text`; `Split(text,"@")` is used only to reject more than one `@` | none; as entered | required; otherwise preserved; no escaping | `Emailลูกค้า(Product)` -> SQL `Email_Customer`; also `Detail` -> approval/VSTS | **CONFIRMED** |
+| Add Email customer email | one `TextInput` | raw `.Text`; no `Split`, `Concat`, validation, or normalization | no enforced delimiter; as entered | required; otherwise preserved | same typed SQL field and `Detail` consumer | **PARTIAL**: business multiplicity is not stated |
+| Customer/internal Roles | multi-select `SelectedItems` | `Concat(..., AccountRoleName/RoleName, ", ")` | exact `", "`; selected-items order | empty yields `""`; no trim/dedup/escape | typed SharePoint/SQL column plus `Detail` -> approval/VSTS | **CONFIRMED** |
+| App | multi-select `SelectedItems` | `Concat(..., "[ " & AppID & " ] " & display, " , ")` | exact `" , "`; selected-items order | empty yields `""`; no trim/dedup/escape | `AppName(Product)` -> SQL `AppName`; `Detail` -> approval/VSTS | **CONFIRMED** |
+| Package Add On | multi-select `SelectedItems` | `Concat(..., DisplayName, " , ")` | exact `" , "`; selected-items order | empty yields `""`; no trim/dedup/escape | Topic 1: SharePoint only; Topic 8: reused `AppName(Product)` -> SQL `AppName` and `Detail` | **CONFIRMED** serialization; downstream policy remains partial |
+| all-Roles fragment | derived `Filter` result | `Concat(role & ", ")`, then `Left(..., Len(...)-2)` | exact `", "`; filter-result order | no rows -> `""`; no sort/dedup/escape | `Detail` -> SQL `Detail` -> approval/VSTS | **CONFIRMED** |
+| `featureList` / `emailList` | one `TextInput` | raw `.Text` appended after its label; no parser | none enforced; as entered | blank rejected; all other whitespace/punctuation preserved; no escaping | `Detail` -> SQL `Detail` -> approval/VSTS | **CONFIRMED** raw-text contract |
+| Transfer Owner email | one `TextInput` | raw `.Text` appended after `Email : ` | none; as entered | blank rejected; no email validation/normalization | `Detail` -> SQL/VSTS | **CONFIRMED** serialization; meaning remains partial |
+| Notification choice | one dropdown | selected `เปิด`/`ปิด` copied through hidden text into `Detail` | single value | sentinel rejected | `Detail` -> SQL/VSTS only | **CONFIRMED** transport; typed destination policy remains partial |
+
+Every topic `Detail` formula concatenates fixed labels and control values. The
+Canvas formulas provide no escaping for embedded line breaks or label-like text,
+and the Flow performs no `split`, `join`, `replace`, `trim`, or case normalization
+on Product Management business values. SQL receives `Detail` unchanged and VSTS
+embeds it unchanged inside the work-item description HTML.
+
+## Reused legacy fields
+
+| Topic/business meaning | Legacy field | Flow and SQL | VSTS usage | Evidence classification | Owner gate |
+| --- | --- | --- | --- | --- | --- |
+| Topic 8 Customer Role | `ProductName(Product)` | direct `Get_item` -> SQL `ProductName` | human-readable `Role Name` in `Detail`; no typed role custom field | `LEGACY_STORAGE_CONFIRMED`; `BUSINESS_MEANING_CONFIRMED`; `DOWNSTREAM_USAGE_CONFIRMED` | confirm compatibility mapping |
+| Topic 8 Package Add On | `AppName(Product)` | direct `Get_item` -> SQL `AppName` | human-readable `Package Add On` in `Detail`; no typed Add-On custom field | same three statuses confirmed | confirm compatibility mapping |
+| Topic 10 New Provider | `RoleName(Product)` | direct `Get_item` -> SQL `RoleName` | human-readable `Name Provider Type (New)` in `Detail`; no typed Provider custom field | same three statuses confirmed | confirm compatibility mapping |
+| Topic 11 New Provider | `RoleName(Product)` | direct `Get_item` -> SQL `RoleName` | human-readable `Name Provider Type (New)` in `Detail`; no typed Provider custom field | same three statuses confirmed | confirm compatibility mapping and Transfer Owner meaning |
+
+The visible labels, lookup/choice sources, DataCard updates, `Detail` labels, Flow
+parameters, SQL destinations, and VSTS description jointly establish storage,
+business meaning, and downstream usage. They do not authorize the new Portal to
+preserve these overloaded columns; those decisions remain OPEN.
+
+## Internal Role Matrix behavior
+
+The routed TH forms use `DB - MatrixProductManagement_TH`, PH uses
+`DB - MatrixProductManagement_PH`, and VN/MY/ID use
+`DB - MatrixProductManagement_VN_MY_ID`. All ten effective forms for Topics 5
+and 6 use this shape:
+
+```powerfx
+If(
+  CountRows(Filter(<matrix>, User().Email = Manager)) > 0,
+  Filter(<matrix>, User().Email = Manager),
+  Filter(<matrix>, Manager = Lower(Office365Users.ManagerV2(User().Email).mail))
+)
+```
+
+- `Active` is never referenced by an effective `Items` formula.
+- `Department` is never referenced by an effective `Items` formula. Older
+  non-routed screen copies use `Department = Office365Users.MyProfile().Department`.
+- Manager and Department are not ORed or ANDed. The effective code first returns
+  rows where the requester is the Matrix `Manager`; only when that count is zero
+  does it return rows for the requester's directory manager.
+- There is no explicit guard for a blank/error directory Manager result. The
+  exported formula does not establish whether blank Matrix Manager rows can be
+  surfaced or how connector failure is handled.
+- No `Sort` or `Distinct` is applied. Duplicate `RoleName` rows and source filter
+  order are preserved; selected values are stored with `Concat(..., ", ")`.
+- The Matrix controls dropdown candidate visibility. The selected labels then
+  flow to `RoleInternal(Product)` and SQL `RoleInternal`; the code does not prove
+  that Matrix membership is entitlement authority or approval authority.
+
+Technical behavior is **CONFIRMED**; lookup authority and the owner-approved
+`Active`/blank/duplicate policy remain **PARTIAL**.
 
 ## Country differences
 
@@ -264,10 +363,13 @@ business content through `Detail`, not through corresponding typed custom fields
 
 The API schema registry now records observed requiredness, multiplicity, legacy
 field/label/control/binding/default/visibility, lookup source, Portal handling,
-submit destination, transformation, and per-Topic `partialReasons`.
+submit destination, transformation, serialization, reused-field evidence, Matrix
+behavior, and per-Topic `partialReasons`.
 
-- `0 CONFIRMED / 13 PARTIAL`.
+- `5 CONFIRMED / 8 PARTIAL`.
 - A `PARTIAL` form is non-submittable in both Web and API mock boundaries.
+- All Product Management submission also remains explicitly disabled, including
+  source-closed `CONFIRMED` schemas; contract status does not activate submission.
 - `PRODUCT_MANAGEMENT_DATA_SOURCE=real` remains fail-closed.
 - No production adapter, production write, Power Automate change, USR_PowerApp
   write, SQL write, VSTS write, approval execution, provisioning, or revocation
@@ -275,22 +377,22 @@ submit destination, transformation, and per-Topic `partialReasons`.
 
 ### Exact remaining evidence/policy by Topic
 
-| Topic | Machine-readable reason | Exact missing evidence or decision |
-| --- | --- | --- |
-| Create New Account | `UNKNOWN_SUBMISSION_MAPPING` | approved downstream treatment for `PackageHid(Product)` |
-| เพิ่ม Email เข้า Account | `UNKNOWN_MULTIPLICITY` | single-vs-list grammar for free-text customer email |
-| เพิ่ม Email(พนักงาน) เข้า Account | `DUPLICATE_LEGACY_ROUTE` | owner-approved Thailand route/form intent |
-| เพิ่ม App เข้า Account | `UNKNOWN_SUBMISSION_MAPPING` | whether Portal must recreate the hidden all-Roles `Detail` fragment |
-| ขอสิทธิ์เข้า Role(พนักงาน) | `UNKNOWN_LOOKUP_AUTHORITY` | Matrix ownership, `Active` rule, and authenticated Department/Manager fallback policy |
-| เพิ่ม App เข้า Role(พนักงาน) | `UNKNOWN_LOOKUP_AUTHORITY`, `LEGACY_REQUIREDNESS_ANOMALY` | same Matrix policy plus whether App must actually be required |
-| เพิ่ม Permission เข้า Role(ลูกค้า) | `UNKNOWN_TEXT_LIST_FORMAT` | canonical feature-list grammar/delimiter |
-| เพิ่ม Package Add On(ลูกค้า) | `UNAPPROVED_LEGACY_FIELD_REUSE` | approval to translate Role via Product column and Add-On via App column |
-| Create New Role สำหรับ Account(ลูกค้า) | `UNKNOWN_TEXT_LIST_FORMAT` | canonical feature-list grammar/delimiter |
-| เปลี่ยน Provider สำหรับ Account(ลูกค้า) | `UNKNOWN_TEXT_LIST_FORMAT`, `UNAPPROVED_LEGACY_FIELD_REUSE` | canonical email-list grammar and approval of Provider-via-Role mapping |
-| Tranfer Owner Account(ลูกค้า) | `UNAPPROVED_LEGACY_FIELD_REUSE` | approval of Provider-via-Role mapping and target email semantics |
-| ลบ User ใน Account(ลูกค้า) | `UNKNOWN_TEXT_LIST_FORMAT` | canonical email-list grammar/delimiter |
-| ขอเปิด/ปิดแจ้งเตือน... | `UNKNOWN_SUBMISSION_MAPPING` | approved typed destination/consumer for a setting currently present only in `Detail` |
+| Topic | Status | Machine-readable reason | Closure or exact remaining decision |
+| --- | --- | --- | --- |
+| Create New Account | PARTIAL | `UNKNOWN_SUBMISSION_MAPPING` | owner must decide treatment of SharePoint-only `PackageHid(Product)` |
+| เพิ่ม Email เข้า Account | PARTIAL | `UNKNOWN_MULTIPLICITY` | owner must decide whether raw text means one email or a list and, if a list, its grammar |
+| เพิ่ม Email(พนักงาน) เข้า Account | CONFIRMED | none | effective `Form1_103` route resolved from ordered `If`; stale `Form1_6` is unreachable |
+| เพิ่ม App เข้า Account | CONFIRMED | none | exact all-Roles formula, delimiter, empty behavior, and downstream `Detail` use resolved |
+| ขอสิทธิ์เข้า Role(พนักงาน) | PARTIAL | `UNKNOWN_LOOKUP_AUTHORITY` | Matrix authority and `Active`/blank/duplicate policy require owner decision |
+| เพิ่ม App เข้า Role(พนักงาน) | PARTIAL | `UNKNOWN_LOOKUP_AUTHORITY`, `LEGACY_REQUIREDNESS_ANOMALY` | same Matrix gate plus whether App is required |
+| เพิ่ม Permission เข้า Role(ลูกค้า) | CONFIRMED | none | raw `featureList` passthrough is the exact legacy contract |
+| เพิ่ม Package Add On(ลูกค้า) | PARTIAL | `UNAPPROVED_LEGACY_FIELD_REUSE` | owner must approve Role-via-Product and Add-On-via-App compatibility |
+| Create New Role สำหรับ Account(ลูกค้า) | CONFIRMED | none | raw `featureList` passthrough is the exact legacy contract |
+| เปลี่ยน Provider สำหรับ Account(ลูกค้า) | PARTIAL | `UNAPPROVED_LEGACY_FIELD_REUSE` | raw `emailList` is resolved; Provider-via-Role needs approval |
+| Tranfer Owner Account(ลูกค้า) | PARTIAL | `UNAPPROVED_LEGACY_FIELD_REUSE`, `UNKNOWN_TARGET_EMAIL_SEMANTICS` | Provider reuse and target email meaning need decisions |
+| ลบ User ใน Account(ลูกค้า) | CONFIRMED | none | raw `emailList` passthrough is the exact legacy contract |
+| ขอเปิด/ปิดแจ้งเตือน... | PARTIAL | `UNKNOWN_SUBMISSION_MAPPING` | owner must accept `Detail`-only transport or define a typed destination |
 
-The next task should obtain Product Management owner decisions for this table,
-then update only the resolved schema entries. Real read or write integration
-requires separate authorization and remains outside PM-03.
+The next task should obtain the ten concise OPEN decisions in the owner-decision
+document, then update only the affected eight schemas. Real read or write
+integration requires separate authorization and remains outside PM-03A.

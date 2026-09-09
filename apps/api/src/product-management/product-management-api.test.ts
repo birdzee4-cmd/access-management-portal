@@ -60,6 +60,8 @@ test("countries and Topics responses expose the exact confirmed model for every 
 });
 
 test("all 65 Country and Topic pairs return compatible schema registry contracts", async () => {
+  let confirmed = 0;
+  let partial = 0;
   for (const country of productManagementCountries) {
     for (const topic of productManagementTopics) {
       const response = await handleProductManagementForm(request({}, { country, topic }), dependencies());
@@ -68,12 +70,16 @@ test("all 65 Country and Topic pairs return compatible schema registry contracts
       assert.equal(body.source, "MOCK");
       assert.equal(body.country, country);
       assert.equal(body.topic, topic);
-      assert.equal(body.schema.implementationStatus, "PARTIAL");
-      assert.ok(body.schema.partialReasons.length > 0);
+      if (body.schema.implementationStatus === "CONFIRMED") confirmed += 1;
+      if (body.schema.implementationStatus === "PARTIAL") partial += 1;
+      assert.equal(body.schema.partialReasons.length === 0, body.schema.implementationStatus === "CONFIRMED");
+      assert.equal(body.schema.submissionEnabled, false);
       assert.ok(body.schema.legacyScreenPattern);
       assert.ok(body.fields.length > 0);
     }
   }
+  assert.equal(confirmed, 25);
+  assert.equal(partial, 40);
 });
 
 test("lookup endpoints implement Country partitions, shared Product and Account to Customer Role", async () => {
@@ -130,10 +136,12 @@ test("form rejects missing or unsupported Country and Topic with HTTP 400", asyn
   }
 });
 
-test("mock submit rejects PARTIAL schemas and invalid schema input", async () => {
+test("mock submit rejects PARTIAL schemas, source-closed disabled schemas, and invalid input", async () => {
   const valid = { country: "Thailand", topic: productManagementTopics[0], fields: { companyName: "Synthetic Company" }, idempotencyKey: "synthetic-key" };
   const response = await handleProductManagementSubmit(request(valid), dependencies());
   assert.equal(response.status, 400);
+  const sourceClosed = { country: "Thailand", topic: productManagementTopics[6], fields: { account: "Synthetic Account", customerRole: "Synthetic Role", featureList: "Synthetic Feature" }, idempotencyKey: "synthetic-source-closed" };
+  assert.equal((await handleProductManagementSubmit(request(sourceClosed), dependencies())).status, 400);
   for (const invalid of [{}, { ...valid, country: "" }, { ...valid, topic: "Unsupported" }, { ...valid, idempotencyKey: "" }, { ...valid, fields: {} }, { ...valid, fields: { unknown: "value" } }, { ...valid, fields: { companyName: 42 } }, { ...valid, unexpected: true }]) {
     assert.equal((await handleProductManagementSubmit(request(invalid), dependencies())).status, 400);
   }

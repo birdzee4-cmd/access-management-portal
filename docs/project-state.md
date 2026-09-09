@@ -1,6 +1,6 @@
 # Project state
 
-M1 implementation snapshot, 2026-09-07; based on repository docs and source
+M1 and PM-03A implementation snapshot, 2026-09-09; based on repository docs and source
 without production refresh. Read [safety](production-safety-boundary.md)
 and [roadmap](roadmap.md). Historical findings are scoped to their dates/samples.
 
@@ -71,13 +71,17 @@ lookup endpoints, and dependent mock dropdowns. PM-02A-R2 offline export evidenc
 confirmed five hard-coded Countries, one shared ordered set of 13 hard-coded
 Topics, topic-specific legacy forms, Country-partitioned Package/Add-On/App/Account
 sources, shared `DB - Product_TH`, Account-to-customer-Role filtering, and
-Department/Manager-based internal Role matrices. PM-02B aligns mock mode and the
+Manager-fallback internal Role matrices. PM-02B aligns mock mode and the
 dynamic schema registry to that evidence. PM-03 inspected all 65 effective
 supported forms and the exported flows, documented the complete observed field
 and submission contract, added missing List Feature/List Email schema fields, and
 records requiredness, multiplicity, legacy bindings, transformations, destination
-and machine-readable gap reasons. The result remains `0 CONFIRMED / 13 PARTIAL`;
-both Web and API mock boundaries reject submission for a partial schema. See
+and machine-readable gap reasons. PM-03A confirms five source-closed contracts,
+leaves eight policy-dependent contracts PARTIAL, and adds serialization,
+reused-field, all-Roles, and effective Matrix metadata. The result is
+`5 CONFIRMED / 8 PARTIAL`; both Web and API reject PARTIAL submission and an
+independent `submissionEnabled=false` gate disables all Product Management
+submission. See
 [Product Management form contract](product-management-form-contract.md). Real
 mode still fails closed; no production read, production adapter, workflow
 invocation or legacy write is active.

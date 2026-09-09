@@ -272,13 +272,12 @@ Internal employee role:
   `DB - MatrixProductManagement_PH`, or
   `DB - MatrixProductManagement_VN_MY_ID`
 - Value/display column: SharePoint `Title`, mapped as `RoleName`
-- Representative formulas:
-  `Filter(<matrix>, Department=Office365Users.MyProfile().Department)` and
+- Effective-route formula:
   `If(CountRows(Filter(<matrix>, User().Email=Manager)) > 0,
   Filter(<matrix>, User().Email=Manager), Filter(<matrix>, Manager=<fallback>))`
-- Dependencies: current user's Department or Manager mapping, depending on the
-  country/topic screen variant. No `Active` predicate appears in these observed
-  Items formulas.
+- Dependency: current user email as Matrix `Manager`, otherwise the directory
+  Manager email. Department-filter formulas exist only on older non-routed copies.
+  No effective `Items` formula applies `Active`, `Sort`, or `Distinct`.
 - Persistence field: `USR_PowerApp.RoleInternal(Product)`
 
 Both Role sources are operationally CONFIRMED. Whether matrix `RoleName` is an
@@ -297,7 +296,6 @@ flowchart TD
     SCREEN --> ACCOUNT["Account\ncountry source + SearchText"]
     SCREEN --> PRODUCT["Product\nDB - Product_TH"]
     ACCOUNT --> CUSTOMERROLE["Customer Role\nFilter by Account"]
-    USERDEPT["Office365Users Department"] --> INTERNALROLE["Internal Role matrix"]
     MANAGER["User/Manager comparison"] --> INTERNALROLE
 ```
 
@@ -324,8 +322,8 @@ without a trailing country suffix while the other copies use one.
 | `เพิ่ม Email เข้า Account(ลูกค้า)` | TH base; other `{CC}_..._{CC}` | Customer email, Provider Type, Account, customer Role | Account → Role | guarded `SubmitForm(Form*)` |
 | `เพิ่ม Email(พนักงาน) เข้า Account(ลูกค้า)` | `{CC}_..._{CC}` | Account, customer Role | Account → Role | guarded `SubmitForm(Form*)` |
 | `เพิ่ม App เข้า Account(ลูกค้า)` | TH base; other `{CC}_..._{CC}` | Account, App | Country-partitioned Account and App; no App filter by Account | guarded `SubmitForm(Form*)` |
-| `ขอสิทธิ์เข้า Role(พนักงาน)` | TH base; other `{CC}_..._{CC}` | Internal Role | Department/Manager → matrix Role | guarded `SubmitForm(Form*)` |
-| `เพิ่ม App เข้า Role(พนักงาน)` | TH base; other `{CC}_..._{CC}` | Internal Role, App | Department/Manager → Role; country → App source | guarded `SubmitForm(Form*)` |
+| `ขอสิทธิ์เข้า Role(พนักงาน)` | TH base; other `{CC}_..._{CC}` | Internal Role | requester-as-Manager else requester-manager → matrix Role | guarded `SubmitForm(Form*)` |
+| `เพิ่ม App เข้า Role(พนักงาน)` | TH base; other `{CC}_..._{CC}` | Internal Role, App | same Manager fallback → Role; country → App source | guarded `SubmitForm(Form*)` |
 | `เพิ่ม Permission เข้า Role(ลูกค้า)` | TH base; other `{CC}_..._{CC}` | Account, customer Role, request detail | Account → Role | guarded `SubmitForm(Form*)` |
 | `เพิ่ม Package Add On(ลูกค้า)` | TH base; other `{CC}_..._{CC}` | Account, customer Role, Add-On | Account → Role; Add-On independent of Package | guarded `SubmitForm(Form*)` |
 | `Create New Role สำหรับ Account(ลูกค้า)` | `{CC}_Create New Role...` | Account, new Role text | Country → Account source | guarded `SubmitForm(Form*)` |
@@ -391,7 +389,7 @@ Product Management mapping.
 | Countries | **PARTIAL MATCH** | Mock has Thailand/Vietnam; export has Thailand, Philippines, Vietnam, Malaysia, Indonesia |
 | Topics | **MISMATCH** | Mock `New Product`/`Product Change` do not match the 13 selectable exported topics |
 | Dynamic schemas | **MISMATCH** | Mock exposes two generic schemas with all lookups; export has 13 topic-specific form shapes copied per country |
-| Lookup dependencies | **MISMATCH** | Mock assumes Provider → Package, Package → Add-On/App, App → Account/Role; exports show Country source partition, Account → customer Role, and Department/Manager → internal Role |
+| Lookup dependencies | **MISMATCH** | Mock assumes Provider → Package, Package → Add-On/App, App → Account/Role; exports show Country source partition, Account → customer Role, and effective Manager-fallback → internal Role |
 
 The mock remains valid synthetic contract/test data but is not a representation of
 the exported production application's complete Country, Topic, form, or dependency
@@ -402,9 +400,10 @@ behavior.
 The Canvas export confirms that the `MatrixProductManagement_*` aliases are
 directly used for internal Role selection. They are SharePoint connections in the
 app export, with `Title` mapped to `RoleName` and fields `Manager`, `Department`,
-and `Active`. Formulas filter them by requester Department or Manager. This proves
-operational role/approval-routing use, but not enterprise entitlement authority;
-their mixed business meaning remains UNKNOWN.
+and `Active`. Effective routed forms filter by requester-as-Manager with a
+requester-manager fallback. Department filtering occurs only on older non-routed
+copies. This proves dropdown candidate use, but not enterprise entitlement or
+approval authority; their mixed business meaning remains UNKNOWN.
 
 `All_SharepointUserRequest.Country` and `TopicRequest` remain request-history
 observations and are not referenced as lookup masters by the Canvas app. The
@@ -423,8 +422,8 @@ master-data source for Country or Topic.
 - `DB - Product_TH` is reused for non-TH screens; intended country scope is UNKNOWN.
 - Provider options differ between screen generations; the canonical set per topic
   requires business confirmation.
-- Matrix Role formulas do not consistently apply `Active`; the intended active-row
-  rule is UNKNOWN.
+- Effective Matrix Role formulas never apply `Active`; the intended active-row,
+  blank/error Manager, duplicate, and ordering policies are UNKNOWN.
 - Several copied screens reuse semantically different `USR_PowerApp` fields, such
   as Add-On in `AppName(Product)`, customer Role in `ProductName(Product)`, and new
   Provider in `RoleName(Product)`. A future adapter must preserve or deliberately
@@ -450,7 +449,7 @@ stable-key, policy, and real-adapter gates remain open after PM-03.
 3. Define stable value/display keys and explicit per-country source allowlists for
    Package, Add-On, App, Product, Account, customer Role, and internal Role.
 4. Model dependencies from the export: Country/topic choose the schema/source;
-   Account filters customer Role; Department/Manager-based internal Role requires
+   Account filters customer Role; Manager-fallback internal Role requires
    a separate authorization/privacy review and must not trust browser identity.
 5. Add read-only connector ports behind the existing adapter with bounded
    projections, sanitized errors, API-authoritative authentication/authorization,
