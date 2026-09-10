@@ -118,4 +118,8 @@ unproven approval-notification fan-out, missing approved internal test identity,
 missing exact live target/configuration, and missing least-privilege credential
 evidence prevent the one-request acceptance. Normal submission remains disabled.
 See [PM-07 acceptance](product-management-controlled-production-acceptance.md).
+The PM-07 FINAL gate-closure attempt reconfirmed the block: controlled-acceptance
+configuration was absent and neither a controllable Microsoft browser session nor
+a usable Power Automate CLI resource token was available for bounded live
+verification. No Production-specific dry run, target read, or write occurred.
 PM-08 is not started and requires a separate decision after the remaining gates.

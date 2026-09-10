@@ -23,6 +23,25 @@ all nine pre-write gates passing. They did not pass:
 Therefore `CONTROLLED PRODUCTION WRITE: BLOCKED`. No gate was bypassed and the
 single-write allowance remains unused.
 
+### PM-07 FINAL gate re-evaluation
+
+The final gate-closure attempt on 2026-09-10 confirmed, without recording any
+identifier or secret, that all 16 required `PRODUCT_MANAGEMENT_PM07_*`
+configuration values were absent from the process environment and ignored local
+configuration. No controllable Microsoft browser session was available, and the
+existing signed-in CLI context could not obtain a Power Automate resource token.
+Consequently it could not perform the bounded live flow, target, schema,
+notification, approver, or permission reads needed to replace the offline
+UNKNOWNs with Production evidence.
+
+An available signed-in user context is not an approved PM-07 requester identity
+and does not evidence delegated SharePoint least privilege. The task did not name
+an approved internal requester, expected Manager approver, safe notification
+destinations, exact site/list, or reviewed permission assignment. The final run
+therefore stopped before the Production-specific dry run, target inspection, and
+POST. No Legacy Production source was read or written and the one-write allowance
+remains unused.
+
 ## Offline target correlation
 
 The inspected Power Apps export names its writable intake data source
@@ -86,6 +105,16 @@ succeed or that a platform will create exactly one notification artifact.
 | G. Intended Production target verified | FAIL | offline Power App/Flow target matches; no bounded live target verification occurred |
 | H. Authorized least-privilege credentials/config | FAIL | no relevant environment configuration or permission evidence was present |
 | I. Normal user route remains disabled | PASS | no API/Web registration; all 13 schema flags and normal runtime guards remain disabled |
+
+The exact external input required to continue is one reviewed PM-07 operational
+configuration package containing: the generic HTTP failure action's destination
+and side-effect classification; complete pre-approval/Reject/Approve recipients
+and connector fan-out; an approved internal requester with its delegated
+SharePoint identity, expected Manager approver, company and routing value; the
+exact Production SharePoint site/list and verified schema/read-back method; a
+credential technically limited to creating and reading the one intake item with
+no site administration, Flow modification, VSTS write, or direct SQL write; and
+an authorized human rejection path plus bounded post-rejection read access.
 
 ## Selected Topic and planned data
 
@@ -191,16 +220,18 @@ PM-08 was not started. `submissionEnabled=false` remains mandatory.
 
 ## Validation
 
-- Product Management/API inventory: 185/185 passed with
+- PM-07 FINAL Product Management/API inventory: 185/185 passed with
   `node --test --test-isolation=none`.
-- Complete repository fallback inventory: 362/362 passed (contracts 46,
+- Complete PM-07 FINAL fallback inventory: 362/362 passed (contracts 46,
   connectors 40, database 8, Web 83, API 185).
-- `npm test`: TypeScript compilation passed, then the standard Node worker runner
-  failed only with Windows `spawn EPERM`; the identical inventories passed with
-  `--test-isolation=none` as required by the task.
+- Standard `npm test`: TypeScript compilation passed, then the Node worker runner
+  failed only with Windows `spawn EPERM`; no test assertion failed before the
+  identical inventories passed with `--test-isolation=none`.
 - `npm run typecheck`: passed.
 - `npm run build`: passed.
 - `npm run prisma:validate`: passed; syntax validation only, no database access.
+  Prisma engine verification required the approved non-sandboxed network
+  allowance.
 - `npm audit --audit-level=moderate`: passed with zero vulnerabilities.
 - Tests and builds used synthetic data/fakes. No real adapter test performed
   network I/O; the SharePoint transport tests inject a synthetic `fetch`.

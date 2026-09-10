@@ -167,6 +167,10 @@ no automatic retry, approval/rejection, provisioning, or revocation. The
 Production pre-write gate failed, so this boundary was not configured or invoked
 against Production. See
 [PM-07 acceptance](product-management-controlled-production-acceptance.md).
+The PM-07 FINAL re-evaluation did not change this architecture: all controlled
+settings were absent and no usable browser or Power Automate CLI session was
+available for live target verification. The adapter remains unregistered and
+normal Product Management submission remains disabled.
 
 ## Task 07D data-model boundaries
 
