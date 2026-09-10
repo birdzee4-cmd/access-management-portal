@@ -16,13 +16,13 @@ import {
 
 export const PRODUCT_MANAGEMENT_PM07_MARKER = "PORTAL-TEST-PM07" as const;
 export const PRODUCT_MANAGEMENT_PM07_TOPIC = productManagementTopics[12];
+export const PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT = "REJECT_AT_VSTS_AFTER_EXISTING_APPROVAL" as const;
 export const PRODUCT_MANAGEMENT_CONTROLLED_ACCEPTANCE_TARGET = Object.freeze({
   classification: "PRODUCTION_CONTROLLED_ACCEPTANCE",
   name: "LEGACY_PRODUCT_MANAGEMENT_SHAREPOINT_INTAKE",
 } as const);
 
 const REQUIRED_AUTHORIZATION = "AUTHORIZED_EXACTLY_ONE_REJECT_TEST";
-const REQUIRED_REJECTION_INTENT = "REJECT_AT_FIRST_TEAMS_APPROVAL";
 const REQUIRED_TARGET_ATTESTATION = "OFFLINE_POWER_APP_FLOW_TARGET_MATCH_VERIFIED";
 const REQUIRED_LEAST_PRIVILEGE_ATTESTATION = "VERIFIED_BOUNDED_LIST_READ_WRITE";
 const expectedListTitle = "USR_PowerApp";
@@ -34,6 +34,7 @@ type Environment = Readonly<Record<string, string | undefined>>;
 
 export interface ProductManagementControlledAcceptanceConfiguration {
   readonly mode: "PM07_SINGLE_REJECT_TEST";
+  readonly rejectionIntent: typeof PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT;
   readonly target: typeof PRODUCT_MANAGEMENT_CONTROLLED_ACCEPTANCE_TARGET;
   readonly siteUrl: string;
   readonly listId: string;
@@ -123,12 +124,88 @@ export interface ProductManagementControlledAcceptanceExecutionResult {
   readonly rejectionPerformed: false;
 }
 
+export interface ProductManagementControlledAcceptanceArtifactObservation {
+  readonly outcome: "KNOWN" | "AMBIGUOUS";
+  readonly controlledRequests: number;
+  readonly sharePointItems: number;
+  readonly sqlBackupRows: number;
+  readonly flowRuns: number;
+  readonly teamsApprovals: number;
+  readonly portalApprovals: number;
+  readonly vstsWorkItems: number;
+  readonly vstsWorkItemOrigin: "LEGACY_WORKFLOW";
+  readonly vstsWorkItemState: "AWAITING_AUTHORIZED_REJECT" | "REJECTED";
+  readonly directVstsCreations: number;
+  readonly vstsApprovedOrCompletedForBusinessExecution: boolean;
+  readonly accessChanges: number;
+  readonly provisioningActions: number;
+  readonly revocationActions: number;
+  readonly unexpectedSideEffects: number;
+}
+
+export interface ProductManagementControlledAcceptanceArtifactGateResult {
+  readonly status: "HUMAN_ACTION_REQUIRED" | "VERIFIED_REJECTED";
+  readonly expectedVstsWorkItems: 1;
+  readonly workflowGeneratedVstsWorkItemAllowed: true;
+  readonly manualVstsRejectionRequired: boolean;
+  readonly accessChangingActionsAllowed: false;
+}
+
 export class ProductManagementControlledAcceptanceSafetyError extends Error {
   readonly code = "PRODUCT_MANAGEMENT_CONTROLLED_ACCEPTANCE_SAFETY_VIOLATION" as const;
   constructor(message: string) {
     super(message);
     this.name = "ProductManagementControlledAcceptanceSafetyError";
   }
+}
+
+function isNonNegativeInteger(value: number): boolean {
+  return Number.isSafeInteger(value) && value >= 0;
+}
+
+export function evaluateProductManagementControlledAcceptanceArtifacts(
+  observation: ProductManagementControlledAcceptanceArtifactObservation,
+): ProductManagementControlledAcceptanceArtifactGateResult {
+  const counts = [
+    observation.controlledRequests,
+    observation.sharePointItems,
+    observation.sqlBackupRows,
+    observation.flowRuns,
+    observation.teamsApprovals,
+    observation.portalApprovals,
+    observation.vstsWorkItems,
+    observation.directVstsCreations,
+    observation.accessChanges,
+    observation.provisioningActions,
+    observation.revocationActions,
+    observation.unexpectedSideEffects,
+  ];
+  if (!counts.every(isNonNegativeInteger) || observation.outcome !== "KNOWN") {
+    throw new ProductManagementControlledAcceptanceSafetyError("The controlled acceptance artifact outcome is invalid or ambiguous.");
+  }
+  if (observation.controlledRequests !== 1 || observation.sharePointItems !== 1 ||
+      observation.sqlBackupRows !== 1 || observation.flowRuns !== 1 ||
+      observation.teamsApprovals !== 1 || observation.vstsWorkItems !== 1 ||
+      observation.vstsWorkItemOrigin !== "LEGACY_WORKFLOW") {
+    throw new ProductManagementControlledAcceptanceSafetyError("The controlled acceptance requires exactly one bounded request and one workflow-generated VSTS work item.");
+  }
+  if (observation.portalApprovals !== 0 || observation.directVstsCreations !== 0 ||
+      observation.vstsApprovedOrCompletedForBusinessExecution !== false ||
+      observation.accessChanges !== 0 || observation.provisioningActions !== 0 ||
+      observation.revocationActions !== 0 || observation.unexpectedSideEffects !== 0) {
+    throw new ProductManagementControlledAcceptanceSafetyError("The controlled acceptance observed a prohibited approval, direct VSTS action, access change, or unexpected side effect.");
+  }
+  if (observation.vstsWorkItemState !== "AWAITING_AUTHORIZED_REJECT" &&
+      observation.vstsWorkItemState !== "REJECTED") {
+    throw new ProductManagementControlledAcceptanceSafetyError("The VSTS work item is not at an allowed controlled rejection state.");
+  }
+  return Object.freeze({
+    status: observation.vstsWorkItemState === "REJECTED" ? "VERIFIED_REJECTED" : "HUMAN_ACTION_REQUIRED",
+    expectedVstsWorkItems: 1,
+    workflowGeneratedVstsWorkItemAllowed: true,
+    manualVstsRejectionRequired: observation.vstsWorkItemState !== "REJECTED",
+    accessChangingActionsAllowed: false,
+  });
 }
 
 function required(environment: Environment, key: string): string {
@@ -164,7 +241,7 @@ export function readProductManagementControlledAcceptanceConfiguration(
   }
   if (required(environment, "PRODUCT_MANAGEMENT_PM07_MODE") !== "PM07_SINGLE_REJECT_TEST" ||
       required(environment, "PRODUCT_MANAGEMENT_PM07_WRITE_AUTHORIZATION") !== REQUIRED_AUTHORIZATION ||
-      required(environment, "PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT") !== REQUIRED_REJECTION_INTENT ||
+      required(environment, "PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT") !== PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT ||
       required(environment, "PRODUCT_MANAGEMENT_PM07_TARGET_CLASSIFICATION") !== PRODUCT_MANAGEMENT_CONTROLLED_ACCEPTANCE_TARGET.classification ||
       required(environment, "PRODUCT_MANAGEMENT_PM07_TARGET_ATTESTATION") !== REQUIRED_TARGET_ATTESTATION ||
       required(environment, "PRODUCT_MANAGEMENT_PM07_LEAST_PRIVILEGE_ATTESTATION") !== REQUIRED_LEAST_PRIVILEGE_ATTESTATION) {
@@ -197,6 +274,7 @@ export function readProductManagementControlledAcceptanceConfiguration(
 
   return Object.freeze({
     mode: "PM07_SINGLE_REJECT_TEST",
+    rejectionIntent: PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT,
     target: PRODUCT_MANAGEMENT_CONTROLLED_ACCEPTANCE_TARGET,
     siteUrl: site.href.replace(/\/$/, ""),
     listId: listId.toLowerCase(),
@@ -276,12 +354,13 @@ export class ProductManagementControlledAcceptanceRunner {
     private readonly adapter: ProductManagementControlledAcceptanceAdapter,
     private readonly now: () => string,
   ) {
-    if (adapter.target !== PRODUCT_MANAGEMENT_CONTROLLED_ACCEPTANCE_TARGET ||
+    if (configuration.rejectionIntent !== PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT ||
+        adapter.target !== PRODUCT_MANAGEMENT_CONTROLLED_ACCEPTANCE_TARGET ||
         adapter.configuration !== configuration ||
         adapter.capabilities.network !== true || adapter.capabilities.approve !== false ||
         adapter.capabilities.reject !== false || adapter.capabilities.provision !== false ||
         adapter.capabilities.revoke !== false) {
-      throw new ProductManagementControlledAcceptanceSafetyError("The acceptance runner requires the exact write/read-only-without-approval PM-07 adapter.");
+      throw new ProductManagementControlledAcceptanceSafetyError("The acceptance runner requires the exact VSTS-rejection intent and write/read-only-without-approval PM-07 adapter.");
     }
   }
 

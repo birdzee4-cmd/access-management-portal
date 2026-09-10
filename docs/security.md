@@ -110,6 +110,13 @@ usable Microsoft browser or Power Automate CLI session. A signed-in user context
 alone was not treated as approved test identity or least-privilege evidence. The
 run stopped before target inspection, payload dry-run, or POST and disclosed no
 Production identifiers or credentials in repository changes.
+PM-07 FIX gives the inactive contract a distinct VSTS-rejection intent without
+adding VSTS credentials or capabilities. A pure artifact gate allows exactly one
+work item only when its origin is the existing legacy workflow, reports
+`HUMAN_ACTION_REQUIRED` before manual rejection, and rejects direct/excess VSTS
+items, Portal double approval, VSTS business completion, ambiguous outcomes and
+any access/provisioning/revocation effect. The former first-Teams intent and
+unknown intents fail closed. No Production configuration or system was accessed.
 
 Future logs must avoid access tokens, secrets, connection strings, full request payloads, and unnecessary employee data. Audit events should capture actor, action, target, decision, correlation ID, and timestamp, with an approved retention period.
 

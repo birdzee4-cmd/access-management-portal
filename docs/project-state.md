@@ -159,6 +159,14 @@ absent, no controllable Microsoft browser session, and no usable Power Automate
 CLI resource token. It therefore produced no new live target, workflow,
 notification, identity, or permission evidence and stopped before dry-run or
 POST. The single authorized write allowance remains unused.
+PM-07 FIX changes the exact rejection intent from first-Teams rejection to
+`REJECT_AT_VSTS_AFTER_EXISTING_APPROVAL`; the old and unknown values fail closed.
+A synthetic-only downstream gate now expects exactly one legacy-workflow-generated
+VSTS item, reports `HUMAN_ACTION_REQUIRED` while it awaits an authorized manual
+reject, and blocks excess/direct VSTS items, double approval, ambiguity and every
+access/provisioning/revocation effect. The SharePoint adapter remains unable to
+reject or create VSTS items directly. No Production access or modification
+occurred and normal submission remains disabled.
 
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration

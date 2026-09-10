@@ -122,4 +122,11 @@ The PM-07 FINAL gate-closure attempt reconfirmed the block: controlled-acceptanc
 configuration was absent and neither a controllable Microsoft browser session nor
 a usable Power Automate CLI resource token was available for bounded live
 verification. No Production-specific dry run, target read, or write occurred.
+PM-07 FIX aligns the inactive contract to the separately approved
+`REJECT_AT_VSTS_AFTER_EXISTING_APPROVAL` boundary. Exactly one VSTS item created
+by the legacy workflow is expected; an authorized human rejection is required,
+while direct VSTS creation, business execution, excess artifacts, ambiguity,
+double approval and access/provisioning/revocation remain blocked. The old
+first-Teams rejection intent fails closed. This contract change neither runs nor
+unblocks the Production acceptance.
 PM-08 is not started and requires a separate decision after the remaining gates.

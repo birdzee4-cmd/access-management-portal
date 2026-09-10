@@ -5,11 +5,13 @@ import { ProductManagementRuntimeSafetyError, readProductManagementRuntimeSafety
 import {
   PRODUCT_MANAGEMENT_CONTROLLED_ACCEPTANCE_TARGET,
   PRODUCT_MANAGEMENT_PM07_MARKER,
+  PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT,
   PRODUCT_MANAGEMENT_PM07_TOPIC,
   ProductManagementControlledAcceptanceRunner,
   ProductManagementControlledAcceptanceSafetyError,
   SharePointProductManagementControlledAcceptanceAdapter,
   createProductManagementControlledAcceptanceDryRun,
+  evaluateProductManagementControlledAcceptanceArtifacts,
   readProductManagementControlledAcceptanceConfiguration,
   type ProductManagementControlledAcceptanceAdapter,
   type ProductManagementControlledAcceptanceConfiguration,
@@ -58,7 +60,7 @@ function environment(): Record<string, string> {
     PRODUCT_MANAGEMENT_ADAPTER_TARGET: "disabled",
     PRODUCT_MANAGEMENT_PM07_MODE: "PM07_SINGLE_REJECT_TEST",
     PRODUCT_MANAGEMENT_PM07_WRITE_AUTHORIZATION: "AUTHORIZED_EXACTLY_ONE_REJECT_TEST",
-    PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT: "REJECT_AT_FIRST_TEAMS_APPROVAL",
+    PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT,
     PRODUCT_MANAGEMENT_PM07_TARGET_CLASSIFICATION: "PRODUCTION_CONTROLLED_ACCEPTANCE",
     PRODUCT_MANAGEMENT_PM07_TARGET_ATTESTATION: "OFFLINE_POWER_APP_FLOW_TARGET_MATCH_VERIFIED",
     PRODUCT_MANAGEMENT_PM07_LEAST_PRIVILEGE_ATTESTATION: "VERIFIED_BOUNDED_LIST_READ_WRITE",
@@ -136,6 +138,7 @@ test("controlled configuration fails closed unless every explicit PM-07 gate is 
     ["PRODUCT_MANAGEMENT_REAL_ADAPTER_ENABLED", "true"],
     ["PRODUCT_MANAGEMENT_ADAPTER_TARGET", "production"],
     ["PRODUCT_MANAGEMENT_PM07_TARGET_CLASSIFICATION", "PRODUCTION"],
+    ["PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT", "REJECT_AT_FIRST_TEAMS_APPROVAL"],
     ["PRODUCT_MANAGEMENT_PM07_TOPIC", productManagementCompatibilityFixtures[0]!.input.topic],
     ["PRODUCT_MANAGEMENT_PM07_APPROVED_REQUESTER_EMAIL", "requester@example.invalid"],
     ["PRODUCT_MANAGEMENT_PM07_SHAREPOINT_SITE_URL", "https://not-sharepoint.example/sites/controlled"],
@@ -143,6 +146,73 @@ test("controlled configuration fails closed unless every explicit PM-07 gate is 
     assert.throws(() => readProductManagementControlledAcceptanceConfiguration({ ...environment(), [key]: value }), ProductManagementControlledAcceptanceSafetyError, key);
   }
   assert.equal(readProductManagementControlledAcceptanceConfiguration(environment()).target.classification, "PRODUCTION_CONTROLLED_ACCEPTANCE");
+  assert.equal(readProductManagementControlledAcceptanceConfiguration(environment()).rejectionIntent, PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT);
+  assert.throws(() => readProductManagementControlledAcceptanceConfiguration({
+    ...environment(), PRODUCT_MANAGEMENT_PM07_REJECTION_INTENT: "UNKNOWN_REJECTION_INTENT",
+  }), ProductManagementControlledAcceptanceSafetyError);
+  const legacyConfiguration = {
+    ...readProductManagementControlledAcceptanceConfiguration(environment()),
+    rejectionIntent: "REJECT_AT_FIRST_TEAMS_APPROVAL",
+  } as unknown as ProductManagementControlledAcceptanceConfiguration;
+  assert.throws(() => new ProductManagementControlledAcceptanceRunner(
+    legacyConfiguration, new FakeControlledAdapter(targetObservation, legacyConfiguration), () => timestamp,
+  ), ProductManagementControlledAcceptanceSafetyError);
+});
+
+const allowedVstsArtifacts = {
+  outcome: "KNOWN",
+  controlledRequests: 1,
+  sharePointItems: 1,
+  sqlBackupRows: 1,
+  flowRuns: 1,
+  teamsApprovals: 1,
+  portalApprovals: 0,
+  vstsWorkItems: 1,
+  vstsWorkItemOrigin: "LEGACY_WORKFLOW",
+  vstsWorkItemState: "AWAITING_AUTHORIZED_REJECT",
+  directVstsCreations: 0,
+  vstsApprovedOrCompletedForBusinessExecution: false,
+  accessChanges: 0,
+  provisioningActions: 0,
+  revocationActions: 0,
+  unexpectedSideEffects: 0,
+} as const;
+
+test("one workflow-generated VSTS artifact is allowed and requires an authorized human reject", () => {
+  assert.deepEqual(evaluateProductManagementControlledAcceptanceArtifacts(allowedVstsArtifacts), {
+    status: "HUMAN_ACTION_REQUIRED",
+    expectedVstsWorkItems: 1,
+    workflowGeneratedVstsWorkItemAllowed: true,
+    manualVstsRejectionRequired: true,
+    accessChangingActionsAllowed: false,
+  });
+  assert.equal(evaluateProductManagementControlledAcceptanceArtifacts({
+    ...allowedVstsArtifacts, vstsWorkItemState: "REJECTED",
+  }).status, "VERIFIED_REJECTED");
+});
+
+test("excess or direct VSTS artifacts and ambiguous outcomes fail closed", () => {
+  for (const observation of [
+    { ...allowedVstsArtifacts, vstsWorkItems: 2 },
+    { ...allowedVstsArtifacts, directVstsCreations: 1 },
+    { ...allowedVstsArtifacts, outcome: "AMBIGUOUS" as const },
+    { ...allowedVstsArtifacts, unexpectedSideEffects: 1 },
+  ]) {
+    assert.throws(() => evaluateProductManagementControlledAcceptanceArtifacts(observation), ProductManagementControlledAcceptanceSafetyError);
+  }
+});
+
+test("access execution, provisioning, revocation, and double approval remain prohibited", () => {
+  for (const observation of [
+    { ...allowedVstsArtifacts, accessChanges: 1 },
+    { ...allowedVstsArtifacts, provisioningActions: 1 },
+    { ...allowedVstsArtifacts, revocationActions: 1 },
+    { ...allowedVstsArtifacts, portalApprovals: 1 },
+    { ...allowedVstsArtifacts, teamsApprovals: 2 },
+    { ...allowedVstsArtifacts, vstsApprovedOrCompletedForBusinessExecution: true },
+  ]) {
+    assert.throws(() => evaluateProductManagementControlledAcceptanceArtifacts(observation), ProductManagementControlledAcceptanceSafetyError);
+  }
 });
 
 test("PM-07 dry run is exact, marked, non-writing, and creates no Portal approval", () => {
