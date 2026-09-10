@@ -111,9 +111,11 @@ model, and 13/13 synthetic acceptance are implemented without Production access,
 external I/O, durable/external persistence, approval creation, or activation. See
 [adapter readiness](product-management-adapter-readiness.md).
 
-**PM-07 status: NOT STARTED / AUTHORIZATION REQUIRED.** PM-07 may not begin from
-this roadmap entry. It requires the explicit checklist in adapter readiness,
-including exact target/action authorization, credential and least-privilege
-approval, durable idempotency/audit, real non-Production adapter acceptance,
-security/operations review, rollback/cutover, double-approval prevention,
-deployment authorization, and separate safety-flag activation authorization.
+**PM-07 status (2026-09-10): BLOCKED AT PRE-WRITE SAFETY GATE.** The authorized
+repository/offline trace and isolated real-adapter implementation are complete,
+but no Production access or write occurred. Unknown failure-handler semantics,
+unproven approval-notification fan-out, missing approved internal test identity,
+missing exact live target/configuration, and missing least-privilege credential
+evidence prevent the one-request acceptance. Normal submission remains disabled.
+See [PM-07 acceptance](product-management-controlled-production-acceptance.md).
+PM-08 is not started and requires a separate decision after the remaining gates.

@@ -1,8 +1,9 @@
 # Product Management controlled adapter readiness
 
-PM-06 status on 2026-09-09: **NON-PRODUCTION SYNTHETIC ACCEPTANCE**. This is an
-internal, deterministic acceptance boundary only. Repository source and synthetic
-fixtures are the evidence. Production was not accessed or modified.
+PM-07 status on 2026-09-10: **BLOCKED AT THE PRE-WRITE SAFETY GATE**. PM-06
+remains **NON-PRODUCTION SYNTHETIC ACCEPTANCE**. Repository source, offline
+exports and synthetic fixtures are the evidence. Production was not accessed or
+modified.
 
 ## Status and non-status
 
@@ -13,7 +14,7 @@ fixtures are the evidence. Production was not accessed or modified.
 | DRY-RUN READY | yes |
 | ADAPTER CONTRACT READY | yes |
 | NON-PRODUCTION SYNTHETIC ACCEPTANCE | 13/13 Topics |
-| REAL ADAPTER DISABLED | yes; no implementation or registration |
+| REAL ADAPTER NORMAL-RUNTIME ACCESS | disabled; an isolated PM-07 SharePoint implementation exists but is unregistered |
 | SUBMISSION DISABLED | yes; every schema flag remains false |
 | PRODUCTION NOT CONNECTED | yes |
 
@@ -59,9 +60,11 @@ PRODUCT_MANAGEMENT_REAL_ADAPTER_ENABLED=false
 PRODUCT_MANAGEMENT_ADAPTER_TARGET=disabled
 ```
 
-No Production adapter class exists. `DisabledProductManagementSubmissionAdapter`
-always fails closed. Existing Product Management POST behavior still rejects all
-13 schemas because `submissionEnabled=false`.
+At PM-06, no Production adapter class existed.
+`DisabledProductManagementSubmissionAdapter` still always fails closed. Existing
+Product Management POST behavior still rejects all 13 schemas because
+`submissionEnabled=false`. The later PM-07 adapter is a separate unregistered
+one-attempt harness and is not accepted by the normal PM-06 factory/service.
 
 ## Version 1 envelope and canonicalization
 
@@ -225,6 +228,23 @@ Every item below needs explicit evidence and authorization before real submissio
 - final Production acceptance plan with exact scope, limits, verification, abort
   conditions, and authorization.
 
-Changing configuration is not authorization. PM-07 has not started. Submission,
-the real adapter, Production integration, approval creation, provisioning, and
-revocation remain disabled/not implemented.
+Changing configuration is not authorization. These were the PM-06 exit gates;
+PM-07 later implemented only the isolated adapter/harness and stopped when the
+operational pre-write gate failed. Normal submission, Production integration,
+approval creation, provisioning, and revocation remain disabled.
+
+## PM-07 controlled acceptance outcome
+
+PM-07 repository work completed an offline workflow trace and added an isolated
+SharePoint REST adapter/one-attempt harness. The operational Production write is
+**BLOCKED AT THE PRE-WRITE SAFETY GATE** and was not performed. The adapter is not
+registered in API/Web/normal runtime and cannot approve, reject, provision, or
+revoke. It requires exact `PRODUCTION_CONTROLLED_ACCEPTANCE` configuration,
+reviewed payload fingerprint, marker collision read, delegated-user/target/schema
+verification, and normal submission settings to remain disabled. Ambiguous POST
+outcomes are terminal with no automatic retry. See
+[controlled Production acceptance](product-management-controlled-production-acceptance.md).
+
+Durable multi-instance idempotency/audit remains unresolved; the isolated
+one-attempt guard and downstream marker reconciliation do not claim to solve it.
+No Production access, request, approval, or modification occurred in PM-07.

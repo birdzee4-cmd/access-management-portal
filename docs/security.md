@@ -93,6 +93,19 @@ adapter, credential, persistence, route, monitoring connection, or network call 
 added. See
 [Product Management controlled adapter readiness](product-management-adapter-readiness.md).
 
+PM-07 introduces an isolated real SharePoint REST adapter but no runtime route.
+It accepts an injected access-token provider and never persists or logs the token,
+payload, email, target identifiers, or downstream response body. Pre-write checks
+require exact target classification, list metadata/schema, matching delegated
+human identity, reviewed payload fingerprint, fixed marker/Topic, no prior marker,
+and explicit least-privilege/target attestations. Each adapter and runner instance
+permits one POST; ambiguous outcomes stop with no retry and reconciliation is an
+explicit read. It exposes no approve/reject/provision/revoke operation. The live
+gate failed and Production was not accessed. Remaining credential scope/storage,
+durable idempotency/audit, failure-handler, notification, retention and operations
+reviews are blockers. See
+[PM-07 acceptance](product-management-controlled-production-acceptance.md).
+
 Future logs must avoid access tokens, secrets, connection strings, full request payloads, and unnecessary employee data. Audit events should capture actor, action, target, decision, correlation ID, and timestamp, with an approved retention period.
 
 ## Threats to address before pilot

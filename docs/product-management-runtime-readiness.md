@@ -1,9 +1,10 @@
 # Product Management runtime integration readiness
 
-PM-06 status on 2026-09-09: **NON-PRODUCTION SYNTHETIC ACCEPTANCE**. PM-05 remains
-**DRY-RUN READY**. These statuses are based on repository source, committed
-offline Power Apps/Flow exports, and synthetic tests only. No Production system
-was accessed. See [controlled adapter readiness](product-management-adapter-readiness.md).
+PM-07 status on 2026-09-10: **BLOCKED AT THE PRE-WRITE SAFETY GATE**. PM-06
+remains **NON-PRODUCTION SYNTHETIC ACCEPTANCE** and PM-05 remains **DRY-RUN
+READY**. These statuses are based on repository source, offline Power Apps/Flow
+exports, and synthetic tests only. No Production system was accessed. See
+[controlled adapter readiness](product-management-adapter-readiness.md).
 
 ## Status vocabulary
 
@@ -14,9 +15,9 @@ was accessed. See [controlled adapter readiness](product-management-adapter-read
 | DRY-RUN READY | yes | An internal preview can validate and return a sanitized compatibility payload without side effects. |
 | ADAPTER CONTRACT READY | yes | PM-06 adds a typed envelope, adapter/result/verification contracts, and synthetic-only executor. |
 | NON-PRODUCTION SYNTHETIC ACCEPTANCE | 13/13 Topics | Serializer through verification passes with synthetic fixtures and zero network I/O. |
-| REAL ADAPTER DISABLED | yes | No Production implementation or registration exists; the disabled adapter always rejects. |
+| REAL ADAPTER NORMAL-RUNTIME ACCESS | disabled | An isolated PM-07 SharePoint implementation exists, but no API/Web/normal-runtime registration exists and the disabled normal adapter always rejects. |
 | SUBMISSION DISABLED | yes | Schema flags remain false and runtime guards reject every enabling or selectable adapter value. |
-| PRODUCTION NOT CONNECTED | yes | No SharePoint, SQL, VSTS, Power Automate, Entra, network, or Portal DB integration was added. |
+| PRODUCTION NOT CONNECTED | yes | The isolated SharePoint transport is unconfigured/uninvoked; no runtime SQL, VSTS, Power Automate, Entra, or Portal DB connection was added. |
 
 These statuses do not mean APPROVED, ACTIVE, or PROVISIONED. PM-06 makes the
 boundary testable only against an in-memory synthetic adapter; it grants no
@@ -103,9 +104,10 @@ Email, or legacy field labels.
 PM-06 implements the typed `ProductManagementSubmissionAdapter` contract and an
 explicit `SYNTHETIC_NON_PRODUCTION / PM06_ACCEPTANCE` adapter with independent
 verification. It also provides in-memory audit/idempotency and bounded retry for
-acceptance tests. None is registered in the API or Web application. No Production
-adapter exists; the disabled implementation always throws. The preview service
-still receives no adapter and cannot call one.
+acceptance tests. None is registered in the API or Web application. At PM-06 no
+Production adapter existed; its disabled implementation still always throws.
+PM-07's separate controlled adapter is not accepted by that factory or service.
+The preview service still receives no adapter and cannot call one.
 
 `readProductManagementRuntimeSafety` accepts only this state:
 
@@ -137,8 +139,8 @@ assert those preview side effects are false.
 
 ## Activation prerequisites
 
-Before any real adapter or submission can be proposed, all of the following need
-separate explicit authorization and review:
+Before operational acceptance or normal submission can be proposed, all of the
+following need separate explicit authorization and review:
 
 - approved target systems, exact write actions, source/destination schema version,
   credentials, network boundary, and least-privilege connector permissions;
@@ -155,5 +157,20 @@ separate explicit authorization and review:
   Production acceptance scope, and explicit authorization for every safety-flag or
   deployment change.
 
-Changing an environment variable alone never authorizes activation. PM-06 adds no
-real adapter, Production connection, deployment, provision, revoke, or migration.
+Changing an environment variable alone never authorizes activation. PM-06 added
+no real adapter, Production connection, deployment, provision, revoke, or
+migration; PM-07's isolated adapter changes only the first of those historical
+statements and remains unconfigured/unregistered.
+
+## PM-07 isolation update
+
+PM-07 adds a real SharePoint REST adapter only behind an unregistered controlled
+acceptance runner. The normal runtime contract above is unchanged and continues
+to reject every selectable adapter target. The runner is bounded to Topic 13, the
+`PORTAL-TEST-PM07` marker, one reviewed fingerprint/idempotency key and one POST
+attempt; it preflights the exact list/schema/delegated identity and checks for an
+existing marker before writing. It exposes no Portal approval or access execution.
+
+The Production pre-write gate failed, so the runner was not configured or
+executed against Production. See
+[PM-07 controlled Production acceptance](product-management-controlled-production-acceptance.md).

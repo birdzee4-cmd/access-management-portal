@@ -157,6 +157,17 @@ composition root and has no repository or connector. Missing/real/Production
 targets fail closed; no real adapter is implemented. See
 [Product Management controlled adapter readiness](product-management-adapter-readiness.md).
 
+PM-07 adds a separate, unregistered controlled-acceptance boundary. Its SharePoint
+REST adapter can target only `PRODUCTION_CONTROLLED_ACCEPTANCE` and must verify the
+configured list identity/title/schema, a matching delegated human test identity,
+the exact Topic/marker and absence of an existing marker before its single POST.
+The runner requires a reviewed canonical fingerprint and normal runtime to remain
+disabled. It can read back an accepted item or reconcile by marker, but performs
+no automatic retry, approval/rejection, provisioning, or revocation. The
+Production pre-write gate failed, so this boundary was not configured or invoked
+against Production. See
+[PM-07 acceptance](product-management-controlled-production-acceptance.md).
+
 ## Task 07D data-model boundaries
 
 Task 07D refines the portal-owned schema around three independent concerns:

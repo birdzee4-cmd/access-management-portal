@@ -1,6 +1,6 @@
 # Project state
 
-M1 and PM-06 implementation snapshot, 2026-09-09; based on repository docs and source
+M1 and PM-07 implementation snapshot, 2026-09-10; based on repository docs and source
 without production refresh. Read [safety](production-safety-boundary.md)
 and [roadmap](roadmap.md). Historical findings are scoped to their dates/samples.
 
@@ -137,10 +137,23 @@ separate verifier, atomic in-memory idempotency/concurrency behavior, bounded
 classified retry, fail-safe unknown outcomes, and privacy-minimized in-memory
 audit/metrics. The service is internal and unregistered; tests perform no network
 or database I/O. Durable idempotency/audit and every real target, credential,
-permission, acceptance, deployment and flag change remain PM-07 prerequisites.
-Submission remains disabled, no Production adapter exists, and Legacy Power
-Automate / Microsoft Teams remains the sole Phase 1 Product Management approval.
+permission, acceptance, deployment and flag change were PM-07 prerequisites.
+Normal submission remains disabled; PM-06 had no Production adapter, and Legacy
+Power Automate / Microsoft Teams remains the sole Phase 1 Product Management
+approval.
 See [adapter readiness](product-management-adapter-readiness.md).
+
+PM-07 traces the exported Product Management path through SharePoint, initial
+notifications, SQL backup, Manager approval, rejection termination, and the
+approval-only VSTS/IT Manager path. It adds an isolated SharePoint REST adapter
+and one-attempt controlled runner with exact target/schema/delegated-identity,
+marker, Topic and fingerprint gates, read-back/reconciliation, and no automatic
+retry after ambiguity. No API/Web/normal-runtime registration exists. The
+Production safety gate failed because a generic HTTP failure action remains
+semantically unknown, notification fan-out is not fully countable, and approved
+live target/least-privilege credentials/internal test identity were unavailable.
+No Production access or write occurred; normal submission remains disabled. See
+[PM-07 acceptance](product-management-controlled-production-acceptance.md).
 
 Scoped Admin legacy SQL reads exist. SharePoint/VSTS APIs are unconnected; VSTS
 observations come from SQL backup data. Power Automate is unchanged. Integration
